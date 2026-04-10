@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MechaMix – Trang Chủ</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #050c18;
+  --bg2:      #07111f;
+  --bg3:      #0b1829;
+  --bg4:      #0f2038;
+  --blue:     #1e6fff;
+  --cyan:     #00d4ff;
+  --teal:     #00c9a7;
+  --violet:   #8b5cf6;
+  --pink:     #ec4899;
+  --green:    #10b981;
+  --gold:     #f59e0b;
+  --red:      #ef4444;
+  --tx1:      #e2e8f0;
+  --tx2:      #7a93b4;
+  --tx3:      #2e4460;
+  --bdr:      rgba(30,111,255,0.14);
+  --bdr2:     rgba(0,212,255,0.28);
+  --font:     'Plus Jakarta Sans', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--tx1);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* animated mesh background */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 60% at 5% 0%,   rgba(30,111,255,0.09) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 100%, rgba(139,92,246,0.07) 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 45%,  rgba(0,201,167,0.04) 0%,transparent 60%),
+    linear-gradient(rgba(30,111,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,111,255,0.025) 1px, transparent 1px);
+  background-size: auto, auto, auto, 44px 44px, 44px 44px;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  position:fixed; left:0; top:0; bottom:0; width:228px;
+  background: var(--bg2);
+  border-right: 1px solid var(--bdr);
+  display:flex; flex-direction:column;
+  z-index:200;
+}
+
+.sb-top { padding:24px 20px 20px; border-bottom:1px solid var(--bdr); }
+.logo-row { display:flex; align-items:center; gap:11px; }
+.logo-mark {
+  width:40px; height:40px; border-radius:12px; flex-shrink:0;
+  background: linear-gradient(135deg,#1e6fff,#00d4ff);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 0 22px rgba(30,111,255,0.45);
+  position:relative;
+}
+.logo-mark::after {
+  content:''; position:absolute; inset:0; border-radius:12px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.logo-mark svg { width:22px; height:22px; fill:white; }
+.logo-name { font-family:var(--font); font-weight:800; font-size:19px; letter-spacing:0.2px; }
+.logo-name em { font-style:normal; color:var(--cyan); }
+.logo-ver { font-size:10px; color:var(--tx3); font-family:var(--mono); margin-top:2px; }
+
+.sb-body { flex:1; padding:16px 12px; overflow-y:auto; }
+.sb-section { margin-bottom:6px; }
+.sb-sec-label {
+  font-size:9.5px; font-weight:700; letter-spacing:1.8px;
+  color:var(--tx3); text-transform:uppercase;
+  padding:4px 10px 6px; display:block;
+}
+.nav-link {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 11px; border-radius:9px; margin-bottom:2px;
+  cursor:pointer; transition:all 0.18s;
+  font-size:13.5px; font-weight:500; color:var(--tx2); letter-spacing:0.1px;
+  text-decoration:none; position:relative;
+}
+.nav-link:hover { background:var(--bg4); color:var(--tx1); }
+.nav-link.active {
+  background: rgba(30,111,255,0.14);
+  color:var(--cyan);
+  border-left:2.5px solid var(--cyan);
+}
+.nav-link svg { width:15px; height:15px; flex-shrink:0; opacity:0.85; }
+.nav-tag {
+  margin-left:auto; font-size:9px; padding:1px 7px; border-radius:10px;
+  font-family:var(--mono); font-weight:600;
+}
+.tag-new { background:rgba(16,185,129,0.18); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+.tag-ai  { background:rgba(139,92,246,0.18); color:var(--violet); border:1px solid rgba(139,92,246,0.3); }
+.tag-beta{ background:rgba(245,158,11,0.15); color:var(--gold); border:1px solid rgba(245,158,11,0.25); }
+
+.sb-bot { padding:14px 12px; border-top:1px solid var(--bdr); }
+.user-row {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 11px; border-radius:10px;
+  background:var(--bg3); cursor:pointer;
+  transition:background 0.18s;
+}
+.user-row:hover { background:var(--bg4); }
+.u-av {
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,#1e6fff,#00d4ff);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:13px;
+}
+.u-name { font-size:13px; font-weight:600; }
+.u-role { font-size:10.5px; color:var(--tx2); margin-top:1px; }
+.u-dots { margin-left:auto; color:var(--tx3); font-size:16px; line-height:1; }
+
+/* ─── Main ─── */
+.main { margin-left:228px; min-height:100vh; position:relative; z-index:1; }
+
+/* ─── Topbar ─── */
+.topbar {
+  height:60px; background:rgba(7,17,31,0.88);
+  border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; padding:0 30px;
+  gap:14px; position:sticky; top:0; z-index:100;
+  backdrop-filter:blur(16px);
+}
+.tb-date { font-size:12px; color:var(--tx2); font-family:var(--mono); }
+.tb-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.tb-search {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg3); border:1px solid var(--bdr);
+  border-radius:9px; padding:7px 14px;
+  font-size:12.5px; color:var(--tx2); cursor:pointer;
+  transition:all 0.2s; width:200px; font-family:var(--font);
+}
+.tb-search:hover { border-color:var(--blue); color:var(--tx1); }
+.tb-search kbd {
+  margin-left:auto; font-family:var(--mono);
+  font-size:9px; padding:1px 5px; border-radius:4px;
+  background:var(--bg4); border:1px solid var(--tx3); color:var(--tx3);
+}
+.tb-icon {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--bg3); border:1px solid var(--bdr);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--tx2); transition:all 0.2s; position:relative;
+}
+.tb-icon:hover { border-color:var(--blue); color:var(--cyan); }
+.tb-notif-dot {
+  position:absolute; top:7px; right:7px; width:7px; height:7px;
+  border-radius:50%; background:var(--cyan); border:1.5px solid var(--bg2);
+  animation:pulseNotif 2s infinite;
+}
+@keyframes pulseNotif{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content ─── */
+.content { padding:36px 36px 60px; }
+
+/* ─── Hero ─── */
+.hero-wrap {
+  background: var(--bg3);
+  border: 1px solid var(--bdr);
+  border-radius: 20px;
+  padding: 40px 44px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.5s ease both;
+  margin-bottom: 32px;
+}
+.hero-wrap::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--blue),var(--cyan),var(--teal));
+}
+.hero-glow {
+  position:absolute; width:320px; height:320px; border-radius:50%;
+  background:radial-gradient(circle,rgba(30,111,255,0.1),transparent 70%);
+  right:-80px; top:-80px; pointer-events:none;
+}
+.hero-eyebrow {
+  font-size:11px; font-weight:700; color:var(--teal);
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:12px; display:flex; align-items:center; gap:8px;
+}
+.hero-eyebrow::before { content:''; width:16px; height:2px; background:var(--teal); border-radius:1px; }
+.hero-title {
+  font-size:32px; font-weight:800; line-height:1.22;
+  margin-bottom:10px; letter-spacing:-0.3px;
+}
+.hero-title span {
+  background:linear-gradient(90deg,var(--cyan),var(--blue));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.hero-sub {
+  font-size:14px; font-weight:400; color:var(--tx2);
+  line-height:1.7; max-width:540px; margin-bottom:32px;
+}
+
+/* ─── 3 Feature Cards ─── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.feat-card {
+  background: var(--bg4);
+  border: 1px solid var(--bdr);
+  border-radius: 14px;
+  padding: 22px 22px 20px;
+  cursor: pointer;
+  transition: all 0.22s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: fadeUp 0.5s ease both;
+}
+.feat-card:nth-child(1){animation-delay:0.08s}
+.feat-card:nth-child(2){animation-delay:0.14s}
+.feat-card:nth-child(3){animation-delay:0.20s}
+.feat-card:hover {
+  border-color: var(--bdr2);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  background: var(--bg3);
+}
+.feat-card.primary {
+  background: linear-gradient(135deg, rgba(30,111,255,0.12), rgba(0,212,255,0.05));
+  border-color: rgba(30,111,255,0.3);
+}
+.feat-card.primary:hover {
+  border-color: rgba(0,212,255,0.5);
+  box-shadow: 0 12px 40px rgba(30,111,255,0.2);
+}
+.feat-top-line {
+  position:absolute; top:0; left:0; right:0; height:1px;
+}
+.feat-icon-wrap {
+  width: 48px; height: 48px; border-radius: 13px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 22px;
+}
+.feat-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--tx3);
+  font-family: var(--mono);
+}
+.feat-title {
+  font-size: 16px; font-weight: 700;
+  letter-spacing: -0.1px; line-height: 1.3;
+}
+.feat-desc {
+  font-size: 12.5px; font-weight: 400;
+  color: var(--tx2); line-height: 1.65; flex: 1;
+}
+.feat-action {
+  display: flex; align-items:center; justify-content:space-between;
+  margin-top: 4px;
+}
+.feat-btn {
+  padding: 9px 18px; border-radius: 9px; border: none;
+  font-family: var(--font); font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.1px;
+  display: flex; align-items:center; gap: 6px;
+}
+.feat-btn-primary {
+  background: linear-gradient(135deg, var(--blue), #0050dd);
+  color: #fff; box-shadow: 0 4px 18px rgba(30,111,255,0.35);
+}
+.feat-btn-primary:hover { box-shadow: 0 8px 28px rgba(30,111,255,0.5); transform:translateY(-1px); }
+.feat-btn-ghost {
+  background: var(--bg3); border: 1px solid var(--bdr);
+  color: var(--tx2);
+}
+.feat-btn-ghost:hover { border-color: var(--cyan); color: var(--tx1); }
+.feat-arrow {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--bg3); border: 1px solid var(--bdr);
+  display: flex; align-items:center; justify-content:center;
+  color: var(--tx2); font-size: 14px; transition: all 0.2s;
+}
+.feat-card:hover .feat-arrow { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.08); }
+
+/* ─── Section heading ─── */
+.sec-heading {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; margin-top: 36px;
+}
+.sec-heading-title {
+  font-size: 15px; font-weight: 700; letter-spacing: -0.1px;
+  display: flex; align-items: center; gap: 9px; color: var(--tx1);
+}
+.sec-heading-title::after {
+  content:''; display:block; width: 40px; height: 1px; background: var(--bdr);
+}
+.sec-heading-link {
+  font-size: 12px; font-weight: 500; color: var(--blue); cursor:pointer;
+  transition: color 0.18s;
+}
+.sec-heading-link:hover { color: var(--cyan); }
+
+/* ─── Recent Projects ─── */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.proj-card {
+  background: var(--bg3); border: 1px solid var(--bdr);
+  border-radius: 14px; padding: 20px;
+  cursor: pointer; transition: all 0.2s;
+  animation: fadeUp 0.5s ease both;
+  position: relative; overflow: hidden;
+}
+.proj-card:hover { border-color: var(--bdr2); transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,0,0,0.3); }
+.proj-card-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.proj-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 18px;
+}
+.proj-status {
+  font-size: 9.5px; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+  font-family: var(--mono);
+}
+.status-done  { background:rgba(16,185,129,0.12); color:var(--green);  border:1px solid rgba(16,185,129,0.25); }
+.status-wip   { background:rgba(0,212,255,0.1);   color:var(--cyan);   border:1px solid rgba(0,212,255,0.25); }
+.status-pause { background:rgba(245,158,11,0.12); color:var(--gold);   border:1px solid rgba(245,158,11,0.25); }
+.proj-name {
+  font-size: 14px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.1px;
+}
+.proj-meta {
+  font-size: 11.5px; color: var(--tx2); margin-bottom: 14px; line-height: 1.5;
+}
+.proj-progress-wrap { margin-bottom: 12px; }
+.proj-progress-label {
+  display: flex; justify-content:space-between;
+  font-size: 10.5px; color: var(--tx3); font-family: var(--mono); margin-bottom: 5px;
+}
+.proj-bar { height: 4px; background: var(--bg4); border-radius: 10px; overflow:hidden; }
+.proj-fill { height: 100%; border-radius: 10px; }
+.proj-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding-top: 12px; border-top: 1px solid rgba(30,111,255,0.08);
+}
+.proj-date {
+  font-size: 10.5px; color: var(--tx3); font-family: var(--mono);
+  display:flex; align-items:center; gap: 5px;
+}
+.proj-open {
+  font-size: 11.5px; font-weight: 600; color: var(--blue);
+  display:flex; align-items:center; gap: 4px;
+  transition: color 0.18s;
+}
+.proj-card:hover .proj-open { color: var(--cyan); }
+
+/* ─── Guide Section ─── */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.guide-card {
+  background: var(--bg3); border: 1px solid var(--bdr);
+  border-radius: 14px; padding: 20px;
+  cursor: pointer; transition: all 0.2s;
+  animation: fadeUp 0.5s ease both;
+  position: relative; overflow: hidden;
+  display: flex; flex-direction:column; gap: 12px;
+}
+.guide-card:hover { border-color: var(--bdr2); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.guide-icon {
+  width: 42px; height: 42px; border-radius: 11px;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 19px;
+}
+.guide-step {
+  font-size: 9.5px; font-weight: 600; font-family:var(--mono);
+  color: var(--tx3); margin-bottom: 4px; letter-spacing: 0.5px;
+}
+.guide-title {
+  font-size: 13.5px; font-weight: 700; margin-bottom: 3px; letter-spacing: -0.1px;
+}
+.guide-desc {
+  font-size: 11.5px; color: var(--tx2); line-height: 1.6; flex:1;
+}
+.guide-tag {
+  font-size: 10px; font-family: var(--mono); font-weight: 600;
+  padding: 2px 8px; border-radius: 4px; display: inline-block;
+  background: var(--bg4); border: 1px solid var(--bdr); color: var(--tx3);
+  align-self: flex-start;
+}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.proj-card:nth-child(1){animation-delay:0.05s}
+.proj-card:nth-child(2){animation-delay:0.10s}
+.proj-card:nth-child(3){animation-delay:0.15s}
+.guide-card:nth-child(1){animation-delay:0.06s}
+.guide-card:nth-child(2){animation-delay:0.11s}
+.guide-card:nth-child(3){animation-delay:0.16s}
+.guide-card:nth-child(4){animation-delay:0.21s}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:rgba(30,111,255,0.25);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">Mecha<em>Mix</em></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-body">
+    <div class="sb-section">
+      <span class="sb-sec-label">Tổng quan</span>
+      <a class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dự án của tôi
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">Nhập liệu & Kiểm tra</span>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Kiểm tra ngưỡng
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">Tính toán</span>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Bộ truyền đai
+      </a>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+        Bánh răng côn-trụ
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <circle cx="4" cy="12" r="2"/>
+          <circle cx="20" cy="12" r="2"/>
+        </svg>
+        Trục & Ổ lăn
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">AI & Tối ưu</span>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        Gợi ý linh kiện
+      </a>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Tối ưu ML / GA
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">Xuất & Chia sẻ</span>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Xuất bản vẽ lắp
+      </a>
+      <a class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Xuất báo cáo PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="sb-bot">
+    <div class="user-row">
+      <div class="u-av">KT</div>
+      <div>
+        <div class="u-name">Thiên Kiều</div>
+        <div class="u-role">CS</div>
+      </div>
+      <div class="u-dots">···</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="tb-date" id="tbDate">Thu, 26 Mar 2026</div>
+    <div class="tb-right">
+      <div class="tb-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Tìm kiếm...
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="tb-notif-dot"></div>
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ── HERO ── -->
+    <div class="hero-wrap">
+      <div class="hero-glow"></div>
+      <div class="hero-eyebrow">Xin chào, Thiên Kiều</div>
+      <div class="hero-title">
+        Thiết kế<br>
+        <span> Hệ dẫn động thùng trộn </span>
+      </div>
+      <div class="hero-sub">
+        Hệ thống tính toán tự động cho hộp giảm tốc — từ nhập thông số,
+        tính động cơ, đến gợi ý linh kiện và tối ưu hoá bằng AI.
+      </div>
+
+      <!-- 3 Feature Cards -->
+      <div class="feature-grid">
+
+        <!-- 1. Bắt đầu dự án mới -->
+        <div class="feat-card primary">
+          <div class="feat-top-line" style="background:linear-gradient(90deg,transparent,rgba(0,212,255,0.5),transparent)"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="feat-label">Bắt đầu</div>
+          </div>
+          <div>
+            <div class="feat-title">Bắt đầu dự án mới</div>
+            <div class="feat-desc">Tạo hộp giảm tốc mới từ đầu. Nhập thông số đầu vào, chọn sơ đồ truyền động và để MechaMix lo phần còn lại.</div>
+          </div>
+          <div class="feat-action">
+            <button class="feat-btn feat-btn-primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Tạo dự án
+            </button>
+            <div class="feat-arrow">→</div>
+          </div>
+        </div>
+
+        <!-- 2. Các dự án gần đây -->
+        <div class="feat-card">
+          <div class="feat-top-line" style="background:linear-gradient(90deg,transparent,rgba(0,201,167,0.45),transparent)"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="feat-label">Gần đây</div>
+          </div>
+          <div>
+            <div class="feat-title">Các dự án gần đây</div>
+            <div class="feat-desc">Tiếp tục từ nơi bạn dừng lại. Truy cập nhanh các dự án đang thực hiện hoặc đã hoàn thành gần đây.</div>
+          </div>
+          <div class="feat-action">
+            <button class="feat-btn feat-btn-ghost">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              Mở dự án
+            </button>
+            <div class="feat-arrow">→</div>
+          </div>
+        </div>
+
+        <!-- 3. Hướng dẫn -->
+        <div class="feat-card">
+          <div class="feat-top-line" style="background:linear-gradient(90deg,transparent,rgba(245,158,11,0.4),transparent)"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="feat-label">Hướng dẫn</div>
+          </div>
+          <div>
+            <div class="feat-title">Hướng dẫn sử dụng</div>
+            <div class="feat-desc">Tìm hiểu cách sử dụng đầy đủ các tính năng — từ nhập thông số, kiểm bền, đến tối ưu hoá bằng AI.</div>
+          </div>
+          <div class="feat-action">
+            <button class="feat-btn feat-btn-ghost">
+              Xem hướng dẫn
+            </button>
+            <div class="feat-arrow">→</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+<script>
+// Update date
+const d = new Date();
+const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+document.getElementById('tbDate').textContent =
+  `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+</script>
+</body>
+</html>

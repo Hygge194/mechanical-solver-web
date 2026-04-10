@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MechaMix – Output & Visualization: Hiển thị và xuất kết quả</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #050c18;
+  --bg2:      #07111f;
+  --bg3:      #0b1829;
+  --bg4:      #0f2038;
+  --blue:     #1e6fff;
+  --cyan:     #00d4ff;
+  --teal:     #00c9a7;
+  --violet:   #8b5cf6;
+  --pink:     #ec4899;
+  --green:    #10b981;
+  --gold:     #f59e0b;
+  --red:      #ef4444;
+  --orange:   #f97316;
+  --tx1:      #e2e8f0;
+  --tx2:      #7a93b4;
+  --tx3:      #2e4460;
+  --bdr:      rgba(30,111,255,0.14);
+  --bdr2:     rgba(0,212,255,0.28);
+  --font:     'Plus Jakarta Sans', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+  --ml:       #a855f7;
+  --ml2:      #7c3aed;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--tx1);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 60% at 5% 0%,   rgba(30,111,255,0.09) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 100%, rgba(168,85,247,0.09) 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 45%,  rgba(0,201,167,0.04) 0%,transparent 60%),
+    linear-gradient(rgba(30,111,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,111,255,0.025) 1px, transparent 1px);
+  background-size: auto, auto, auto, 44px 44px, 44px 44px;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  position:fixed; left:0; top:0; bottom:0; width:228px;
+  background: var(--bg2);
+  border-right: 1px solid var(--bdr);
+  display:flex; flex-direction:column;
+  z-index:200;
+}
+.sb-top { padding:24px 20px 20px; border-bottom:1px solid var(--bdr); }
+.logo-row { display:flex; align-items:center; gap:11px; }
+.logo-mark {
+  width:40px; height:40px; border-radius:12px; flex-shrink:0;
+  background: linear-gradient(135deg,#1e6fff,#00d4ff);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 0 22px rgba(30,111,255,0.45);
+  position:relative;
+}
+.logo-mark::after { content:''; position:absolute; inset:0; border-radius:12px; border:1px solid rgba(255,255,255,0.15); }
+.logo-mark svg { width:22px; height:22px; fill:white; }
+.logo-name { font-family:var(--font); font-weight:800; font-size:19px; letter-spacing:0.2px; }
+.logo-name em { font-style:normal; color:var(--cyan); }
+
+.sb-body { flex:1; padding:16px 12px; overflow-y:auto; }
+.sb-section { margin-bottom:6px; }
+.sb-sec-label { font-size:9.5px; font-weight:700; letter-spacing:1.8px; color:var(--tx3); text-transform:uppercase; padding:4px 10px 6px; display:block; }
+.nav-link {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 11px; border-radius:9px; margin-bottom:2px;
+  cursor:pointer; transition:all 0.18s;
+  font-size:13.5px; font-weight:500; color:var(--tx2); letter-spacing:0.1px;
+  text-decoration:none; position:relative;
+}
+.nav-link:hover { background:var(--bg4); color:var(--tx1); }
+.nav-link.active { background:rgba(0,212,255,0.1); color:var(--cyan); border-left:2.5px solid var(--cyan); }
+.nav-link.done   { background:rgba(16,185,129,0.08); color:var(--green); border-left:2.5px solid var(--green); }
+.nav-link svg { width:15px; height:15px; flex-shrink:0; opacity:0.85; }
+.nav-tag { margin-left:auto; font-size:9px; padding:1px 7px; border-radius:10px; font-family:var(--mono); font-weight:600; }
+.tag-done   { background:rgba(16,185,129,0.18); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+.tag-active { background:rgba(0,212,255,0.18); color:var(--cyan); border:1px solid rgba(0,212,255,0.3); }
+
+.sb-bot { padding:14px 12px; border-top:1px solid var(--bdr); }
+.user-row { display:flex; align-items:center; gap:10px; padding:10px 11px; border-radius:10px; background:var(--bg3); cursor:pointer; }
+.u-av { width:34px; height:34px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg,#1e6fff,#00d4ff); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
+.u-name { font-size:13px; font-weight:600; }
+.u-role { font-size:10.5px; color:var(--tx2); margin-top:1px; }
+.u-dots { margin-left:auto; color:var(--tx3); font-size:16px; }
+
+/* ─── Main ─── */
+.main { margin-left:228px; min-height:100vh; position:relative; z-index:1; }
+
+/* ─── Topbar ─── */
+.topbar {
+  height:60px; background:rgba(7,17,31,0.88);
+  border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; padding:0 30px;
+  gap:14px; position:sticky; top:0; z-index:100;
+  backdrop-filter:blur(16px);
+}
+.tb-breadcrumb { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--tx2); }
+.tb-breadcrumb .sep { color:var(--tx3); }
+.tb-breadcrumb .cur { color:var(--cyan); font-weight:600; }
+.tb-date { font-size:12px; color:var(--tx2); font-family:var(--mono); margin-left:auto; }
+.tb-right { display:flex; align-items:center; gap:10px; margin-left:16px; }
+.tb-search { display:flex; align-items:center; gap:8px; background:var(--bg3); border:1px solid var(--bdr); border-radius:9px; padding:7px 14px; font-size:12.5px; color:var(--tx2); cursor:pointer; width:200px; font-family:var(--font); transition:all 0.2s; }
+.tb-search:hover { border-color:var(--cyan); color:var(--tx1); }
+.tb-icon { width:36px; height:36px; border-radius:9px; background:var(--bg3); border:1px solid var(--bdr); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--tx2); transition:all 0.2s; }
+.tb-icon:hover { border-color:var(--cyan); color:var(--cyan); }
+
+/* ─── Content ─── */
+.content { padding:36px 36px 60px; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes pulse-ring {
+  0%   { transform:scale(0.9); opacity:0.6; }
+  50%  { transform:scale(1.1); opacity:1; }
+  100% { transform:scale(0.9); opacity:0.6; }
+}
+@keyframes countUp {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+/* ─── Module Header ─── */
+.module-header {
+  background: var(--bg3);
+  border: 1px solid var(--bdr);
+  border-radius: 20px;
+  padding: 28px 36px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.module-header::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--blue),var(--cyan),var(--teal),var(--green));
+}
+.module-header-glow {
+  position:absolute; width:400px; height:400px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,0.06),transparent 70%);
+  right:-100px; top:-100px; pointer-events:none;
+}
+.module-badge {
+  width:60px; height:60px; border-radius:16px; flex-shrink:0;
+  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(30,111,255,0.12));
+  border: 1px solid rgba(0,212,255,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; font-size:13px; color:var(--cyan);
+  box-shadow: 0 0 24px rgba(0,212,255,0.2);
+  position:relative; z-index:1; letter-spacing:0.5px;
+}
+.module-meta { flex:1; position:relative; z-index:1; }
+.module-title { font-size:22px; font-weight:800; margin-bottom:6px; letter-spacing:-0.3px; }
+.module-title span { color:var(--cyan); }
+.module-desc { font-size:13px; color:var(--tx2); line-height:1.6; max-width:580px; }
+
+/* ─── Pipeline ─── */
+.pipeline { display:flex; align-items:center; gap:0; margin-left:auto; flex-shrink:0; position:relative; z-index:1; }
+.pipe-step { display:flex; flex-direction:column; align-items:center; gap:5px; padding:0 10px; }
+.pipe-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:var(--mono); }
+.pipe-dot.done   { background:rgba(16,185,129,0.2); border:2px solid var(--green); color:var(--green); }
+.pipe-dot.active { background:rgba(0,212,255,0.15); border:2px solid var(--cyan); color:var(--cyan); box-shadow:0 0 14px rgba(0,212,255,0.4); }
+.pipe-dot.next   { background:var(--bg4); border:2px solid var(--tx3); color:var(--tx3); }
+.pipe-label { font-size:9px; color:var(--tx2); font-weight:600; letter-spacing:0.5px; white-space:nowrap; }
+.pipe-arrow { color:var(--tx3); font-size:16px; padding:0 2px; margin-bottom:18px; }
+
+/* ─── Progress ─── */
+.progress-wrap {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:14px;
+  padding:18px 24px; margin-bottom:24px;
+  animation: fadeUp 0.45s ease both 0.05s;
+  display:flex; align-items:center; gap:20px;
+}
+.progress-label { font-size:12px; font-weight:600; color:var(--tx2); white-space:nowrap; }
+.progress-bar-track { flex:1; height:6px; background:var(--bg4); border-radius:99px; overflow:hidden; }
+.progress-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg, var(--green), var(--teal), var(--cyan), var(--blue)); box-shadow:0 0 8px rgba(0,212,255,0.4); transition:width 0.6s cubic-bezier(0.4,0,0.2,1); }
+.progress-pct { font-size:12px; font-weight:700; font-family:var(--mono); color:var(--cyan); white-space:nowrap; }
+.progress-steps { display:flex; gap:8px; margin-left:8px; flex-wrap:wrap; }
+.ps-item { font-size:10px; padding:3px 9px; border-radius:6px; font-weight:600; white-space:nowrap; }
+.ps-active { background:rgba(0,212,255,0.12); color:var(--cyan); border:1px solid rgba(0,212,255,0.3); }
+.ps-done   { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+.ps-next   { background:var(--bg4); color:var(--tx3); border:1px solid var(--tx3); }
+
+/* ─── Section Card ─── */
+.section-card {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:16px;
+  overflow:hidden; animation: fadeUp 0.5s ease both;
+}
+.card-header {
+  padding:16px 22px 14px;
+  border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; gap:12px;
+}
+.card-icon { width:36px; height:36px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.card-title { font-size:14.5px; font-weight:700; }
+.card-sub { font-size:11px; color:var(--tx2); margin-top:2px; }
+.card-badge { margin-left:auto; font-size:9.5px; padding:3px 10px; border-radius:8px; font-family:var(--mono); font-weight:600; border:1px solid; white-space:nowrap; }
+.badge-cyan   { background:rgba(0,212,255,0.1); color:var(--cyan); border-color:rgba(0,212,255,0.3); }
+.badge-green  { background:rgba(16,185,129,0.1); color:var(--green); border-color:rgba(16,185,129,0.25); }
+.badge-gold   { background:rgba(245,158,11,0.1); color:var(--gold); border-color:rgba(245,158,11,0.25); }
+.badge-blue   { background:rgba(30,111,255,0.1); color:var(--blue); border-color:rgba(30,111,255,0.25); }
+.badge-ml     { background:rgba(168,85,247,0.12); color:var(--ml); border-color:rgba(168,85,247,0.3); }
+.badge-output { background:rgba(0,212,255,0.1); color:var(--cyan); border-color:rgba(0,212,255,0.25); }
+.card-body { padding:22px; }
+
+/* ─── KPI Dashboard Cards ─── */
+.kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; animation:fadeUp 0.45s ease both 0.1s; }
+.kpi-card {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:16px;
+  padding:20px 22px; position:relative; overflow:hidden; cursor:default;
+  transition:border-color 0.2s, transform 0.2s;
+}
+.kpi-card:hover { transform:translateY(-3px); }
+.kpi-card.kpi-power  { border-top:2px solid var(--cyan); }
+.kpi-card.kpi-speed  { border-top:2px solid var(--teal); }
+.kpi-card.kpi-torque { border-top:2px solid var(--gold); }
+.kpi-card.kpi-eff    { border-top:2px solid var(--green); }
+.kpi-card.kpi-life   { border-top:2px solid var(--ml); }
+.kpi-card.kpi-ratio  { border-top:2px solid var(--blue); }
+.kpi-glow {
+  position:absolute; width:160px; height:160px; border-radius:50%;
+  top:-40px; right:-40px; pointer-events:none;
+}
+.kpi-power  .kpi-glow { background:radial-gradient(circle,rgba(0,212,255,0.08),transparent 70%); }
+.kpi-speed  .kpi-glow { background:radial-gradient(circle,rgba(0,201,167,0.08),transparent 70%); }
+.kpi-torque .kpi-glow { background:radial-gradient(circle,rgba(245,158,11,0.08),transparent 70%); }
+.kpi-eff    .kpi-glow { background:radial-gradient(circle,rgba(16,185,129,0.08),transparent 70%); }
+.kpi-life   .kpi-glow { background:radial-gradient(circle,rgba(168,85,247,0.08),transparent 70%); }
+.kpi-ratio  .kpi-glow { background:radial-gradient(circle,rgba(30,111,255,0.08),transparent 70%); }
+.kpi-label { font-size:10.5px; font-weight:700; color:var(--tx2); letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
+.kpi-val { font-family:var(--mono); font-size:26px; font-weight:700; line-height:1; margin-bottom:4px; animation:countUp 0.6s ease both 0.4s; }
+.kpi-power  .kpi-val { color:var(--cyan); }
+.kpi-speed  .kpi-val { color:var(--teal); }
+.kpi-torque .kpi-val { color:var(--gold); }
+.kpi-eff    .kpi-val { color:var(--green); }
+.kpi-life   .kpi-val { color:var(--ml); }
+.kpi-ratio  .kpi-val { color:var(--blue); }
+.kpi-unit { font-size:11px; color:var(--tx3); font-family:var(--mono); font-weight:600; }
+.kpi-trend { font-size:10px; margin-top:8px; display:flex; align-items:center; gap:4px; color:var(--green); font-weight:600; }
+.kpi-trend.warn { color:var(--gold); }
+
+/* ─── Speed Table ─── */
+.check-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.check-table thead tr { background: var(--bg4); border-bottom: 1px solid var(--bdr2); }
+.check-table th {
+  padding: 9px 14px; text-align: left;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--tx2);
+}
+.check-table th:not(:first-child) { text-align: center; }
+.check-table tbody tr { border-bottom: 1px solid var(--bdr); transition: background 0.15s; }
+.check-table tbody tr:last-child { border-bottom: none; }
+.check-table tbody tr:hover { background: rgba(0,212,255,0.04); }
+.check-table td { padding: 10px 14px; color: var(--tx2); font-size: 13px; }
+.check-table td:first-child { color: var(--tx1); font-weight: 600; }
+.check-table td:not(:first-child) { text-align: center; }
+.val-cell { font-family:var(--mono); font-weight:700; color:var(--cyan) !important; font-size:13.5px !important; letter-spacing:0.3px; }
+.val-cell-gold { font-family:var(--mono); font-weight:700; color:var(--gold) !important; font-size:13.5px !important; }
+.val-cell-teal { font-family:var(--mono); font-weight:700; color:var(--teal) !important; font-size:13.5px !important; }
+.val-cell-green { font-family:var(--mono); font-weight:700; color:var(--green) !important; font-size:13.5px !important; }
+.unit-cell { font-family:var(--mono); font-size:11px !important; color:var(--tx3) !important; font-weight:600; }
+
+/* ─── Canvas Chart ─── */
+canvas { display:block; }
+
+/* ─── Recommendation Cards ─── */
+.rec-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.rec-card {
+  background:var(--bg4); border:1px solid var(--bdr); border-radius:12px;
+  padding:16px; transition:all 0.2s; cursor:default;
+  position:relative; overflow:hidden;
+}
+.rec-card:hover { border-color:var(--cyan); transform:translateY(-2px); box-shadow:0 0 16px rgba(0,212,255,0.15); }
+.rec-card-full { grid-column:1 / -1; }
+.rec-type { font-size:9.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--tx3); margin-bottom:8px; }
+.rec-code { font-family:var(--mono); font-size:16px; font-weight:700; color:var(--cyan); margin-bottom:4px; }
+.rec-spec { font-size:11.5px; color:var(--tx2); line-height:1.5; }
+.rec-badge-wrap { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; }
+.rec-tag { font-size:9.5px; padding:2px 8px; border-radius:6px; font-weight:700; font-family:var(--mono); }
+.rec-tag-green { background:rgba(16,185,129,0.15); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+.rec-tag-cyan  { background:rgba(0,212,255,0.12); color:var(--cyan); border:1px solid rgba(0,212,255,0.25); }
+.rec-tag-gold  { background:rgba(245,158,11,0.12); color:var(--gold); border:1px solid rgba(245,158,11,0.25); }
+.rec-icon { position:absolute; top:12px; right:14px; font-size:20px; opacity:0.35; }
+
+/* ─── Synthesis Steps ─── */
+.ga-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 0; position: relative;
+}
+.ga-step:first-child { padding-top: 0; }
+.ga-step:last-child { padding-bottom: 0; border-bottom: none !important; }
+.gstep-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; font-family: var(--mono);
+  flex-shrink: 0; border: 2px solid transparent; transition: all 0.3s;
+}
+.s-done   { background:rgba(16,185,129,0.15); color:var(--green); border-color: var(--green) !important; }
+.s-active { background:rgba(0,212,255,0.15); color:var(--cyan); border-color: var(--cyan) !important; box-shadow: 0 0 12px rgba(0,212,255,0.35); }
+.gstep-content { flex: 1; padding-top: 4px; }
+.gstep-title { font-size: 13.5px; font-weight: 700; color: var(--tx1); margin-bottom: 3px; }
+.gstep-detail { font-size: 11.5px; color: var(--tx2); font-family: var(--mono); line-height: 1.5; }
+
+/* ─── Export Cards ─── */
+.export-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.export-card {
+  background:var(--bg4); border:1.5px solid var(--bdr); border-radius:14px;
+  padding:18px 20px; cursor:pointer; transition:all 0.22s; position:relative; overflow:hidden;
+}
+.export-card:hover { border-color:var(--cyan); transform:translateY(-3px); box-shadow:0 6px 24px rgba(0,212,255,0.15); }
+.export-card:hover .export-arrow { opacity:1; transform:translateX(0); }
+.export-card.featured { border-color:rgba(0,212,255,0.35); background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(30,111,255,0.03)); }
+.export-card-header { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.export-icon-wrap { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.export-title { font-size:14px; font-weight:700; }
+.export-sub { font-size:11px; color:var(--tx2); line-height:1.5; }
+.export-meta { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center; }
+.export-tag { font-size:9.5px; padding:2px 9px; border-radius:6px; font-weight:700; font-family:var(--mono); }
+.export-arrow { margin-left:auto; color:var(--tx3); opacity:0; transform:translateX(-6px); transition:all 0.2s; font-size:16px; }
+.export-progress-wrap { margin-top:12px; }
+.export-progress-bar { height:3px; border-radius:99px; background:var(--bg3); overflow:hidden; }
+.export-progress-fill { height:100%; border-radius:99px; width:0; transition:width 1.2s cubic-bezier(0.4,0,0.2,1); }
+
+/* ─── Result Panel ─── */
+.result-panel {
+  background: linear-gradient(135deg, rgba(0,212,255,0.04), rgba(30,111,255,0.02));
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius:16px; overflow:hidden; margin:0 22px 22px;
+}
+.result-panel-header { padding:14px 20px; border-bottom:1px solid rgba(0,212,255,0.12); display:flex; align-items:center; gap:10px; }
+.result-grid { padding:16px 20px; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.result-item { background:var(--bg4); border:1px solid var(--bdr); border-radius:10px; padding:12px 14px; transition:border-color 0.2s; }
+.result-item:hover { border-color:rgba(0,212,255,0.3); }
+.result-item-label { font-size:9.5px; color:var(--tx2); font-weight:600; letter-spacing:0.6px; text-transform:uppercase; margin-bottom:5px; }
+.result-item-val { font-family:var(--mono); font-size:17px; font-weight:700; background:linear-gradient(135deg,var(--cyan),var(--teal)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+/* ─── Buttons ─── */
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; font-family:var(--font); cursor:pointer; border:none; transition:all 0.2s; letter-spacing:0.2px; white-space:nowrap; }
+.btn-cyan { background:linear-gradient(135deg,var(--blue),var(--cyan)); color:#050c18; box-shadow:0 4px 16px rgba(0,212,255,0.3); }
+.btn-cyan:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,212,255,0.5); }
+.btn-ghost { background:var(--bg4); color:var(--tx2); border:1.5px solid var(--tx3); }
+.btn-ghost:hover { border-color:var(--cyan); color:var(--tx1); }
+.btn-success { background:linear-gradient(135deg,#0d8f60,var(--green)); color:#fff; box-shadow:0 4px 16px rgba(16,185,129,0.3); }
+.btn-success:hover { transform:translateY(-1px); }
+.btn-gold { background:linear-gradient(135deg,#c07800,var(--gold)); color:#fff; box-shadow:0 4px 16px rgba(245,158,11,0.3); }
+.btn-gold:hover { transform:translateY(-1px); }
+.btn-ml { background:linear-gradient(135deg,var(--ml2),var(--ml)); color:#fff; box-shadow:0 4px 16px rgba(168,85,247,0.35); }
+.btn-ml:hover { transform:translateY(-1px); }
+
+/* ─── CTA bar ─── */
+.cta-bar { background:var(--bg3); border:1px solid var(--bdr); border-radius:16px; padding:20px 24px; display:flex; align-items:center; gap:16px; margin-top:24px; animation: fadeUp 0.5s ease both 0.3s; }
+.cta-info { flex:1; }
+.cta-info-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+.cta-info-sub { font-size:12px; color:var(--tx2); }
+
+/* ─── Layout ─── */
+.layout-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; align-items:start; }
+
+/* ─── Toast ─── */
+.toast-wrap { position:fixed; bottom:30px; right:30px; z-index:999; display:flex; flex-direction:column; gap:10px; }
+.toast { background:var(--bg3); border:1px solid var(--bdr); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; min-width:280px; max-width:380px; box-shadow:0 8px 32px rgba(0,0,0,0.4); animation: toastIn 0.3s ease both; backdrop-filter:blur(12px); }
+.toast.toast-cyan { border-color:rgba(0,212,255,0.4); }
+.toast.toast-ok   { border-color:rgba(16,185,129,0.4); }
+.toast.toast-warn { border-color:rgba(245,158,11,0.4); }
+.toast-icon { font-size:18px; flex-shrink:0; }
+.toast-msg { font-size:13px; font-weight:500; flex:1; }
+.toast-close { font-size:16px; color:var(--tx3); cursor:pointer; }
+.toast-close:hover { color:var(--tx1); }
+
+/* ─── Mini live dot ─── */
+.live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); display:inline-block; animation:pulse-ring 1.8s ease infinite; margin-right:4px; }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:10px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">Mecha<em>Mix</em></div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-body">
+    <div class="sb-section">
+      <span class="sb-sec-label">Tổng quan</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Dự án của tôi
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Nhập liệu & Kiểm tra</span>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Kiểm tra ngưỡng <span class="nav-tag tag-done">DONE</span>
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Tính toán</span>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>Bộ truyền đai <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>Bánh răng côn-trụ <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></svg>Trục & Ổ lăn <span class="nav-tag tag-done">DONE</span>
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">AI & Tối ưu</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        Gợi ý linh kiện
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Tối ưu ML / GA
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Xuất & Chia sẻ</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Xuất bản vẽ lắp
+      </a>
+      <a class="nav-link active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Xuất báo cáo PDF
+      </a>
+    </div>
+  </div>
+  <div class="sb-bot">
+    <div class="user-row">
+      <div class="u-av">KT</div>
+      <div>
+        <div class="u-name">Thiên Kiều</div>
+        <div class="u-role">CS</div>
+      </div>
+      <div class="u-dots">···</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <header class="topbar">
+    <div class="tb-breadcrumb">
+      <span>MechaMix</span>
+      <span class="sep">›</span>
+      <span>Xuất & Chia sẻ</span>
+      <span class="sep">›</span>
+      <span class="cur">Xuất báo cáo PDF</span>
+    </div>
+    <div class="tb-date" id="tbDate"></div>
+    <div class="tb-right">
+      <div class="tb-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Tìm kiếm...
+      </div>
+      <div class="tb-icon" title="Thông báo">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ─── Module Header ─── -->
+    <div class="module-header">
+      <div class="module-header-glow"></div>
+      <div class="module-badge">M6</div>
+      <div class="module-meta">
+        <div class="module-title">Hiển thị và <span>xuất kết quả</span></div>
+        <div class="module-desc">Tổng hợp toàn bộ kết quả.</div>
+      </div>
+      <div class="pipeline">
+        <div class="pipe-step"><div class="pipe-dot done">M1</div><div class="pipe-label">Nhập & Kiểm tra</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot done">M2</div><div class="pipe-label">Bộ truyền đai</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot done">M3</div><div class="pipe-label">Bánh răng</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot done">M4</div><div class="pipe-label">Trục & Ổ lăn</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot done">M5</div><div class="pipe-label">Tối ưu - Gợi ý linh kiện</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot active">M6</div><div class="pipe-label">Xuất kết quả</div></div>
+      </div>
+    </div>
+
+    <!-- ─── Progress ─── -->
+    <div class="progress-wrap">
+      <div class="progress-label">Tiến độ thiết kế</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" style="width:100%"></div></div>
+      <div class="progress-pct">100%</div>
+      <div class="progress-steps">
+        <div class="ps-item ps-done">M1–M5 · Hoàn tất</div>
+        <div class="ps-item ps-active"><span class="live-dot"></span>Đang tổng hợp & xuất</div>
+      </div>
+    </div>
+
+    <!-- ─── KPI Dashboard ─── -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-card kpi-power">
+        <div class="kpi-glow"></div>
+        <div class="kpi-label">Công suất đầu vào</div>
+        <div class="kpi-val" id="kpiP">7.50</div>
+        <div class="kpi-unit">kW</div>
+        <div class="kpi-trend">▲ Đáp ứng yêu cầu 7.2 kW</div>
+      </div>
+      <div class="kpi-card kpi-speed">
+        <div class="kpi-glow"></div>
+        <div class="kpi-label">Tốc độ trục vào n₁</div>
+        <div class="kpi-val" id="kpiN1">1450</div>
+        <div class="kpi-unit">rpm</div>
+        <div class="kpi-trend">Động cơ 4 cực 50 Hz</div>
+      </div>
+      <div class="kpi-card kpi-torque">
+        <div class="kpi-glow"></div>
+        <div class="kpi-label">Momen xoắn T₁</div>
+        <div class="kpi-val" id="kpiT">49.4</div>
+        <div class="kpi-unit">N·m</div>
+        <div class="kpi-trend warn">≈ Đúng thiết kế ±2%</div>
+      </div>
+      <div class="kpi-card kpi-eff">
+        <div class="kpi-glow"></div>
+        <div class="kpi-label">Hiệu suất tổng η</div>
+        <div class="kpi-val" id="kpiEff">0.874</div>
+        <div class="kpi-unit">—</div>
+        <div class="kpi-trend">▲ Trên mức khuyến nghị</div>
+      </div>
+      <div class="kpi-card kpi-life">
+        <div class="kpi-glow"></div>
+        <div class="kpi-label">Tuổi thọ ổ lăn L₁₀h</div>
+        <div class="kpi-val" id="kpiLife">14.2k</div>
+        <div class="kpi-unit">giờ</div>
+        <div class="kpi-trend">▲ Vượt yêu cầu 12 000 h</div>
+      </div>
+      <div class="kpi-card kpi-ratio">
+        <div class="kpi-glow"></div>
+        <div class="kpi-label">Tỉ số truyền tổng u</div>
+        <div class="kpi-val" id="kpiU">15.75</div>
+        <div class="kpi-unit">—</div>
+        <div class="kpi-trend">Đai × Bánh răng</div>
+      </div>
+    </div>
+
+    <!-- ─── Main 2-col layout ─── -->
+    <div class="layout-grid">
+
+      <!-- ═══ LEFT ═══ -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- 1. Tốc độ từng trục -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Tốc độ & Momen từng trục</div><div class="card-sub">Tổng hợp từ M2 (đai) + M3 (bánh răng) + M4 (trục)</div></div>
+            <div class="card-badge badge-cyan">TỔNG HỢP</div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="check-table">
+              <thead>
+                <tr>
+                  <th>Trục</th>
+                  <th>Tốc độ n (rpm)</th>
+                  <th>Momen T (N·m)</th>
+                  <th>Công suất P (kW)</th>
+                  <th>Nguồn</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Trục I (động cơ)</td>
+                  <td><span class="val-cell-teal">1450</span></td>
+                  <td><span class="val-cell-gold">49.4</span></td>
+                  <td><span class="val-cell">7.50</span></td>
+                  <td class="unit-cell">M1</td>
+                </tr>
+                <tr>
+                  <td>Trục II (sau đai)</td>
+                  <td><span class="val-cell-teal">483</span></td>
+                  <td><span class="val-cell-gold">144.8</span></td>
+                  <td><span class="val-cell">7.34</span></td>
+                  <td class="unit-cell">M2</td>
+                </tr>
+                <tr>
+                  <td>Trục III (sau BR côn)</td>
+                  <td><span class="val-cell-teal">120</span></td>
+                  <td><span class="val-cell-gold">572.3</span></td>
+                  <td><span class="val-cell">7.19</span></td>
+                  <td class="unit-cell">M3</td>
+                </tr>
+                <tr>
+                  <td>Trục IV (ra máy)</td>
+                  <td><span class="val-cell-teal">92</span></td>
+                  <td><span class="val-cell-gold">731.5</span></td>
+                  <td><span class="val-cell">7.05</span></td>
+                  <td class="unit-cell">M4</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. Biểu đồ cột công suất / tốc độ -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Biểu đồ công suất & tốc độ theo trục</div><div class="card-sub">So sánh trực quan giữa các trục truyền</div></div>
+            <div class="card-badge badge-blue">DASHBOARD</div>
+          </div>
+          <div class="card-body" style="padding:18px;">
+            <canvas id="dashChart" width="600" height="200" style="width:100%;height:200px;"></canvas>
+            <div style="display:flex;gap:18px;margin-top:12px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);">
+                <div style="width:12px;height:12px;border-radius:3px;background:var(--cyan);"></div>Công suất P (kW)
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);">
+                <div style="width:12px;height:12px;border-radius:3px;background:var(--gold);"></div>Tốc độ n / 100 (rpm)
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);">
+                <div style="width:12px;height:12px;border-radius:3px;background:var(--teal);"></div>Momen T / 10 (N·m)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Recommendation Engine -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Recommendation Engine</div><div class="card-sub">Đề xuất động cơ, ổ lăn, bộ truyền từ DB</div></div>
+            <div class="card-badge badge-ml">AI ENGINE</div>
+          </div>
+          <div class="card-body">
+            <div class="rec-grid">
+
+              <div class="rec-card">
+                <div class="rec-type">Động cơ điện</div>
+                <div class="rec-code">ABB M2AA-132S-4</div>
+                <div class="rec-spec">7.5 kW · 1450 rpm · 4 cực · IP55<br>Cos φ = 0.85 · η = 91.2%</div>
+                <div class="rec-badge-wrap">
+                  <span class="rec-tag rec-tag-green">✓ Đạt công suất</span>
+                  <span class="rec-tag rec-tag-cyan">IEC 132</span>
+                </div>
+              </div>
+
+              <div class="rec-card">
+                <div class="rec-type">Ổ lăn trục II (SKF)</div>
+                <div class="rec-code">SKF 6306</div>
+                <div class="rec-spec">d = 30 mm · C = 22.5 kN<br>L₁₀h = 16 800 giờ · Ball bearing</div>
+                <div class="rec-badge-wrap">
+                  <span class="rec-tag rec-tag-green">✓ Tuổi thọ OK</span>
+                  <span class="rec-tag rec-tag-gold">C/P = 2.4×</span>
+                </div>
+              </div>
+
+              <div class="rec-card">
+                <div class="rec-type">Ổ lăn trục III (SKF)</div>
+                <div class="rec-code">SKF 6208</div>
+                <div class="rec-spec">d = 40 mm · C = 29.5 kN<br>L₁₀h = 19 500 giờ · Ball bearing</div>
+                <div class="rec-badge-wrap">
+                  <span class="rec-tag rec-tag-green">✓ Tuổi thọ OK</span>
+                  <span class="rec-tag rec-tag-gold">C/P = 3.1×</span>
+                </div>
+              </div>
+
+              <div class="rec-card">
+                <div class="rec-type">Bộ truyền đai</div>
+                <div class="rec-code">Đai thang B-2240</div>
+                <div class="rec-spec">Loại B · L = 2240 mm · z = 2 đai<br>d₁ = 140 mm · d₂ = 420 mm · u = 3.0</div>
+                <div class="rec-badge-wrap">
+                  <span class="rec-tag rec-tag-green">✓ Đạt tỉ số</span>
+                  <span class="rec-tag rec-tag-cyan">TCVN 4754</span>
+                </div>
+              </div>
+
+              <div class="rec-card rec-card-full">
+                <div class="rec-type">Bộ truyền xích con lăn</div>
+                <div class="rec-code">Xích ống-con lăn ANSI 50 (bước p = 15.875 mm)</div>
+                <div class="rec-spec">z₁ = 25 · z₂ = 76 · u = 3.04 · a = 630 mm · N = 110 mắt · v = 1.9 m/s</div>
+                <div class="rec-badge-wrap">
+                  <span class="rec-tag rec-tag-green">✓ Kiểm nghiệm bền đạt</span>
+                  <span class="rec-tag rec-tag-cyan">ANSI B29.1</span>
+                  <span class="rec-tag rec-tag-gold">Lực vòng 2.8 kN</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ RIGHT ═══ -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        
+
+        <!-- Xuất file kỹ thuật -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Xuất file kỹ thuật</div><div class="card-sub">Bảng thông số & bản vẽ CAD</div></div>
+            <div class="card-badge badge-gold">EXPORT</div>
+          </div>
+          <div class="card-body">
+            <div class="export-grid">
+
+              <div class="export-card featured" onclick="triggerExport('xlsx')">
+                <div class="export-card-header">
+                  <div>
+                    <div class="export-title">Bảng thông số</div>
+                  </div>
+                  <div class="export-arrow">→</div>
+                </div>
+                <div class="export-sub">File XLSX đầy đủ: P, n, T từng trục, mã linh kiện, kiểm nghiệm bền</div>
+                <div class="export-meta">
+                  <span class="export-tag" style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);">.XLSX</span>
+                  <span class="export-tag" style="background:rgba(30,111,255,0.1);color:var(--blue);border:1px solid rgba(30,111,255,0.25);">.JSON</span>
+                </div>
+                <div class="export-progress-wrap">
+                  <div class="export-progress-bar"><div class="export-progress-fill" id="pgXlsx" style="background:var(--green);"></div></div>
+                </div>
+              </div>
+
+              <div class="export-card" onclick="triggerExport('pdf')">
+                <div class="export-card-header">
+                  <div>
+                    <div class="export-title">Báo cáo kỹ thuật</div>
+                  </div>
+                  <div class="export-arrow">→</div>
+                </div>
+                <div class="export-sub">PDF tổng hợp: dashboard, gợi ý linh kiện, kiểm nghiệm</div>
+                <div class="export-meta">
+                  <span class="export-tag" style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);">.PDF</span>
+                </div>
+                <div class="export-progress-wrap">
+                  <div class="export-progress-bar"><div class="export-progress-fill" id="pgPdf" style="background:var(--red);"></div></div>
+                </div>
+              </div>
+
+              <div class="export-card featured" onclick="triggerExport('a0')">
+                <div class="export-card-header">
+                  <div>
+                    <div class="export-title">Bản vẽ lắp</div>
+                  </div>
+                  <div class="export-arrow">→</div>
+                </div>
+                <div class="export-sub">Khổ A0 · DXF / DWG phục vụ CAD trực tiếp</div>
+                <div class="export-meta">
+                  <span class="export-tag" style="background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.25);">.DXF</span>
+                  <span class="export-tag" style="background:rgba(30,111,255,0.1);color:var(--blue);border:1px solid rgba(30,111,255,0.25);">A0</span>
+                </div>
+                <div class="export-progress-wrap">
+                  <div class="export-progress-bar"><div class="export-progress-fill" id="pgA0" style="background:var(--cyan);"></div></div>
+                </div>
+              </div>
+
+              <div class="export-card" onclick="triggerExport('a3')">
+                <div class="export-card-header">
+                  <div>
+                    <div class="export-title">Bản vẽ chi tiết</div>
+                  </div>
+                  <div class="export-arrow">→</div>
+                </div>
+                <div class="export-sub">Khổ A3 · Trục, bánh răng, ổ lăn riêng từng chi tiết</div>
+                <div class="export-meta">
+                  <span class="export-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.25);">.DXF</span>
+                  <span class="export-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.25);">A3</span>
+                </div>
+                <div class="export-progress-wrap">
+                  <div class="export-progress-bar"><div class="export-progress-fill" id="pgA3" style="background:var(--gold);"></div></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Kết quả cuối cùng -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Kết quả hoàn chỉnh</div><div class="card-sub">Sẵn sàng cho CAD / sản xuất</div></div>
+            <div class="card-badge badge-output">OUTPUT FINAL</div>
+          </div>
+          <div class="result-panel">
+            <div class="result-panel-header">
+              <span style="font-size:11px;font-weight:700;color:var(--green);">HOÀN TẤT</span>
+              <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);margin-left:8px;">Hộp giảm tốc 2 cấp côn-trụ</span>
+            </div>
+            <div class="result-grid">
+              <div class="result-item">
+                <div class="result-item-label">Đường kính trục</div>
+                <div class="result-item-val">d = 25 mm</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Mã ổ lăn</div>
+                <div class="result-item-val">SKF 6205</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Bộ truyền đai</div>
+                <div class="result-item-val">B-2240</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">u tổng</div>
+                <div class="result-item-val">15.75</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─── CTA Bar ─── -->
+    <div class="cta-bar">
+      <div class="cta-info">
+        <div class="cta-info-title">Xuất CAD & tài liệu kỹ thuật</div>
+      </div>
+      <button class="btn btn-ghost" onclick="exportJSON()">Xuất JSON</button>
+      <button class="btn btn-gold" onclick="exportAll('xlsx')">Xuất XLSX</button>
+      <button class="btn btn-cyan" onclick="exportAll('a0')">Xuất bản vẽ lắp A0</button>
+      <button class="btn btn-success" onclick="exportAll('pdf')">Xuất báo cáo PDF</button>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ─── Date ───
+document.getElementById('tbDate').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+
+// ─── Dashboard Chart ───
+function drawDashChart() {
+  const canvas = document.getElementById('dashChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = 200 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = canvas.offsetWidth, H = 200;
+  ctx.clearRect(0, 0, W, H);
+
+  const labels = ['Trục I', 'Trục II', 'Trục III', 'Trục IV'];
+  const dataP   = [7.50, 7.34, 7.19, 7.05];  // kW
+  const dataN   = [14.50, 4.83, 1.20, 0.92];  // rpm / 100
+  const dataT   = [4.94, 14.48, 57.23, 73.15]; // N·m / 10
+
+  const pad = {l:40, r:20, t:20, b:36};
+  const w = W - pad.l - pad.r;
+  const h = H - pad.t - pad.b;
+  const maxVal = 80;
+  const barW = w / (labels.length * 4 + labels.length - 1);
+  const groupW = barW * 4;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(30,111,255,0.08)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + h * i / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + w, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(122,147,180,0.5)';
+    ctx.font = `9px 'JetBrains Mono'`;
+    ctx.textAlign = 'right';
+    ctx.fillText((maxVal * (4 - i) / 4).toFixed(0), pad.l - 6, y + 3);
+  }
+
+  // Bars
+  labels.forEach((lbl, gi) => {
+    const gx = pad.l + gi * (groupW + barW);
+
+    const drawBar = (offset, val, color, maxV) => {
+      const bh = h * (val / maxV);
+      const x = gx + offset * barW;
+      const y = pad.t + h - bh;
+      const grad = ctx.createLinearGradient(x, y, x, pad.t + h);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, color + '55');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(x, y, barW - 2, bh, [3, 3, 0, 0]) : ctx.rect(x, y, barW - 2, bh);
+      ctx.fill();
+
+      // Value label on top
+      ctx.fillStyle = color;
+      ctx.font = `bold 8px 'JetBrains Mono'`;
+      ctx.textAlign = 'center';
+      ctx.fillText(val.toFixed(1), x + (barW - 2) / 2, y - 3);
+    };
+
+    drawBar(0, dataP[gi], '#00d4ff', maxVal);
+    drawBar(1, dataN[gi], '#f59e0b', maxVal);
+    drawBar(2, dataT[gi], '#00c9a7', maxVal);
+
+    // Group label
+    ctx.fillStyle = '#7a93b4';
+    ctx.font = `10px 'Plus Jakarta Sans'`;
+    ctx.textAlign = 'center';
+    ctx.fillText(lbl, gx + groupW / 2 - barW / 2, H - 8);
+  });
+}
+
+// Delay to allow layout
+setTimeout(drawDashChart, 200);
+window.addEventListener('resize', drawDashChart);
+
+// ─── Export trigger ───
+function triggerExport(type) {
+  const targets = {xlsx:'pgXlsx', pdf:'pgPdf', a0:'pgA0', a3:'pgA3'};
+  const labels  = {xlsx:'Bảng thông số XLSX', pdf:'Báo cáo PDF', a0:'Bản vẽ lắp A0 DXF', a3:'Bản vẽ chi tiết A3 DXF'};
+  const el = document.getElementById(targets[type]);
+  if (!el) return;
+  el.style.width = '0%';
+  el.style.transition = 'none';
+  setTimeout(() => {
+    el.style.transition = 'width 1.4s cubic-bezier(0.4,0,0.2,1)';
+    el.style.width = '100%';
+  }, 50);
+  showToast('cyan', `Đang tạo ${labels[type]}...`);
+  setTimeout(() => showToast('ok', `${labels[type]} đã sẵn sàng tải xuống`), 1600);
+}
+
+function exportAll(type) { triggerExport(type); }
+
+function exportJSON() {
+  const payload = {
+    module: 'OUTPUT – Hiển thị & Xuất kết quả',
+    project: 'Hộp giảm tốc 2 cấp côn-trụ',
+    kpi: { P_kW: 7.5, n1_rpm: 1450, T1_Nm: 49.4, eta: 0.874, L10h: 14200, u_total: 15.75 },
+    shafts: [
+      {shaft:'I',  n:1450, T:49.4,  P:7.50},
+      {shaft:'II', n:483,  T:144.8, P:7.34},
+      {shaft:'III',n:120,  T:572.3, P:7.19},
+      {shaft:'IV', n:92,   T:731.5, P:7.05}
+    ],
+    components: {
+      motor: 'ABB M2AA-132S-4 7.5kW',
+      bearing_II: 'SKF 6306',
+      bearing_III: 'SKF 6208',
+      belt: 'Đai thang B-2240 z=2',
+      chain: 'ANSI 50 p=15.875mm'
+    },
+    timestamp: new Date().toISOString()
+  };
+  navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+  showToast('ok', 'JSON kết quả đã sao chép vào clipboard');
+}
+
+// ─── Toast ───
+function showToast(type, msg) {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = {ok:'✅', cyan:'📤', warn:'⚠️'};
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  wrap.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(20px)'; setTimeout(()=>t.remove(), 300); }, 4800);
+}
+
+// ─── Animate KPIs on load ───
+function animateKPI(id, from, to, dec, suffix) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const dur = 900, start = performance.now();
+  const tick = (now) => {
+    const t = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const val = from + (to - from) * ease;
+    el.textContent = typeof dec === 'string' ? dec(val) : val.toFixed(dec) + (suffix||'');
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+setTimeout(() => {
+  animateKPI('kpiP',    0, 7.5,  2);
+  animateKPI('kpiN1',   0, 1450, 0);
+  animateKPI('kpiT',    0, 49.4, 1);
+  animateKPI('kpiEff',  0, 0.874,3);
+  animateKPI('kpiLife', 0, 14.2, 0, 'k');
+  animateKPI('kpiU',    0, 15.75,2);
+}, 300);
+</script>
+</body>
+</html>

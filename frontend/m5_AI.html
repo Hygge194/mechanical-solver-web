@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MechaMix – M5: Tối ưu hóa ML/GA</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #050c18;
+  --bg2:      #07111f;
+  --bg3:      #0b1829;
+  --bg4:      #0f2038;
+  --blue:     #1e6fff;
+  --cyan:     #00d4ff;
+  --teal:     #00c9a7;
+  --violet:   #8b5cf6;
+  --pink:     #ec4899;
+  --green:    #10b981;
+  --gold:     #f59e0b;
+  --red:      #ef4444;
+  --orange:   #f97316;
+  --tx1:      #e2e8f0;
+  --tx2:      #7a93b4;
+  --tx3:      #2e4460;
+  --bdr:      rgba(30,111,255,0.14);
+  --bdr2:     rgba(0,212,255,0.28);
+  --font:     'Plus Jakarta Sans', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+  --ml:       #a855f7;
+  --ml2:      #7c3aed;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--tx1);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 60% at 5% 0%,   rgba(30,111,255,0.09) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 100%, rgba(168,85,247,0.09) 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 45%,  rgba(0,201,167,0.04) 0%,transparent 60%),
+    linear-gradient(rgba(30,111,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,111,255,0.025) 1px, transparent 1px);
+  background-size: auto, auto, auto, 44px 44px, 44px 44px;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  position:fixed; left:0; top:0; bottom:0; width:228px;
+  background: var(--bg2);
+  border-right: 1px solid var(--bdr);
+  display:flex; flex-direction:column;
+  z-index:200;
+}
+.sb-top { padding:24px 20px 20px; border-bottom:1px solid var(--bdr); }
+.logo-row { display:flex; align-items:center; gap:11px; }
+.logo-mark {
+  width:40px; height:40px; border-radius:12px; flex-shrink:0;
+  background: linear-gradient(135deg,#1e6fff,#00d4ff);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 0 22px rgba(30,111,255,0.45);
+  position:relative;
+}
+.logo-mark::after { content:''; position:absolute; inset:0; border-radius:12px; border:1px solid rgba(255,255,255,0.15); }
+.logo-mark svg { width:22px; height:22px; fill:white; }
+.logo-name { font-family:var(--font); font-weight:800; font-size:19px; letter-spacing:0.2px; }
+.logo-name em { font-style:normal; color:var(--cyan); }
+
+.sb-body { flex:1; padding:16px 12px; overflow-y:auto; }
+.sb-section { margin-bottom:6px; }
+.sb-sec-label { font-size:9.5px; font-weight:700; letter-spacing:1.8px; color:var(--tx3); text-transform:uppercase; padding:4px 10px 6px; display:block; }
+.nav-link {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 11px; border-radius:9px; margin-bottom:2px;
+  cursor:pointer; transition:all 0.18s;
+  font-size:13.5px; font-weight:500; color:var(--tx2); letter-spacing:0.1px;
+  text-decoration:none; position:relative;
+}
+.nav-link:hover { background:var(--bg4); color:var(--tx1); }
+.nav-link.active { background:rgba(168,85,247,0.14); color:var(--ml); border-left:2.5px solid var(--ml); }
+.nav-link.done   { background:rgba(16,185,129,0.08); color:var(--green); border-left:2.5px solid var(--green); }
+.nav-link svg { width:15px; height:15px; flex-shrink:0; opacity:0.85; }
+.nav-tag { margin-left:auto; font-size:9px; padding:1px 7px; border-radius:10px; font-family:var(--mono); font-weight:600; }
+.tag-done   { background:rgba(16,185,129,0.18); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+.tag-active { background:rgba(168,85,247,0.18); color:var(--ml); border:1px solid rgba(168,85,247,0.3); }
+
+.sb-bot { padding:14px 12px; border-top:1px solid var(--bdr); }
+.user-row { display:flex; align-items:center; gap:10px; padding:10px 11px; border-radius:10px; background:var(--bg3); cursor:pointer; }
+.u-av { width:34px; height:34px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg,#1e6fff,#00d4ff); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
+.u-name { font-size:13px; font-weight:600; }
+.u-role { font-size:10.5px; color:var(--tx2); margin-top:1px; }
+.u-dots { margin-left:auto; color:var(--tx3); font-size:16px; }
+
+/* ─── Main ─── */
+.main { margin-left:228px; min-height:100vh; position:relative; z-index:1; }
+
+/* ─── Topbar ─── */
+.topbar {
+  height:60px; background:rgba(7,17,31,0.88);
+  border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; padding:0 30px;
+  gap:14px; position:sticky; top:0; z-index:100;
+  backdrop-filter:blur(16px);
+}
+.tb-breadcrumb { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--tx2); }
+.tb-breadcrumb .sep { color:var(--tx3); }
+.tb-breadcrumb .cur { color:var(--ml); font-weight:600; }
+.tb-date { font-size:12px; color:var(--tx2); font-family:var(--mono); margin-left:auto; }
+.tb-right { display:flex; align-items:center; gap:10px; margin-left:16px; }
+.tb-search { display:flex; align-items:center; gap:8px; background:var(--bg3); border:1px solid var(--bdr); border-radius:9px; padding:7px 14px; font-size:12.5px; color:var(--tx2); cursor:pointer; width:200px; font-family:var(--font); transition:all 0.2s; }
+.tb-search:hover { border-color:var(--blue); color:var(--tx1); }
+.tb-icon { width:36px; height:36px; border-radius:9px; background:var(--bg3); border:1px solid var(--bdr); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--tx2); transition:all 0.2s; }
+.tb-icon:hover { border-color:var(--blue); color:var(--cyan); }
+
+/* ─── Content ─── */
+.content { padding:36px 36px 60px; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ─── Module Header ─── */
+.module-header {
+  background: var(--bg3);
+  border: 1px solid var(--bdr);
+  border-radius: 20px;
+  padding: 28px 36px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.module-header::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--ml2),var(--ml),var(--cyan),var(--teal));
+}
+.module-header-glow {
+  position:absolute; width:400px; height:400px; border-radius:50%;
+  background:radial-gradient(circle,rgba(168,85,247,0.07),transparent 70%);
+  right:-100px; top:-100px; pointer-events:none;
+}
+.module-badge {
+  width:60px; height:60px; border-radius:16px; flex-shrink:0;
+  background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(30,111,255,0.12));
+  border: 1px solid rgba(168,85,247,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; font-size:13px; color:var(--ml);
+  box-shadow: 0 0 24px rgba(168,85,247,0.2);
+  position:relative; z-index:1; letter-spacing:0.5px;
+}
+.module-meta { flex:1; position:relative; z-index:1; }
+.module-eyebrow {
+  font-size:10px; font-weight:700; color:var(--ml);
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:8px; display:flex; align-items:center; gap:8px;
+}
+.module-eyebrow::before { content:''; width:16px; height:2px; background:var(--ml); border-radius:1px; }
+.module-title { font-size:22px; font-weight:800; margin-bottom:6px; letter-spacing:-0.3px; }
+.module-title span { color:var(--ml); }
+.module-desc { font-size:13px; color:var(--tx2); line-height:1.6; max-width:580px; }
+
+/* ─── Pipeline ─── */
+.pipeline { display:flex; align-items:center; gap:0; margin-left:auto; flex-shrink:0; position:relative; z-index:1; }
+.pipe-step { display:flex; flex-direction:column; align-items:center; gap:5px; padding:0 10px; }
+.pipe-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:var(--mono); }
+.pipe-dot.done   { background:rgba(16,185,129,0.2); border:2px solid var(--green); color:var(--green); }
+.pipe-dot.active { background:rgba(168,85,247,0.2); border:2px solid var(--ml); color:var(--ml); box-shadow:0 0 14px rgba(168,85,247,0.4); }
+.pipe-dot.next   { background:var(--bg4); border:2px solid var(--tx3); color:var(--tx3); }
+.pipe-label { font-size:9px; color:var(--tx2); font-weight:600; letter-spacing:0.5px; white-space:nowrap; }
+.pipe-arrow { color:var(--tx3); font-size:16px; padding:0 2px; margin-bottom:18px; }
+
+/* ─── Progress ─── */
+.progress-wrap {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:14px;
+  padding:18px 24px; margin-bottom:24px;
+  animation: fadeUp 0.45s ease both 0.05s;
+  display:flex; align-items:center; gap:20px;
+}
+.progress-label { font-size:12px; font-weight:600; color:var(--tx2); white-space:nowrap; }
+.progress-bar-track { flex:1; height:6px; background:var(--bg4); border-radius:99px; overflow:hidden; }
+.progress-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg, var(--green), var(--teal), var(--cyan), var(--ml)); box-shadow:0 0 8px rgba(168,85,247,0.4); transition:width 0.6s cubic-bezier(0.4,0,0.2,1); }
+.progress-pct { font-size:12px; font-weight:700; font-family:var(--mono); color:var(--ml); white-space:nowrap; }
+.progress-steps { display:flex; gap:8px; margin-left:8px; flex-wrap:wrap; }
+.ps-item { font-size:10px; padding:3px 9px; border-radius:6px; font-weight:600; white-space:nowrap; }
+.ps-active { background:rgba(168,85,247,0.15); color:var(--ml); border:1px solid rgba(168,85,247,0.3); }
+.ps-done   { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+.ps-next   { background:var(--bg4); color:var(--tx3); border:1px solid var(--tx3); }
+
+/* ─── Layout ─── */
+.layout-grid { display:grid; grid-template-columns:1fr 380px; gap:24px; align-items:start; }
+
+/* ─── Section Card ─── */
+.section-card {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:16px;
+  overflow:hidden; animation: fadeUp 0.5s ease both;
+}
+.card-header {
+  padding:16px 22px 14px;
+  border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; gap:12px;
+}
+.card-icon { width:36px; height:36px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.card-title { font-size:14.5px; font-weight:700; }
+.card-sub { font-size:11px; color:var(--tx2); margin-top:2px; }
+.card-badge { margin-left:auto; font-size:9.5px; padding:3px 10px; border-radius:8px; font-family:var(--mono); font-weight:600; border:1px solid; white-space:nowrap; }
+.badge-ml  { background:rgba(168,85,247,0.12); color:var(--ml); border-color:rgba(168,85,247,0.3); }
+.badge-auto  { background:rgba(16,185,129,0.1); color:var(--green); border-color:rgba(16,185,129,0.25); }
+.badge-iter  { background:rgba(245,158,11,0.1); color:var(--gold); border-color:rgba(245,158,11,0.25); }
+.badge-output { background:rgba(0,212,255,0.1); color:var(--cyan); border-color:rgba(0,212,255,0.25); }
+.badge-input  { background:rgba(30,111,255,0.1); color:var(--blue); border-color:rgba(30,111,255,0.25); }
+.card-body { padding:22px; }
+
+/* ─── Form Fields ─── */
+.field-group { margin-bottom:18px; }
+.field-group:last-child { margin-bottom:0; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.field-label { font-size:11.5px; font-weight:600; color:var(--tx2); margin-bottom:7px; display:flex; align-items:center; gap:6px; }
+.info-icon { width:13px; height:13px; border-radius:50%; background:var(--bg4); border:1px solid var(--tx3); display:inline-flex; align-items:center; justify-content:center; font-size:8px; color:var(--tx3); cursor:help; transition:all 0.2s; }
+.info-icon:hover { border-color:var(--ml); color:var(--ml); }
+.field-input-wrap { position:relative; }
+.field-input {
+  width:100%; padding:10px 48px 10px 14px;
+  background:var(--bg4); border:1.5px solid var(--tx3);
+  border-radius:10px; color:var(--tx1);
+  font-size:13.5px; font-family:var(--mono);
+  transition:all 0.2s; outline:none; appearance:none;
+}
+.field-input:focus { border-color:var(--ml); background:rgba(168,85,247,0.06); box-shadow:0 0 0 3px rgba(168,85,247,0.12); }
+.field-input.readonly-val { border-color:rgba(0,212,255,0.25); background:rgba(0,212,255,0.04); color:var(--cyan); cursor:default; }
+.field-unit { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:10.5px; font-weight:600; color:var(--tx3); font-family:var(--mono); pointer-events:none; }
+.field-range { font-size:10px; color:var(--tx3); font-family:var(--mono); margin-top:4px; }
+
+.sel {
+  width:100%; padding:10px 38px 10px 14px;
+  background:var(--bg4); border:1.5px solid var(--tx3);
+  border-radius:10px; color:var(--tx1);
+  font-size:13px; font-family:var(--font);
+  transition:all 0.2s; outline:none; cursor:pointer; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a93b4' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;
+}
+.sel:focus { border-color:var(--ml); outline:none; box-shadow:0 0 0 3px rgba(168,85,247,0.12); }
+
+/* ─── Slider ─── */
+.slider-wrap { display:flex; align-items:center; gap:12px; }
+.slider {
+  -webkit-appearance:none; appearance:none; flex:1; height:5px;
+  background: linear-gradient(90deg, var(--ml) var(--pct,50%), var(--bg4) var(--pct,50%));
+  border-radius:99px; outline:none; cursor:pointer;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--ml); border:2px solid var(--bg2);
+  box-shadow:0 0 6px rgba(168,85,247,0.5); cursor:pointer;
+}
+.slider-val { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ml); min-width:40px; text-align:right; }
+
+/* ─── Divider ─── */
+.divider { display:flex; align-items:center; gap:12px; margin:18px 0; }
+.divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--bdr); }
+.divider-label { font-size:10px; font-weight:700; color:var(--tx3); letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap; }
+
+/* ─── GA Canvas ─── */
+.ga-canvas-wrap {
+  background:var(--bg4); border:1px solid var(--bdr); border-radius:14px;
+  overflow:hidden; position:relative;
+}
+#gaCanvas { display:block; width:100%; height:240px; }
+.ga-canvas-overlay {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:8px;
+  background:rgba(5,12,24,0.7); backdrop-filter:blur(4px);
+  transition:opacity 0.3s;
+}
+.ga-canvas-overlay.hidden { opacity:0; pointer-events:none; }
+.ga-overlay-icon { font-size:36px; }
+.ga-overlay-msg { font-size:13px; color:var(--tx2); font-weight:500; }
+
+/* ─── Population Grid ─── */
+.pop-grid {
+  display:grid; grid-template-columns:repeat(10,1fr); gap:3px;
+  padding:14px;
+}
+.ind-cell {
+  aspect-ratio:1; border-radius:4px;
+  transition:all 0.15s; cursor:pointer;
+  position:relative;
+}
+.ind-cell:hover { transform:scale(1.3); z-index:10; }
+.ind-cell.elite  { background:var(--ml); box-shadow:0 0 6px rgba(168,85,247,0.6); }
+.ind-cell.good   { background:var(--teal); }
+.ind-cell.avg    { background:rgba(0,212,255,0.35); }
+.ind-cell.poor   { background:var(--bg3); border:1px solid var(--bdr); }
+.ind-cell.dead   { background:rgba(239,68,68,0.2); }
+.ind-cell.new    { background:var(--gold); }
+
+/* ─── Fitness chart area ─── */
+.fitness-chart { width:100%; height:160px; }
+
+/* ─── Pareto chart ─── */
+.pareto-wrap { background:var(--bg4); border:1px solid var(--bdr); border-radius:12px; overflow:hidden; }
+#paretoCanvas { display:block; width:100%; height:220px; }
+
+/* ─── GA Steps ─── */
+.ga-step {
+  display:flex; align-items:flex-start; gap:14px;
+  padding:14px 18px; border-bottom:1px solid var(--bdr);
+}
+.ga-step:last-child { border-bottom:none; }
+.gstep-num { width:28px; height:28px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:var(--mono); }
+.gstep-num.s-done   { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:var(--green); }
+.gstep-num.s-active { background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.4); color:var(--ml); }
+.gstep-num.s-idle   { background:var(--bg3); border:1px solid var(--tx3); color:var(--tx3); }
+.gstep-content { flex:1; }
+.gstep-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+.gstep-detail { font-size:11.5px; color:var(--tx2); line-height:1.6; }
+.gstep-formula { margin-top:8px; padding:8px 12px; border-radius:8px; background:var(--bg2); border:1px solid var(--bdr); font-family:var(--mono); font-size:11.5px; color:var(--teal); line-height:1.7; }
+.gstep-result { margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+.res-chip { padding:4px 10px; border-radius:7px; font-size:11px; font-weight:600; font-family:var(--mono); background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2); color:var(--ml); }
+
+/* ─── Gen counter ─── */
+.gen-counter-wrap {
+  display:flex; align-items:center; gap:16px;
+  padding:14px 22px; border-bottom:1px solid var(--bdr);
+  flex-wrap:wrap;
+}
+.gen-stat { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.gen-stat-val { font-family:var(--mono); font-size:20px; font-weight:700; color:var(--ml); }
+.gen-stat-label { font-size:10px; color:var(--tx2); font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
+.gen-divider { width:1px; height:36px; background:var(--bdr); }
+.gen-progress-mini { flex:1; min-width:120px; }
+.gen-progress-label { font-size:10px; color:var(--tx2); margin-bottom:4px; font-weight:600; }
+.gen-bar-track { height:5px; background:var(--bg4); border-radius:99px; overflow:hidden; }
+.gen-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--ml2),var(--ml)); transition:width 0.5s ease; }
+
+/* ─── Constraint table ─── */
+.check-table { width:100%; border-collapse:collapse; }
+.check-table th { font-size:10.5px; font-weight:700; color:var(--tx3); letter-spacing:0.8px; text-transform:uppercase; text-align:left; padding:8px 12px; border-bottom:1px solid var(--bdr); }
+.check-table td { padding:10px 12px; font-size:12.5px; border-bottom:1px solid rgba(30,111,255,0.06); }
+.check-table tr:last-child td { border-bottom:none; }
+.check-table .val-cell { font-family:var(--mono); color:var(--cyan); }
+.check-table .limit-cell { font-family:var(--mono); color:var(--tx2); }
+.check-state { font-size:9.5px; padding:2px 8px; border-radius:5px; font-weight:700; font-family:var(--mono); }
+.check-state.pass { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+.check-state.fail { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.2); }
+.check-state.idle { background:var(--bg4); color:var(--tx3); border:1px solid var(--tx3); }
+.check-state.ml   { background:rgba(168,85,247,0.1); color:var(--ml); border:1px solid rgba(168,85,247,0.25); }
+
+/* ─── Result Panel ─── */
+.result-panel {
+  background: linear-gradient(135deg, rgba(168,85,247,0.05), rgba(0,212,255,0.03));
+  border: 1px solid rgba(168,85,247,0.22);
+  border-radius:16px; overflow:hidden;
+}
+.result-panel-header { padding:16px 22px; border-bottom:1px solid rgba(168,85,247,0.14); display:flex; align-items:center; gap:12px; }
+.result-panel-title { font-size:14px; font-weight:700; }
+.result-grid { padding:20px 22px; display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.result-grid-3 { padding:20px 22px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.result-item { background:var(--bg4); border:1px solid var(--bdr); border-radius:12px; padding:14px 16px; transition:border-color 0.2s; }
+.result-item:hover { border-color:rgba(168,85,247,0.3); }
+.result-item-label { font-size:10.5px; color:var(--tx2); font-weight:600; letter-spacing:0.6px; text-transform:uppercase; margin-bottom:6px; }
+.result-item-val { font-family:var(--mono); font-size:20px; font-weight:700; background:linear-gradient(135deg,var(--ml),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.result-item-val span { font-size:12px; color:var(--tx2); -webkit-text-fill-color:var(--tx2); font-weight:400; }
+.result-item-sub { font-size:10px; color:var(--tx3); font-family:var(--mono); margin-top:4px; }
+
+/* ─── Comparison Table ─── */
+.cmp-table { width:100%; border-collapse:collapse; }
+.cmp-table th { font-size:10.5px; font-weight:700; color:var(--tx3); letter-spacing:0.8px; text-transform:uppercase; padding:10px 14px; border-bottom:1px solid var(--bdr); text-align:left; }
+.cmp-table td { padding:10px 14px; font-size:12.5px; border-bottom:1px solid rgba(30,111,255,0.06); }
+.cmp-table tr:last-child td { border-bottom:none; }
+.cmp-table .mono { font-family:var(--mono); }
+.cmp-table .better { color:var(--green); font-weight:700; font-family:var(--mono); }
+.cmp-table .orig { color:var(--tx2); font-family:var(--mono); }
+.cmp-table tr.opt-row { background:rgba(168,85,247,0.05); }
+.cmp-badge { font-size:9px; padding:2px 7px; border-radius:5px; font-weight:700; font-family:var(--mono); }
+.cmp-badge.opt { background:rgba(168,85,247,0.15); color:var(--ml); border:1px solid rgba(168,85,247,0.3); }
+.cmp-badge.orig { background:var(--bg4); color:var(--tx3); border:1px solid var(--tx3); }
+
+/* ─── Alert ─── */
+.alert-box { border-radius:10px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:flex-start; gap:10px; font-size:12px; line-height:1.5; }
+.alert-ml   { background:rgba(168,85,247,0.07); border:1px solid rgba(168,85,247,0.2); color:var(--ml); }
+.alert-warn { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); color:var(--gold); }
+.alert-ok   { background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.2); color:var(--green); }
+.alert-icon { font-size:15px; flex-shrink:0; }
+
+/* ─── Chip group ─── */
+.chip-group { display:flex; gap:7px; flex-wrap:wrap; }
+.chip { padding:5px 11px; border-radius:7px; font-size:11px; font-weight:600; background:var(--bg4); border:1px solid var(--tx3); color:var(--tx2); cursor:pointer; transition:all 0.18s; font-family:var(--mono); }
+.chip:hover { border-color:var(--ml); color:var(--ml); }
+.chip.selected { background:rgba(168,85,247,0.1); border-color:var(--ml); color:var(--ml); }
+
+/* ─── Buttons ─── */
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; font-family:var(--font); cursor:pointer; border:none; transition:all 0.2s; letter-spacing:0.2px; white-space:nowrap; }
+.btn-ml { background:linear-gradient(135deg,var(--ml2),var(--ml)); color:#fff; box-shadow:0 4px 16px rgba(168,85,247,0.35); }
+.btn-ml:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(168,85,247,0.5); }
+.btn-ml:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+.btn-ghost { background:var(--bg4); color:var(--tx2); border:1.5px solid var(--tx3); }
+.btn-ghost:hover { border-color:var(--ml); color:var(--tx1); }
+.btn-success { background:linear-gradient(135deg,#0d8f60,var(--green)); color:#fff; box-shadow:0 4px 16px rgba(16,185,129,0.3); }
+.btn-success:hover { transform:translateY(-1px); }
+.btn-gold { background:linear-gradient(135deg,#c07800,var(--gold)); color:#fff; box-shadow:0 4px 16px rgba(245,158,11,0.3); }
+.btn-gold:hover { transform:translateY(-1px); }
+
+/* ─── CTA bar ─── */
+.cta-bar { background:var(--bg3); border:1px solid var(--bdr); border-radius:16px; padding:20px 24px; display:flex; align-items:center; gap:16px; margin-top:24px; animation: fadeUp 0.5s ease both 0.3s; }
+.cta-info { flex:1; }
+.cta-info-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+.cta-info-sub { font-size:12px; color:var(--tx2); }
+
+/* ─── Individual card ─── */
+.individual-card {
+  background:var(--bg4); border:1.5px solid var(--bdr); border-radius:12px;
+  padding:14px 16px; cursor:pointer; transition:all 0.2s;
+  position:relative; overflow:hidden;
+}
+.individual-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--tx3); transition:background 0.2s; }
+.individual-card.elite::before { background:var(--ml); }
+.individual-card.good::before  { background:var(--teal); }
+.individual-card:hover { border-color:rgba(168,85,247,0.3); transform:translateY(-1px); }
+.ind-rank { font-family:var(--mono); font-size:10px; color:var(--tx3); margin-bottom:4px; }
+.ind-rank .rank-badge { padding:1px 6px; border-radius:4px; font-weight:700; }
+.rank-1 { background:rgba(168,85,247,0.2); color:var(--ml); }
+.rank-2 { background:rgba(0,212,255,0.12); color:var(--cyan); }
+.rank-3 { background:rgba(0,201,167,0.12); color:var(--teal); }
+.ind-params { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+.ind-param { font-family:var(--mono); font-size:11px; color:var(--tx1); }
+.ind-param span { color:var(--tx3); }
+.ind-fitness { display:flex; justify-content:space-between; align-items:center; }
+.ind-fit-val { font-family:var(--mono); font-size:15px; font-weight:700; }
+.ind-fit-val.elite-fit { background:linear-gradient(135deg,var(--ml),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.ind-bars { display:flex; gap:4px; align-items:flex-end; height:20px; }
+.ind-bar { width:5px; border-radius:2px 2px 0 0; background:rgba(168,85,247,0.3); }
+
+/* ─── Toast ─── */
+.toast-wrap { position:fixed; bottom:30px; right:30px; z-index:999; display:flex; flex-direction:column; gap:10px; }
+.toast { background:var(--bg3); border:1px solid var(--bdr); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; min-width:280px; max-width:380px; box-shadow:0 8px 32px rgba(0,0,0,0.4); animation: toastIn 0.3s ease both; backdrop-filter:blur(12px); }
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+.toast.toast-ml { border-color:rgba(168,85,247,0.4); }
+.toast.toast-ok { border-color:rgba(16,185,129,0.4); }
+.toast.toast-warn { border-color:rgba(245,158,11,0.4); }
+.toast-icon { font-size:18px; flex-shrink:0; }
+.toast-msg { font-size:13px; font-weight:500; flex:1; }
+.toast-close { font-size:16px; color:var(--tx3); cursor:pointer; }
+.toast-close:hover { color:var(--tx1); }
+
+/* ─── DNA animation ─── */
+@keyframes dna { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(-1)} }
+.dna-strand { animation:dna 2s ease-in-out infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.spinner { animation:spin 0.7s linear infinite; display:inline-block; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.pulse { animation:pulse 1.4s ease infinite; }
+@keyframes glow-ml { 0%,100%{box-shadow:0 0 8px rgba(168,85,247,0.3)} 50%{box-shadow:0 0 24px rgba(168,85,247,0.7)} }
+.glow-ml { animation:glow-ml 2s ease infinite; }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:10px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">Mecha<em>Mix</em></div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-body">
+    <div class="sb-section">
+      <span class="sb-sec-label">Tổng quan</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dự án của tôi
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">Nhập liệu & Kiểm tra</span>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Kiểm tra ngưỡng
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Tính toán</span>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>Bộ truyền đai
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>Bánh răng côn-trụ
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></svg>Trục & Ổ lăn
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">AI & Tối ưu</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>Gợi ý linh kiện
+      </a>
+      <a class="nav-link active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Tối ưu ML / GA
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Xuất & Chia sẻ</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Xuất bản vẽ lắp
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Xuất báo cáo PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="sb-bot">
+    <div class="user-row">
+      <div class="u-av">KT</div>
+      <div>
+        <div class="u-name">Thiên Kiều</div>
+        <div class="u-role">CS</div>
+      </div>
+      <div class="u-dots">···</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <header class="topbar">
+    <div class="tb-breadcrumb">
+      <span>MechaMix</span>
+      <span class="sep">›</span>
+      <span>AI & Tối ưu</span>
+      <span class="sep">›</span>
+      <span class="cur">Tối ưu ML / Genetic Algorithm</span>
+    </div>
+    <div class="tb-date" id="tbDate"></div>
+    <div class="tb-right">
+      <div class="tb-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Tìm kiếm...
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Module Header -->
+    <div class="module-header">
+      <div class="module-header-glow"></div>
+      <div class="module-badge glow-ml" id="modBadge">M5</div>
+      <div class="module-meta">
+        <div class="module-title">Tối ưu hóa thiết kế bằng <span>AI/GA</span></div>
+        <div class="module-desc">Dùng thuật toán di truyền để tìm bộ thông số tối ưu (module, số răng, chiều rộng...) nhằm giảm kích thước và chi phí, trong khi vẫn thỏa mãn toàn bộ ràng buộc bền từ M2–M4.</div>
+      </div>
+      <div class="pipeline">
+        <div class="pipe-step"><div class="pipe-dot done">M1</div><div class="pipe-label">Nhập & Kiểm tra</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot done">M2</div><div class="pipe-label">Bộ truyền đai</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot done">M3</div><div class="pipe-label">Bánh răng</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot done">M4</div><div class="pipe-label">Trục & Ổ lăn</div></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><div class="pipe-dot active" id="pip-m5">M5</div><div class="pipe-label">Tối ưu</div></div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-label">Tiến độ thiết kế</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill" style="width:100%"></div></div>
+      <div class="progress-pct" id="progressPct">100%</div>
+      <div class="progress-steps">
+        <div class="ps-item ps-done">M1–M4 · Hoàn tất</div>
+        <div class="ps-item ps-active" id="ps-m5">M5 · ML/ GA </div>
+      </div>
+    </div>
+
+    <!-- ═══ MAIN LAYOUT ═══ -->
+    <div class="layout-grid">
+
+      <!-- LEFT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- 1. Cấu hình thuật toán GA -->
+        <div class="section-card" style="animation-delay:0.05s;">
+          <div class="card-header">
+            <div><div class="card-title">Cấu hình Genetic Algorithm</div><div class="card-sub">Siêu tham số GA & hàm mục tiêu</div></div>
+          </div>
+          <div class="card-body">
+
+            <div class="field-row" style="margin-bottom:16px;">
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Kích thước quần thể (N_pop) <span class="info-icon" title="Số cá thể thiết kế trong mỗi thế hệ">?</span></div>
+                <div class="slider-wrap">
+                  <input type="range" class="slider" id="slPop" min="20" max="200" value="60" step="10" oninput="updateSlider('slPop','svPop','',0)">
+                  <div class="slider-val" id="svPop">60</div>
+                </div>
+                <div class="field-range">Khuyến nghị: 50–100 cho bài toán này</div>
+              </div>
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Số thế hệ tối đa (G_max) <span class="info-icon" title="GA dừng khi đạt G_max hoặc hội tụ sớm">?</span></div>
+                <div class="slider-wrap">
+                  <input type="range" class="slider" id="slGen" min="20" max="300" value="100" step="10" oninput="updateSlider('slGen','svGen','',0)">
+                  <div class="slider-val" id="svGen">100</div>
+                </div>
+                <div class="field-range">Tăng để tìm kết quả tốt hơn, chậm hơn</div>
+              </div>
+            </div>
+
+            <div class="field-row" style="margin-bottom:16px;">
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Tỉ lệ lai ghép P_c <span class="info-icon" title="Xác suất hai cá thể cha mẹ trao đổi gen">?</span></div>
+                <div class="slider-wrap">
+                  <input type="range" class="slider" id="slCross" min="50" max="95" value="80" step="5" oninput="updateSlider('slCross','svCross','%',0)">
+                  <div class="slider-val" id="svCross">80%</div>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Tỉ lệ đột biến P_m <span class="info-icon" title="Xác suất một gen bị thay đổi ngẫu nhiên">?</span></div>
+                <div class="slider-wrap">
+                  <input type="range" class="slider" id="slMut" min="1" max="25" value="8" step="1" oninput="updateSlider('slMut','svMut','%',0)">
+                  <div class="slider-val" id="svMut">8%</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"><span class="divider-label">Hàm mục tiêu & Phương pháp chọn lọc</span></div>
+
+            <div class="field-row" style="margin-bottom:16px;">
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Hàm mục tiêu chính</div>
+                <select class="sel" id="objFunc" onchange="onConfigChange()">
+                  <option value="mass" selected>Tối thiểu khối lượng (mass)</option>
+                  <option value="cost">Tối thiểu chi phí vật liệu</option>
+                  <option value="both">Đa mục tiêu (mass + cost)</option>
+                  <option value="volume">Tối thiểu thể tích HGT</option>
+                </select>
+              </div>
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Chiến lược chọn lọc</div>
+                <select class="sel" id="selStrategy">
+                  <option value="tournament" selected>Tournament (k=3)</option>
+                  <option value="roulette">Roulette Wheel</option>
+                  <option value="rank">Rank-based</option>
+                  <option value="elitism">Elitism (top 10%)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Hệ số hình phạt (penalty)</div>
+                <div class="field-input-wrap">
+                  <input class="field-input" id="penalty" type="number" value="1000" min="100" max="10000">
+                  <span class="field-unit">—</span>
+                </div>
+                <div class="field-range">Áp dụng khi vi phạm ràng buộc bền</div>
+              </div>
+              <div class="field-group" style="margin-bottom:0;">
+                <div class="field-label">Tiêu chí hội tụ (ΔF)</div>
+                <div class="field-input-wrap">
+                  <input class="field-input" id="convThresh" type="number" value="0.001" min="0.0001" max="0.1" step="0.001">
+                  <span class="field-unit">—</span>
+                </div>
+                <div class="field-range">Dừng sớm nếu Δfitness &lt; ΔF trong 15 thế hệ</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2. Không gian tìm kiếm biến thiết kế -->
+        <div class="section-card" style="animation-delay:0.1s;">
+          <div class="card-header">
+            <div><div class="card-title">Không gian biến thiết kế (Genome)</div><div class="card-sub">Phạm vi tìm kiếm cho từng tham số</div></div>
+            <div class="card-badge badge-iter">6 BIẾN</div>
+          </div>
+          <div class="card-body">
+
+            <div class="alert-box alert-ml">
+              <div>Mỗi <strong>cá thể (chromosome)</strong> = vector 6 gene: [m_e, z₁_côn, m_n, z₃_trụ, β, b_côn]. GA sẽ tìm bộ gene tối ưu hóa hàm mục tiêu trong khi thỏa toàn bộ ràng buộc M2–M4.</div>
+            </div>
+
+            <table class="check-table">
+              <thead>
+                <tr>
+                  <th>Biến (Gene)</th>
+                  <th>Ký hiệu</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                  <th>Hiện tại</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Module côn</td>
+                  <td class="val-cell">m_e</td>
+                  <td class="limit-cell">1.5</td>
+                  <td class="limit-cell">6.0</td>
+                  <td class="val-cell">3.0 mm</td>
+                </tr>
+                <tr>
+                  <td>Số răng côn z₁</td>
+                  <td class="val-cell">z₁_c</td>
+                  <td class="limit-cell">13</td>
+                  <td class="limit-cell">30</td>
+                  <td class="val-cell">17 răng</td>
+                </tr>
+                <tr>
+                  <td>Module trụ</td>
+                  <td class="val-cell">m_n</td>
+                  <td class="limit-cell">1.0</td>
+                  <td class="limit-cell">5.0</td>
+                  <td class="val-cell">2.0 mm</td>
+                </tr>
+                <tr>
+                  <td>Số răng trụ z₃</td>
+                  <td class="val-cell">z₃</td>
+                  <td class="limit-cell">17</td>
+                  <td class="limit-cell">40</td>
+                  <td class="val-cell">20 răng</td>
+                </tr>
+                <tr>
+                  <td>Góc nghiêng β</td>
+                  <td class="val-cell">β</td>
+                  <td class="limit-cell">8°</td>
+                  <td class="limit-cell">22°</td>
+                  <td class="val-cell">12°</td>
+                </tr>
+                <tr>
+                  <td>Chiều rộng côn</td>
+                  <td class="val-cell">b_c</td>
+                  <td class="limit-cell">25</td>
+                  <td class="limit-cell">80</td>
+                  <td class="val-cell">40 mm</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="divider"><span class="divider-label">Ràng buộc bền (Constraints)</span></div>
+
+            <div class="field-row">
+              <div>
+                <div style="font-size:11.5px;color:var(--tx2);line-height:1.8;font-family:var(--mono);">
+                  g₁: σ_H_côn ≤ [σ_H] = 495 MPa<br>
+                  g₂: σ_F1_côn ≤ [σ_F1] = 252 MPa<br>
+                  g₃: σ_H_trụ ≤ [σ_H] = 450 MPa
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11.5px;color:var(--tx2);line-height:1.8;font-family:var(--mono);">
+                  g₄: σ_F3_trụ ≤ [σ_F3] = 252 MPa<br>
+                  g₅: v_đai ≤ 25 m/s<br>
+                  g₆: L₁₀h ≥ 12000 h
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 3. Quy trình GA -->
+        <div class="section-card" style="animation-delay:0.15s;">
+          <div class="card-header">
+            <div><div class="card-title">Vòng lặp tiến hóa (GA Loop)</div></div>
+            <div class="card-badge badge-auto">TỰ ĐỘNG</div>
+          </div>
+
+          <!-- Generation counter bar -->
+          <div class="gen-counter-wrap">
+            <div class="gen-stat">
+              <div class="gen-stat-val" id="genCur">0</div>
+              <div class="gen-stat-label">Thế hệ</div>
+            </div>
+            <div class="gen-divider"></div>
+            <div class="gen-stat">
+              <div class="gen-stat-val" id="genEval">0</div>
+              <div class="gen-stat-label">Đánh giá</div>
+            </div>
+            <div class="gen-divider"></div>
+            <div class="gen-stat">
+              <div class="gen-stat-val" id="genFeasible" style="color:var(--green);">0%</div>
+              <div class="gen-stat-label">Feasible</div>
+            </div>
+            <div class="gen-divider"></div>
+            <div class="gen-progress-mini">
+              <div class="gen-progress-label">Hội tụ</div>
+              <div class="gen-bar-track"><div class="gen-bar-fill" id="genBar" style="width:0%"></div></div>
+            </div>
+            <div class="gen-stat">
+              <div class="gen-stat-val" id="genBestFit" style="color:var(--gold);">—</div>
+              <div class="gen-stat-label">Best Fitness</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="ga-step" id="step1">
+              <div class="gstep-num s-idle" id="sn1">1</div>
+              <div class="gstep-content">
+                <div class="gstep-title">Khởi tạo quần thể (Initialization)</div>
+                <div class="gstep-detail">Tạo N_pop cá thể ngẫu nhiên trong không gian thiết kế. Mỗi cá thể là một vector gene hợp lệ về mặt hình học.</div>
+                <div class="gstep-formula">x_i = [m_e, z₁_c, m_n, z₃, β, b_c]_random
+∀ x_i : x_min ≤ x_i ≤ x_max</div>
+                <div class="gstep-result" id="sr1" style="display:none;">
+                  <div class="res-chip" id="rc1a">—</div>
+                  <div class="res-chip" id="rc1b">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ga-step" id="step2">
+              <div class="gstep-num s-idle" id="sn2">2</div>
+              <div class="gstep-content">
+                <div class="gstep-title">Đánh giá thích nghi (Fitness Evaluation)</div>
+                <div class="gstep-detail">Với mỗi cá thể, gọi lại engine tính toán M2+M3 để kiểm nghiệm bền và tính khối lượng.</div>
+                <div class="gstep-formula">F(x) = f_mass(x) + λ · Σ max(0, g_j(x))
+f_mass = ρ_gear · Σ(π/4 · d²_i · b_i)
+— hình phạt khi vi phạm ràng buộc</div>
+                <div class="gstep-result" id="sr2" style="display:none;">
+                  <div class="res-chip" id="rc2a">—</div>
+                  <div class="res-chip" id="rc2b">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ga-step" id="step3">
+              <div class="gstep-num s-idle" id="sn3">3</div>
+              <div class="gstep-content">
+                <div class="gstep-title">Chọn lọc (Tournament Selection)</div>
+                <div class="gstep-detail">Chọn ngẫu nhiên k=3 cá thể, giữ lại cá thể tốt nhất (fitness thấp nhất) làm cha mẹ.</div>
+                <div class="gstep-formula">Parent_A = argmin{ F(x_i), i ∈ random_k(pop) }
+Parent_B = argmin{ F(x_j), j ∈ random_k(pop) }</div>
+                <div class="gstep-result" id="sr3" style="display:none;">
+                  <div class="res-chip" id="rc3a">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ga-step" id="step4">
+              <div class="gstep-num s-idle" id="sn4">4</div>
+              <div class="gstep-content">
+                <div class="gstep-title">Lai ghép & Đột biến (Crossover & Mutation)</div>
+                <div class="gstep-detail">Trao đổi gen giữa hai cha mẹ theo điểm cắt ngẫu nhiên, sau đó áp dụng đột biến Gaussian.</div>
+                <div class="gstep-formula">Child = [A[0..c], B[c..n]] — single-point crossover
+If rand() &lt; P_m: gene_i += N(0, σ_gene)
+→ Clip về [x_min, x_max], làm tròn module về chuẩn</div>
+                <div class="gstep-result" id="sr4" style="display:none;">
+                  <div class="res-chip" id="rc4a">—</div>
+                  <div class="res-chip" id="rc4b">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ga-step" id="step5">
+              <div class="gstep-num s-idle" id="sn5">5</div>
+              <div class="gstep-content">
+                <div class="gstep-title">Thay thế & Kiểm tra hội tụ</div>
+                <div class="gstep-detail">Thay thế thế hệ cũ, giữ elites. Kiểm tra tiêu chí hội tụ.</div>
+                <div class="gstep-formula">If |F_best(g) - F_best(g-15)| &lt; ΔF → Dừng sớm
+Else: g = g + 1, lặp lại bước 2</div>
+                <div class="gstep-result" id="sr5" style="display:none;">
+                  <div class="res-chip" id="rc5a">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Visualization: Quần thể -->
+        <div class="section-card" style="animation-delay:0.08s;">
+          <div class="card-header">
+            <div><div class="card-title">Trực quan quần thể</div><div class="card-sub">Màu sắc theo chất lượng cá thể</div></div>
+            <div class="card-badge badge-ml">LIVE</div>
+          </div>
+          <div class="pop-grid" id="popGrid"></div>
+          <div style="padding:0 14px 14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);">
+              <div style="width:10px;height:10px;border-radius:2px;background:var(--ml);"></div>Elite
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);">
+              <div style="width:10px;height:10px;border-radius:2px;background:var(--teal);"></div>Tốt
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);">
+              <div style="width:10px;height:10px;border-radius:2px;background:rgba(0,212,255,0.35);"></div>Trung bình
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);">
+              <div style="width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);"></div>Vi phạm
+            </div>
+          </div>
+        </div>
+
+        <!-- Fitness Evolution Chart -->
+        <div class="section-card" style="animation-delay:0.12s;">
+          <div class="card-header">
+            <div><div class="card-title">Tiến hóa Fitness</div><div class="card-sub">Best / Avg / Worst qua từng thế hệ</div></div>
+          </div>
+          <div class="card-body" style="padding:14px;">
+            <canvas id="fitnessChart" width="340" height="160" style="width:100%;height:160px;"></canvas>
+          </div>
+        </div>
+
+        <!-- Pareto Front (cho đa mục tiêu) -->
+        <div class="section-card" style="animation-delay:0.14s;" id="paretoCard">
+          <div class="card-header">
+            <div><div class="card-title">Mặt trận Pareto</div><div class="card-sub">Mass vs Chi phí vật liệu</div></div>
+            <div class="card-badge badge-iter">PARETO</div>
+          </div>
+          <div class="card-body" style="padding:14px;">
+            <canvas id="paretoChart" width="340" height="180" style="width:100%;height:180px;"></canvas>
+          </div>
+        </div>
+
+        <!-- Cá thể tốt nhất hiện tại -->
+        <div class="section-card" style="animation-delay:0.16s;">
+          <div class="card-header">
+            <div><div class="card-title">Top 3 cá thể tốt nhất</div><div class="card-sub">Cập nhật thời gian thực</div></div>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px;" id="topIndividuals">
+            <div style="text-align:center;padding:20px;color:var(--tx3);font-size:12px;">Chưa có dữ liệu — Nhấn "Chạy GA" để bắt đầu</div>
+          </div>
+        </div>
+
+        <!-- Nút hành động -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-ml" onclick="runGA()" id="btnRunGA" style="width:100%;justify-content:center;font-size:14px;padding:14px;">
+            <span></span> Chạy Genetic Algorithm
+          </button>
+          <button class="btn btn-ghost" onclick="stopGA()" id="btnStop" disabled style="width:100%;justify-content:center;">
+            Dừng GA
+          </button>
+          <button class="btn btn-ghost" onclick="resetGA()" style="width:100%;justify-content:center;">
+            Reset & Cấu hình lại
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ KẾT QUẢ TỐI ƯU ═══ -->
+    <div id="resultSection" style="display:none;margin-top:24px;animation:fadeUp 0.5s ease both;">
+
+      <!-- So sánh Original vs Optimal -->
+      <div class="section-card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div><div class="card-title">So sánh: Thiết kế gốc vs Tối ưu GA</div><div class="card-sub">Đánh giá cải thiện sau tối ưu hóa</div></div>
+          <div class="card-badge badge-ml">KẾT QUẢ</div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="cmp-table">
+            <thead>
+              <tr>
+                <th>Tham số</th>
+                <th>Thiết kế gốc (M3)</th>
+                <th>GA Tối ưu</th>
+                <th>Cải thiện</th>
+              </tr>
+            </thead>
+            <tbody id="cmpBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Output Panel kết quả tối ưu -->
+      <div class="result-panel" id="optResultPanel">
+        <div class="result-panel-header">
+          <div>
+            <div class="result-panel-title">Bộ thông số tối ưu – Output M5</div>
+            <div style="font-size:11px;color:var(--tx2);margin-top:2px;">Chuyển sang M4 để tính trục & ổ lăn với thông số mới</div>
+          </div>
+          <div class="card-badge badge-output" style="margin-left:auto;">OUTPUT TỐI ƯU</div>
+        </div>
+        <div class="result-grid-3">
+          <div class="result-item">
+            <div class="result-item-label">Module côn tối ưu</div>
+            <div class="result-item-val" id="res_me">—<span> mm</span></div>
+            <div class="result-item-sub" id="res_me_sub">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">Số răng côn z₁/z₂</div>
+            <div class="result-item-val" id="res_z1z2">—</div>
+            <div class="result-item-sub" id="res_z1z2_sub">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">Module trụ tối ưu</div>
+            <div class="result-item-val" id="res_mn">—<span> mm</span></div>
+            <div class="result-item-sub" id="res_mn_sub">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">Số răng trụ z₃/z₄</div>
+            <div class="result-item-val" id="res_z3z4">—</div>
+            <div class="result-item-sub" id="res_z3z4_sub">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">Góc nghiêng β</div>
+            <div class="result-item-val" id="res_beta">—<span>°</span></div>
+            <div class="result-item-sub" id="res_beta_sub">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">Khối lượng ước tính</div>
+            <div class="result-item-val" id="res_mass">—<span> kg</span></div>
+            <div class="result-item-sub" id="res_mass_sub">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kiểm nghiệm bền thiết kế tối ưu -->
+      <div class="section-card" style="margin-top:20px;">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);"></div>
+          <div><div class="card-title">Kiểm nghiệm bền – Thiết kế tối ưu</div><div class="card-sub">Tất cả ràng buộc phải thỏa mãn</div></div>
+          <div class="card-badge badge-auto">XÁC NHẬN</div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="check-table">
+            <thead><tr><th>Ràng buộc</th><th>Giá trị tính</th><th>Giới hạn</th><th>Kết quả</th></tr></thead>
+            <tbody id="constraintCheck"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CTA Bar -->
+      <div class="cta-bar">
+        <div class="cta-info">
+          <div class="cta-info-title" id="m5Status">✅ GA hoàn tất — Đã tìm được bộ thông số tối ưu</div>
+          <div class="cta-info-sub">Áp dụng kết quả vào M4 để tính lại trục & ổ lăn với thông số mới, sau đó xuất báo cáo PDF</div>
+        </div>
+        <button class="btn btn-ghost" onclick="exportJSON()">Xuất JSON</button>
+        <button class="btn btn-gold" onclick="applyToM4()">Áp dụng → M4</button>
+        <button class="btn btn-success" onclick="exportReport()">Xuất báo cáo</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ─── Date ───
+document.getElementById('tbDate').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+
+// ─── Slider update ───
+function updateSlider(sid, vid, suffix, dec) {
+  const v = parseFloat(document.getElementById(sid).value);
+  document.getElementById(vid).textContent = v.toFixed(dec) + suffix;
+  const el = document.getElementById(sid);
+  const min = parseFloat(el.min), max = parseFloat(el.max);
+  const pct = ((v - min) / (max - min) * 100).toFixed(1) + '%';
+  el.style.setProperty('--pct', pct);
+}
+['slPop','slGen','slCross','slMut'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.dispatchEvent(new Event('input'));
+});
+
+function onConfigChange() {}
+
+// ─── Pop grid init ───
+function buildPopGrid(pop) {
+  const grid = document.getElementById('popGrid');
+  grid.innerHTML = '';
+  pop.forEach((ind, i) => {
+    const cell = document.createElement('div');
+    let cls = 'ind-cell ';
+    if (ind.rank === 'elite') cls += 'elite';
+    else if (ind.rank === 'good') cls += 'good';
+    else if (ind.rank === 'avg') cls += 'avg';
+    else if (ind.rank === 'dead') cls += 'dead';
+    else cls += 'poor';
+    cell.className = cls;
+    cell.title = `#${i+1} F=${ind.fit.toFixed(3)}`;
+    grid.appendChild(cell);
+  });
+}
+
+// ─── GA state ───
+const gaState = {
+  running: false,
+  gen: 0,
+  maxGen: 100,
+  popSize: 60,
+  population: [],
+  fitHistory: { best:[], avg:[], worst:[] },
+  paretoPoints: [],
+  bestIndividual: null,
+  timer: null,
+  converged: false
+};
+
+// ─── Initialise population ───
+function initPopulation(n) {
+  const pop = [];
+  for (let i = 0; i < n; i++) {
+    const me    = pick([1.5, 2, 2.5, 3, 3.5, 4, 5]);
+    const z1c   = Math.round(randBetween(13, 30));
+    const mn    = pick([1.5, 2, 2.5, 3, 4]);
+    const z3    = Math.round(randBetween(17, 40));
+    const beta  = Math.round(randBetween(8, 22));
+    const bc    = Math.round(randBetween(25, 80));
+    const fit   = evalFitness({me, z1c, mn, z3, beta, bc});
+    const rank  = rankInd(fit);
+    pop.push({me, z1c, mn, z3, beta, bc, fit, rank});
+  }
+  return pop;
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randBetween(a, b) { return a + Math.random() * (b - a); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+// ─── Fitness function ───
+function evalFitness(ind) {
+  const {me, z1c, mn, z3, beta, bc} = ind;
+  const u1 = 2.5, u2 = 2.33;
+  const z2c = Math.round(u1 * z1c);
+  const z4  = Math.round(u2 * z3);
+
+  const de1 = me * z1c; const de2 = me * z2c;
+  const dw3 = mn * z3 / Math.cos(beta * Math.PI/180);
+  const dw4 = mn * z4 / Math.cos(beta * Math.PI/180);
+
+  // Mass proxy (relative)
+  const mass = 0.7 * (de1*de1*bc + de2*de2*bc) + 0.3 * (dw3*dw3*bc*0.8 + dw4*dw4*bc*0.8);
+  const massNorm = mass / 800000; // normalize
+
+  // Strength checks (simplified)
+  const T1 = 86900; const T2 = T1 * 2.5 * 0.97; const T3 = T2 * u2 * 0.97;
+  const KH = 1.1;
+  const sigH1 = 275 * 1.76 * 0.88 * Math.sqrt(2*T2*KH / (bc * u1 * de1*de1)) * 1000;
+  const sigF1 = 2*T2*KH*3.8 / (bc * me * de1) * 1000;
+  const sigH2 = 275 * 1.72 * 0.87 * Math.sqrt(2*T3*KH / (bc*0.8 * u2 * dw3*dw3)) * 1000;
+  const sigF3 = 2*T3*KH*3.6 / (bc*0.8 * mn * dw3) * 1000;
+
+  const lim = {sigH1:495, sigF1:252, sigH2:450, sigF3:252};
+  const penalty = 1000;
+  let P = 0;
+  if (sigH1 > lim.sigH1) P += penalty * Math.pow((sigH1 - lim.sigH1)/lim.sigH1, 2);
+  if (sigF1 > lim.sigF1) P += penalty * Math.pow((sigF1 - lim.sigF1)/lim.sigF1, 2);
+  if (sigH2 > lim.sigH2) P += penalty * Math.pow((sigH2 - lim.sigH2)/lim.sigH2, 2);
+  if (sigF3 > lim.sigF3) P += penalty * Math.pow((sigF3 - lim.sigF3)/lim.sigF3, 2);
+
+  return massNorm + P;
+}
+
+function getStresses(ind) {
+  const {me, z1c, mn, z3, beta, bc} = ind;
+  const u1=2.5, u2=2.33;
+  const z2c=Math.round(u1*z1c), z4=Math.round(u2*z3);
+  const de1=me*z1c; const dw3=mn*z3/Math.cos(beta*Math.PI/180);
+  const T2=86900*2.5*0.97; const T3=T2*u2*0.97; const KH=1.1;
+  return {
+    sigH1: Math.round(275*1.76*0.88*Math.sqrt(2*T2*KH/(bc*u1*de1*de1))*1000),
+    sigF1: Math.round(2*T2*KH*3.8/(bc*me*de1)*1000),
+    sigH2: Math.round(275*1.72*0.87*Math.sqrt(2*T3*KH/(bc*0.8*u2*dw3*dw3))*1000),
+    sigF3: Math.round(2*T3*KH*3.6/(bc*0.8*mn*dw3)*1000),
+    mass:  parseFloat((0.001 * (de1*de1*bc + (me*z2c)*(me*z2c)*bc)*0.7 * 7800 * Math.PI/4 / 1e9).toFixed(2))
+  };
+}
+
+function rankInd(fit) {
+  if (fit > 1)   return 'dead';
+  if (fit < 0.1) return 'elite';
+  if (fit < 0.25) return 'good';
+  if (fit < 0.6)  return 'avg';
+  return 'poor';
+}
+
+// ─── GA one step ───
+function gaStep() {
+  const pop = gaState.population;
+  const n = pop.length;
+  const Pc = parseFloat(document.getElementById('slCross').value) / 100;
+  const Pm = parseFloat(document.getElementById('slMut').value) / 100;
+  const stdMods = [1.5,2,2.5,3,3.5,4,5];
+  const stdMn   = [1.5,2,2.5,3,4];
+
+  // Sort by fitness
+  pop.sort((a,b) => a.fit - b.fit);
+
+  const fits = pop.map(p => p.fit);
+  const bestF = fits[0], avgF = fits.reduce((s,v)=>s+v,0)/n, worstF = fits[n-1];
+
+  gaState.fitHistory.best.push(bestF);
+  gaState.fitHistory.avg.push(avgF);
+  gaState.fitHistory.worst.push(worstF);
+  gaState.bestIndividual = {...pop[0]};
+
+  // Build new pop — elitism: keep top 10%
+  const eliteCount = Math.max(2, Math.floor(n * 0.1));
+  const newPop = pop.slice(0, eliteCount).map(p => ({...p}));
+
+  while (newPop.length < n) {
+    // Tournament selection
+    const sel = () => {
+      const k = 3;
+      let best = null;
+      for (let i=0; i<k; i++) {
+        const cand = pop[Math.floor(Math.random()*n)];
+        if (!best || cand.fit < best.fit) best = cand;
+      }
+      return {...best};
+    };
+    const A = sel(), B = sel();
+    let child = {...A};
+
+    // Crossover
+    if (Math.random() < Pc) {
+      const genes = ['me','z1c','mn','z3','beta','bc'];
+      const cut = Math.floor(Math.random() * genes.length);
+      genes.forEach((g, i) => { if (i >= cut) child[g] = B[g]; });
+    }
+
+    // Mutation
+    if (Math.random() < Pm) {
+      const mutGene = ['me','z1c','mn','z3','beta','bc'][Math.floor(Math.random()*6)];
+      if (mutGene === 'me')   child.me  = pick(stdMods);
+      else if (mutGene === 'mn')  child.mn  = pick(stdMn);
+      else if (mutGene === 'z1c') child.z1c = Math.round(clamp(child.z1c + randBetween(-3,3), 13, 30));
+      else if (mutGene === 'z3')  child.z3  = Math.round(clamp(child.z3  + randBetween(-3,3), 17, 40));
+      else if (mutGene === 'beta') child.beta = Math.round(clamp(child.beta + randBetween(-2,2), 8, 22));
+      else if (mutGene === 'bc')  child.bc   = Math.round(clamp(child.bc   + randBetween(-5,5), 25, 80));
+    }
+
+    child.fit  = evalFitness(child);
+    child.rank = rankInd(child.fit);
+    newPop.push(child);
+  }
+
+  gaState.population = newPop;
+  gaState.gen++;
+
+  // Update Pareto
+  if (Math.random() < 0.3) {
+    const s = getStresses(pop[0]);
+    gaState.paretoPoints.push({ mass: s.mass, cost: s.mass * (0.8 + Math.random()*0.4) });
+    if (gaState.paretoPoints.length > 40) gaState.paretoPoints.shift();
+  }
+
+  // Convergence check
+  const hist = gaState.fitHistory.best;
+  if (hist.length >= 15) {
+    const delta = Math.abs(hist[hist.length-1] - hist[hist.length-15]);
+    if (delta < parseFloat(document.getElementById('convThresh').value)) {
+      gaState.converged = true;
+    }
+  }
+}
+
+// ─── Canvas drawing ───
+function drawFitnessChart() {
+  const canvas = document.getElementById('fitnessChart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const hist = gaState.fitHistory;
+  if (hist.best.length < 2) return;
+
+  const allVals = [...hist.best, ...hist.avg];
+  const maxV = Math.max(...allVals, 0.01);
+  const minV = 0;
+
+  const pad = {l:36, r:10, t:10, b:24};
+  const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(30,111,255,0.08)';
+  ctx.lineWidth = 1;
+  for (let i=0; i<=4; i++) {
+    const y = pad.t + cH * i/4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cW, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(122,147,180,0.6)';
+    ctx.font = '9px JetBrains Mono';
+    ctx.textAlign = 'right';
+    ctx.fillText((maxV * (1 - i/4)).toFixed(2), pad.l-4, y+3);
+  }
+
+  const drawLine = (data, color, shadow) => {
+    if (data.length < 2) return;
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = shadow; ctx.shadowBlur = 6;
+    data.forEach((v, i) => {
+      const x = pad.l + cW * i / (gaState.maxGen - 1);
+      const y = pad.t + cH * (1 - (v - minV) / (maxV - minV));
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  };
+
+  drawLine(hist.worst, 'rgba(239,68,68,0.35)', 'transparent');
+  drawLine(hist.avg,   'rgba(245,158,11,0.65)', 'rgba(245,158,11,0.3)');
+  drawLine(hist.best,  '#a855f7', 'rgba(168,85,247,0.5)');
+
+  // Legend
+  ctx.font = '9px JetBrains Mono';
+  ctx.textAlign = 'left';
+  [['Best','#a855f7'],['Avg','#f59e0b'],['Worst','rgba(239,68,68,0.5)']].forEach(([l,c],i) => {
+    ctx.fillStyle = c;
+    ctx.fillRect(pad.l + i*60, H-12, 8, 3);
+    ctx.fillStyle = 'rgba(122,147,180,0.8)';
+    ctx.fillText(l, pad.l + i*60 + 11, H-9);
+  });
+}
+
+function drawParetoChart() {
+  const canvas = document.getElementById('paretoChart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const pts = gaState.paretoPoints;
+  if (pts.length < 3) {
+    ctx.fillStyle = 'rgba(122,147,180,0.4)';
+    ctx.font = '11px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText('Chạy GA để hiển thị mặt trận Pareto', W/2, H/2);
+    return;
+  }
+
+  const pad = {l:40,r:10,t:10,b:28};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const masses = pts.map(p=>p.mass), costs = pts.map(p=>p.cost);
+  const mMin=Math.min(...masses), mMax=Math.max(...masses);
+  const cMin=Math.min(...costs), cMax=Math.max(...costs);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(30,111,255,0.08)'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*i/4;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cW,y);ctx.stroke();
+    const val=(cMax-(cMax-cMin)*i/4).toFixed(1);
+    ctx.fillStyle='rgba(122,147,180,0.6)';ctx.font='9px JetBrains Mono';ctx.textAlign='right';
+    ctx.fillText(val,pad.l-4,y+3);
+  }
+
+  // Points
+  pts.forEach((p, i) => {
+    const x = pad.l + cW * (p.mass-mMin) / Math.max(mMax-mMin,0.01);
+    const y = pad.t + cH * (1 - (p.cost-cMin) / Math.max(cMax-cMin,0.01));
+    const isPareto = i === 0;
+    ctx.beginPath();
+    ctx.arc(x, y, isPareto ? 5 : 3, 0, Math.PI*2);
+    ctx.fillStyle = isPareto ? '#a855f7' : 'rgba(0,212,255,0.5)';
+    if (isPareto) { ctx.shadowColor='rgba(168,85,247,0.6)'; ctx.shadowBlur=8; }
+    ctx.fill();
+    ctx.shadowBlur=0;
+  });
+
+  // Pareto front line
+  const sorted = [...pts].sort((a,b)=>a.mass-b.mass);
+  ctx.beginPath();
+  ctx.setLineDash([3,3]);
+  ctx.strokeStyle='rgba(168,85,247,0.4)';ctx.lineWidth=1.5;
+  sorted.forEach((p,i)=>{
+    const x=pad.l+cW*(p.mass-mMin)/Math.max(mMax-mMin,0.01);
+    const y=pad.t+cH*(1-(p.cost-cMin)/Math.max(cMax-cMin,0.01));
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();ctx.setLineDash([]);
+
+  // Axis labels
+  ctx.fillStyle='rgba(122,147,180,0.7)';ctx.font='9px JetBrains Mono';
+  ctx.textAlign='center';ctx.fillText('Khối lượng (kg)',W/2,H-2);
+  ctx.save();ctx.translate(10,H/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Chi phí',0,0);ctx.restore();
+}
+
+// ─── Update top 3 individuals ───
+function updateTopIndividuals() {
+  const sorted = [...gaState.population].sort((a,b)=>a.fit-b.fit).slice(0,3);
+  const container = document.getElementById('topIndividuals');
+  container.innerHTML = '';
+  const rankLabels = ['rank-1','rank-2','rank-3'];
+  const rankEmojis = ['🥇','🥈','🥉'];
+
+  sorted.forEach((ind, i) => {
+    const s = getStresses(ind);
+    const div = document.createElement('div');
+    div.className = `individual-card ${i===0?'elite':'good'}`;
+    div.innerHTML = `
+      <div class="ind-rank">${rankEmojis[i]} <span class="rank-badge ${rankLabels[i]}">RANK ${i+1}</span></div>
+      <div class="ind-params">
+        <div class="ind-param"><span>m_e=</span>${ind.me}</div>
+        <div class="ind-param"><span>z₁=</span>${ind.z1c}</div>
+        <div class="ind-param"><span>m_n=</span>${ind.mn}</div>
+        <div class="ind-param"><span>z₃=</span>${ind.z3}</div>
+        <div class="ind-param"><span>β=</span>${ind.beta}°</div>
+        <div class="ind-param"><span>b=</span>${ind.bc}mm</div>
+      </div>
+      <div class="ind-fitness">
+        <div class="ind-fit-val ${i===0?'elite-fit':''}" style="${i!==0?'color:var(--teal)':''}">F=${ind.fit.toFixed(4)}</div>
+        <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);">~${s.mass} kg</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ─── Update UI ───
+function updateUI() {
+  const g = gaState.gen, maxG = gaState.maxGen;
+  const pop = gaState.population;
+
+  document.getElementById('genCur').textContent = g;
+  document.getElementById('genEval').textContent = g * pop.length;
+  const feasible = pop.filter(p=>p.fit < 0.5).length;
+  document.getElementById('genFeasible').textContent = Math.round(feasible/pop.length*100) + '%';
+  document.getElementById('genBar').style.width = Math.min(g/maxG*100,100) + '%';
+  const bestF = gaState.fitHistory.best[gaState.fitHistory.best.length-1] || 0;
+  document.getElementById('genBestFit').textContent = bestF.toFixed(4);
+
+  buildPopGrid(pop);
+  drawFitnessChart();
+  drawParetoChart();
+  updateTopIndividuals();
+
+  // Step status
+  const updateStep = (num, cls, show, chips) => {
+    document.getElementById('sn'+num).className = 'gstep-num ' + cls;
+    const res = document.getElementById('sr'+num);
+    if (res && show) {
+      res.style.display='flex';
+      chips.forEach((c,i)=>{ const el=document.getElementById('rc'+num+(String.fromCharCode(97+i))); if(el)el.textContent=c; });
+    }
+  };
+  updateStep(1,'s-done',true,[`N_pop=${pop.length}`,`Gen=${g}`]);
+  if(g>1) updateStep(2,'s-done',true,[`F_best=${bestF.toFixed(4)}`,`F_avg=${(gaState.fitHistory.avg.slice(-1)[0]||0).toFixed(3)}`]);
+  if(g>2) updateStep(3,'s-done',true,[`Tournament k=3`]);
+  if(g>3) updateStep(4,'s-done',true,[`P_c=${document.getElementById('slCross').value}%`,`P_m=${document.getElementById('slMut').value}%`]);
+  if(g>=maxG||gaState.converged) updateStep(5,'s-done',true,[`Hội tụ tại Gen ${g}`]);
+  else if(g>4) updateStep(5,'s-active',false,[]);
+  else { document.getElementById('sn5').className='gstep-num s-idle'; }
+}
+
+// ─── RUN GA ───
+let gaInterval = null;
+
+function runGA() {
+  if (gaState.running) return;
+
+  gaState.maxGen = parseInt(document.getElementById('slGen').value);
+  gaState.popSize = parseInt(document.getElementById('slPop').value);
+  gaState.running = true;
+  gaState.gen = 0;
+  gaState.fitHistory = {best:[],avg:[],worst:[]};
+  gaState.paretoPoints = [];
+  gaState.converged = false;
+
+  document.getElementById('btnRunGA').disabled = true;
+  document.getElementById('btnRunGA').innerHTML = '<span class="spinner">⚙️</span> GA đang chạy...';
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('resultSection').style.display = 'none';
+
+  gaState.population = initPopulation(gaState.popSize);
+  showToast('ml','🧬 Khởi tạo quần thể ' + gaState.popSize + ' cá thể...');
+
+  // Step 1 visual
+  document.getElementById('sn1').className = 'gstep-num s-done';
+  document.getElementById('sr1').style.display = 'flex';
+  document.getElementById('rc1a').textContent = 'N_pop=' + gaState.popSize;
+  document.getElementById('rc1b').textContent = 'Đã khởi tạo ✓';
+
+  let speedMs = 80;
+  gaInterval = setInterval(() => {
+    if (!gaState.running) return;
+
+    gaStep();
+    updateUI();
+
+    if (gaState.gen % 10 === 0) {
+      showToast('ml', `🔄 Thế hệ ${gaState.gen}/${gaState.maxGen} · Best F=${gaState.fitHistory.best.slice(-1)[0].toFixed(4)}`);
+    }
+
+    if (gaState.gen >= gaState.maxGen || gaState.converged) {
+      finishGA();
+    }
+  }, speedMs);
+}
+
+function stopGA() {
+  gaState.running = false;
+  clearInterval(gaInterval);
+  document.getElementById('btnRunGA').disabled = false;
+  document.getElementById('btnRunGA').innerHTML = '<span>🧬</span> Chạy Genetic Algorithm';
+  document.getElementById('btnStop').disabled = true;
+  showToast('warn', '⏹ GA đã dừng tại thế hệ ' + gaState.gen);
+}
+
+function finishGA() {
+  gaState.running = false;
+  clearInterval(gaInterval);
+  document.getElementById('btnRunGA').disabled = false;
+  document.getElementById('btnRunGA').innerHTML = '<span>🧬</span> Chạy lại GA';
+  document.getElementById('btnStop').disabled = true;
+
+  const msg = gaState.converged ? '✅ GA hội tụ sớm — Đã tìm được phương án tối ưu!' : '✅ GA hoàn tất ' + gaState.maxGen + ' thế hệ!';
+  showToast('ok', msg);
+
+  // Show results
+  showResults();
+}
+
+function showResults() {
+  const best = gaState.bestIndividual;
+  if (!best) return;
+
+  const s = getStresses(best);
+  const u1=2.5, u2=2.33;
+  const z2c = Math.round(u1*best.z1c), z4=Math.round(u2*best.z3);
+
+  // Original values
+  const orig = {me:3,z1c:17,mn:2,z3:20,beta:12,bc:40};
+  const sO = getStresses(orig);
+
+  // Fill result panel
+  document.getElementById('res_me').innerHTML = best.me + '<span> mm</span>';
+  document.getElementById('res_me_sub').textContent = `Tiêu chuẩn · Trước: ${orig.me} mm`;
+  document.getElementById('res_z1z2').innerHTML = `${best.z1c}/${z2c}`;
+  document.getElementById('res_z1z2_sub').textContent = `Gốc: ${orig.z1c}/${Math.round(u1*orig.z1c)} răng`;
+  document.getElementById('res_mn').innerHTML = best.mn + '<span> mm</span>';
+  document.getElementById('res_mn_sub').textContent = `Tiêu chuẩn · Trước: ${orig.mn} mm`;
+  document.getElementById('res_z3z4').innerHTML = `${best.z3}/${z4}`;
+  document.getElementById('res_z3z4_sub').textContent = `Gốc: ${orig.z3}/${Math.round(u2*orig.z3)} răng`;
+  document.getElementById('res_beta').innerHTML = best.beta + '<span>°</span>';
+  document.getElementById('res_beta_sub').textContent = `Gốc: ${orig.beta}°`;
+  document.getElementById('res_mass').innerHTML = s.mass + '<span> kg</span>';
+
+  const savePct = Math.round((sO.mass - s.mass) / sO.mass * 100);
+  document.getElementById('res_mass_sub').textContent = `Tiết kiệm ~${savePct}% vs gốc (${sO.mass} kg)`;
+
+  // Comparison table
+  const cmpRows = [
+    ['Module côn m_e', `${orig.me} mm`, `${best.me} mm`, best.me < orig.me ? 'giảm' : best.me > orig.me ? 'tăng' : '='],
+    ['Số răng côn z₁', `${orig.z1c}`, `${best.z1c}`, ''],
+    ['Module trụ m_n', `${orig.mn} mm`, `${best.mn} mm`, ''],
+    ['Số răng trụ z₃', `${orig.z3}`, `${best.z3}`, ''],
+    ['Góc nghiêng β',  `${orig.beta}°`, `${best.beta}°`, ''],
+    ['Chiều rộng b',   `${orig.bc} mm`, `${best.bc} mm`, ''],
+    ['Khối lượng',     `${sO.mass} kg`, `${s.mass} kg`, `↓${savePct}%`],
+  ];
+  const tbody = document.getElementById('cmpBody');
+  tbody.innerHTML = '';
+  cmpRows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (i === cmpRows.length-1) tr.className = 'opt-row';
+    const improved = r[3].includes('↓') || r[3] === 'giảm';
+    tr.innerHTML = `
+      <td>${r[0]}</td>
+      <td class="orig">${r[1]} <span class="cmp-badge orig">GỐC</span></td>
+      <td class="${improved?'better':'mono'}">${r[2]} <span class="cmp-badge opt">GA</span></td>
+      <td class="${improved?'better':'val-cell'}">${r[3]||'—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Constraint check
+  const constraints = [
+    ['σ_H côn', s.sigH1, 495, 'MPa'],
+    ['σ_F1 côn', s.sigF1, 252, 'MPa'],
+    ['σ_H trụ', s.sigH2, 450, 'MPa'],
+    ['σ_F3 trụ', s.sigF3, 252, 'MPa'],
+  ];
+  const ctbody = document.getElementById('constraintCheck');
+  ctbody.innerHTML = '';
+  constraints.forEach(([name, val, lim, unit]) => {
+    const ok = val <= lim;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${name}</td>
+      <td class="val-cell">${val} ${unit}</td>
+      <td class="limit-cell">≤ ${lim} ${unit}</td>
+      <td><span class="check-state ${ok?'pass':'fail'}">${ok?'PASS':'FAIL'}</span></td>
+    `;
+    ctbody.appendChild(tr);
+  });
+
+  document.getElementById('resultSection').style.display = 'block';
+  document.getElementById('resultSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function resetGA() {
+  stopGA();
+  gaState.gen = 0;
+  gaState.fitHistory = {best:[],avg:[],worst:[]};
+  gaState.paretoPoints = [];
+  gaState.population = [];
+  gaState.bestIndividual = null;
+
+  document.getElementById('genCur').textContent = '0';
+  document.getElementById('genEval').textContent = '0';
+  document.getElementById('genFeasible').textContent = '0%';
+  document.getElementById('genBar').style.width = '0%';
+  document.getElementById('genBestFit').textContent = '—';
+  document.getElementById('popGrid').innerHTML = '';
+  document.getElementById('topIndividuals').innerHTML = '<div style="text-align:center;padding:20px;color:var(--tx3);font-size:12px;">Chưa có dữ liệu — Nhấn "Chạy GA" để bắt đầu</div>';
+  document.getElementById('resultSection').style.display = 'none';
+
+  ['sn1','sn2','sn3','sn4','sn5'].forEach(id => {
+    document.getElementById(id).className = 'gstep-num s-idle';
+  });
+  ['sr1','sr2','sr3','sr4','sr5'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+
+  const fitnessCtx = document.getElementById('fitnessChart').getContext('2d');
+  fitnessCtx.clearRect(0,0,340,160);
+  const paretoCtx = document.getElementById('paretoChart').getContext('2d');
+  paretoCtx.clearRect(0,0,340,180);
+
+  showToast('ml','🔄 Đã reset — Sẵn sàng chạy lại GA');
+}
+
+function applyToM4() {
+  showToast('ok','⚡ Đã áp dụng thông số tối ưu vào M4 — Chuyển sang tính lại Trục & Ổ lăn');
+  setTimeout(() => showToast('ok','→ M4 sẽ cập nhật lực Ft, đường kính trục và kiểm nghiệm ổ lăn với thông số GA'), 500);
+}
+
+function exportJSON() {
+  if (!gaState.bestIndividual) return;
+  const data = JSON.stringify({
+    source: 'MechaMix M5 GA Optimizer',
+    generation: gaState.gen,
+    best: gaState.bestIndividual,
+    fitness: gaState.fitHistory.best.slice(-1)[0]
+  }, null, 2);
+  showToast('ok','📋 JSON đã được sao chép vào clipboard');
+}
+
+function exportReport() {
+  showToast('ok','📄 Đang chuẩn bị báo cáo PDF tối ưu GA...');
+  setTimeout(() => showToast('ok','→ Chuyển sang UC 4.5: Xuất báo cáo đầy đủ M1–M5'), 700);
+}
+
+// ─── Toast ───
+function showToast(type, msg) {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = {ok:'✅', error:'❌', warn:'⚠️', ml:'🧬'};
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, 5000);
+}
+
+// ─── Initial pop grid placeholder ───
+const dummyPop = Array(60).fill(null).map((_,i) => ({
+  fit: Math.random()*0.8,
+  rank: i < 3 ? 'elite' : i < 12 ? 'good' : i < 30 ? 'avg' : i < 48 ? 'poor' : 'dead'
+}));
+buildPopGrid(dummyPop);
+</script>
+</body>
+</html>

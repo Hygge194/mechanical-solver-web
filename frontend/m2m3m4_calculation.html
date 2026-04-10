@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MechCalc – UC2: Tính toán thiết kế M2→M4</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #050c18;
+  --bg2:      #07111f;
+  --bg3:      #0b1829;
+  --bg4:      #0f2038;
+  --blue:     #1e6fff;
+  --cyan:     #00d4ff;
+  --teal:     #00c9a7;
+  --violet:   #8b5cf6;
+  --pink:     #ec4899;
+  --green:    #10b981;
+  --gold:     #f59e0b;
+  --red:      #ef4444;
+  --orange:   #f97316;
+  --tx1:      #e2e8f0;
+  --tx2:      #7a93b4;
+  --tx3:      #2e4460;
+  --bdr:      rgba(30,111,255,0.14);
+  --bdr2:     rgba(0,212,255,0.28);
+  --font:     'Plus Jakarta Sans', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--tx1);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 60% at 5% 0%,   rgba(30,111,255,0.09) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 100%, rgba(139,92,246,0.07) 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 45%,  rgba(0,201,167,0.04) 0%,transparent 60%),
+    linear-gradient(rgba(30,111,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,111,255,0.025) 1px, transparent 1px);
+  background-size: auto, auto, auto, 44px 44px, 44px 44px;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  position:fixed; left:0; top:0; bottom:0; width:228px;
+  background: var(--bg2);
+  border-right: 1px solid var(--bdr);
+  display:flex; flex-direction:column;
+  z-index:200;
+}
+.sb-top { padding:24px 20px 20px; border-bottom:1px solid var(--bdr); }
+.logo-row { display:flex; align-items:center; gap:11px; }
+.logo-mark {
+  width:40px; height:40px; border-radius:12px; flex-shrink:0;
+  background: linear-gradient(135deg,#1e6fff,#00d4ff);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 0 22px rgba(30,111,255,0.45);
+  position:relative;
+}
+.logo-mark::after {
+  content:''; position:absolute; inset:0; border-radius:12px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.logo-mark svg { width:22px; height:22px; fill:white; }
+.logo-name { font-family:var(--font); font-weight:800; font-size:19px; letter-spacing:0.2px; }
+.logo-name em { font-style:normal; color:var(--cyan); }
+.logo-ver { font-size:10px; color:var(--tx3); font-family:var(--mono); margin-top:2px; }
+
+.sb-body { flex:1; padding:16px 12px; overflow-y:auto; }
+.sb-section { margin-bottom:6px; }
+.sb-sec-label {
+  font-size:9.5px; font-weight:700; letter-spacing:1.8px;
+  color:var(--tx3); text-transform:uppercase;
+  padding:4px 10px 6px; display:block;
+}
+.nav-link {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 11px; border-radius:9px; margin-bottom:2px;
+  cursor:pointer; transition:all 0.18s;
+  font-size:13.5px; font-weight:500; color:var(--tx2); letter-spacing:0.1px;
+  text-decoration:none; position:relative;
+}
+.nav-link:hover { background:var(--bg4); color:var(--tx1); }
+.nav-link.active { background:rgba(30,111,255,0.14); color:var(--cyan); border-left:2.5px solid var(--cyan); }
+.nav-link.done   { background:rgba(16,185,129,0.08); color:var(--green); border-left:2.5px solid var(--green); }
+.nav-link svg { width:15px; height:15px; flex-shrink:0; opacity:0.85; }
+.nav-tag {
+  margin-left:auto; font-size:9px; padding:1px 7px; border-radius:10px;
+  font-family:var(--mono); font-weight:600;
+}
+.tag-done { background:rgba(16,185,129,0.18); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+.tag-active { background:rgba(0,212,255,0.18); color:var(--cyan); border:1px solid rgba(0,212,255,0.3); }
+.tag-next { background:var(--bg4); color:var(--tx3); border:1px solid var(--tx3); }
+.sb-bot { padding:14px 12px; border-top:1px solid var(--bdr); }
+.user-row {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 11px; border-radius:10px;
+  background:var(--bg3); cursor:pointer; transition:background 0.18s;
+}
+.user-row:hover { background:var(--bg4); }
+.u-av {
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,#1e6fff,#00d4ff);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:13px;
+}
+.u-name { font-size:13px; font-weight:600; }
+.u-role { font-size:10.5px; color:var(--tx2); margin-top:1px; }
+.u-dots { margin-left:auto; color:var(--tx3); font-size:16px; line-height:1; }
+
+/* ─── Main ─── */
+.main { margin-left:228px; min-height:100vh; position:relative; z-index:1; }
+
+/* ─── Topbar ─── */
+.topbar {
+  height:60px; background:rgba(7,17,31,0.88);
+  border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; padding:0 30px;
+  gap:14px; position:sticky; top:0; z-index:100;
+  backdrop-filter:blur(16px);
+}
+.tb-breadcrumb {
+  display:flex; align-items:center; gap:8px;
+  font-size:13px; color:var(--tx2);
+}
+.tb-breadcrumb .sep { color:var(--tx3); }
+.tb-breadcrumb .cur { color:var(--cyan); font-weight:600; }
+.tb-date { font-size:12px; color:var(--tx2); font-family:var(--mono); margin-left:auto; }
+.tb-right { display:flex; align-items:center; gap:10px; margin-left:16px; }
+.tb-search {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg3); border:1px solid var(--bdr);
+  border-radius:9px; padding:7px 14px;
+  font-size:12.5px; color:var(--tx2); cursor:pointer;
+  transition:all 0.2s; width:200px; font-family:var(--font);
+}
+.tb-search:hover { border-color:var(--blue); color:var(--tx1); }
+.tb-search kbd {
+  margin-left:auto; font-family:var(--mono);
+  font-size:9px; padding:1px 5px; border-radius:4px;
+  background:var(--bg4); border:1px solid var(--tx3); color:var(--tx3);
+}
+.tb-icon {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--bg3); border:1px solid var(--bdr);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--tx2); transition:all 0.2s; position:relative;
+}
+.tb-icon:hover { border-color:var(--blue); color:var(--cyan); }
+.tb-notif-dot {
+  position:absolute; top:7px; right:7px; width:7px; height:7px;
+  border-radius:50%; background:var(--cyan); border:1.5px solid var(--bg2);
+  animation:pulseNotif 2s infinite;
+}
+@keyframes pulseNotif{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content ─── */
+.content { padding:36px 36px 60px; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ─── Module Header ─── */
+.module-header {
+  background: var(--bg3);
+  border: 1px solid var(--bdr);
+  border-radius: 20px;
+  padding: 28px 36px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.module-header::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--orange),var(--gold),var(--teal),var(--cyan));
+}
+.module-header-glow {
+  position:absolute; width:300px; height:300px; border-radius:50%;
+  background:radial-gradient(circle,rgba(245,158,11,0.06),transparent 70%);
+  right:-80px; top:-80px; pointer-events:none;
+}
+.module-badge {
+  width:60px; height:60px; border-radius:16px; flex-shrink:0;
+  background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(0,212,255,0.1));
+  border: 1px solid rgba(245,158,11,0.35);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; font-size:13px; color:var(--gold);
+  box-shadow: 0 0 24px rgba(245,158,11,0.15);
+  position:relative; z-index:1; letter-spacing:0.5px;
+}
+.module-meta { flex:1; position:relative; z-index:1; }
+.module-eyebrow {
+  font-size:10px; font-weight:700; color:var(--gold);
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:8px; display:flex; align-items:center; gap:8px;
+}
+.module-eyebrow::before { content:''; width:16px; height:2px; background:var(--gold); border-radius:1px; }
+.module-title { font-size:22px; font-weight:800; margin-bottom:6px; letter-spacing:-0.3px; }
+.module-title span { color:var(--cyan); }
+.module-desc { font-size:13px; color:var(--tx2); line-height:1.6; max-width:580px; }
+
+/* Pipeline */
+.pipeline { display:flex; align-items:center; gap:0; margin-left:auto; flex-shrink:0; position:relative; z-index:1; }
+.pipe-step { display:flex; flex-direction:column; align-items:center; gap:5px; padding:0 12px; }
+.pipe-dot {
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; font-family:var(--mono);
+}
+.pipe-dot.done   { background:rgba(16,185,129,0.2); border:2px solid var(--green); color:var(--green); }
+.pipe-dot.active { background:rgba(245,158,11,0.2); border:2px solid var(--gold); color:var(--gold); box-shadow:0 0 12px rgba(245,158,11,0.35); }
+.pipe-dot.next   { background:var(--bg4); border:2px solid var(--tx3); color:var(--tx3); }
+.pipe-label { font-size:9px; color:var(--tx2); font-weight:600; letter-spacing:0.5px; white-space:nowrap; }
+.pipe-arrow { color:var(--tx3); font-size:16px; padding:0 2px; margin-bottom:18px; }
+
+/* ─── Progress ─── */
+.progress-wrap {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:14px;
+  padding:18px 24px; margin-bottom:24px;
+  animation: fadeUp 0.45s ease both 0.05s;
+  display:flex; align-items:center; gap:20px;
+}
+.progress-label { font-size:12px; font-weight:600; color:var(--tx2); white-space:nowrap; }
+.progress-bar-track { flex:1; height:6px; background:var(--bg4); border-radius:99px; overflow:hidden; }
+.progress-bar-fill {
+  height:100%; border-radius:99px;
+  background:linear-gradient(90deg, var(--green), var(--teal), var(--cyan));
+  box-shadow:0 0 8px rgba(0,212,255,0.4);
+  transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.progress-pct { font-size:12px; font-weight:700; font-family:var(--mono); color:var(--cyan); white-space:nowrap; }
+.progress-steps { display:flex; gap:8px; margin-left:8px; }
+.ps-item { font-size:10px; padding:3px 9px; border-radius:6px; font-weight:600; white-space:nowrap; }
+.ps-active { background:rgba(245,158,11,0.15); color:var(--gold); border:1px solid rgba(245,158,11,0.3); }
+.ps-done   { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+.ps-next   { background:var(--bg4); color:var(--tx3); border:1px solid var(--tx3); }
+
+/* ─── Input from M1 Summary ─── */
+.m1-summary {
+  background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(0,212,255,0.04));
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 14px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.4s ease both 0.08s;
+  display: flex; align-items: center; gap: 20px;
+  flex-wrap: wrap;
+}
+.m1-tag {
+  display:flex; align-items:center; gap:7px;
+  background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25);
+  border-radius:8px; padding:6px 12px;
+  font-size:11px; font-weight:600; color:var(--green);
+}
+.m1-tag svg { width:12px; height:12px; }
+.m1-params { display:flex; gap:20px; flex-wrap:wrap; flex:1; }
+.m1-param { display:flex; flex-direction:column; gap:2px; }
+.m1-param-label { font-size:10px; color:var(--tx3); font-weight:600; letter-spacing:0.8px; text-transform:uppercase; }
+.m1-param-val { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--tx1); }
+.m1-param-val span { font-size:11px; color:var(--tx2); font-weight:400; }
+
+/* ─── Module Tab Bar ─── */
+.module-tabs {
+  display:flex; gap:0; margin-bottom:28px;
+  background: var(--bg3); border:1px solid var(--bdr); border-radius:14px;
+  padding: 6px; animation: fadeUp 0.45s ease both 0.1s;
+}
+.module-tab {
+  flex:1; display:flex; align-items:center; justify-content:center; gap:9px;
+  padding:12px 18px; border-radius:10px; cursor:pointer;
+  font-size:13px; font-weight:600; color:var(--tx2);
+  transition:all 0.22s; border:1.5px solid transparent;
+  position:relative;
+}
+.module-tab:hover { color:var(--tx1); background:var(--bg4); }
+.module-tab.active {
+  background: rgba(245,158,11,0.12);
+  border-color: rgba(245,158,11,0.35);
+  color: var(--gold);
+}
+.module-tab.done-tab {
+  color:var(--green);
+}
+.module-tab.done-tab .tab-dot { background:var(--green); box-shadow:0 0 5px rgba(16,185,129,0.5); }
+.module-tab.active .tab-dot  { background:var(--gold); box-shadow:0 0 5px rgba(245,158,11,0.5); }
+.tab-dot {
+  width:7px; height:7px; border-radius:50%; background:var(--tx3);
+  transition:all 0.2s;
+}
+.tab-num {
+  width:22px; height:22px; border-radius:6px;
+  background:var(--bg4); border:1px solid var(--tx3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-family:var(--mono); font-weight:700;
+  transition:all 0.2s;
+}
+.module-tab.active .tab-num { background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.4); color:var(--gold); }
+.module-tab.done-tab .tab-num { background:rgba(16,185,129,0.12); border-color:rgba(16,185,129,0.3); color:var(--green); }
+
+/* ─── Module Panel ─── */
+.module-panel { display:none; }
+.module-panel.active { display:block; animation:fadeUp 0.35s ease both; }
+
+/* ─── Layout Grid ─── */
+.layout-grid { display:grid; grid-template-columns:1fr 380px; gap:24px; align-items:start; }
+.layout-wide { display:grid; grid-template-columns:1fr; gap:24px; }
+
+/* ─── Section Card ─── */
+.section-card {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:16px;
+  overflow:hidden; animation: fadeUp 0.5s ease both;
+}
+.card-header {
+  padding:16px 22px 14px;
+  border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; gap:12px;
+}
+.card-icon {
+  width:36px; height:36px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+}
+.card-title { font-size:14.5px; font-weight:700; }
+.card-sub { font-size:11px; color:var(--tx2); margin-top:2px; }
+.card-badge {
+  margin-left:auto; font-size:9.5px; padding:3px 10px; border-radius:8px;
+  font-family:var(--mono); font-weight:600; border:1px solid; white-space:nowrap;
+}
+.badge-input  { background:rgba(30,111,255,0.1);  color:var(--blue);   border-color:rgba(30,111,255,0.25); }
+.badge-auto   { background:rgba(16,185,129,0.1);  color:var(--green);  border-color:rgba(16,185,129,0.25); }
+.badge-output { background:rgba(0,212,255,0.1);   color:var(--cyan);   border-color:rgba(0,212,255,0.25); }
+.badge-iter   { background:rgba(245,158,11,0.1);  color:var(--gold);   border-color:rgba(245,158,11,0.25); }
+.badge-check  { background:rgba(139,92,246,0.1);  color:var(--violet); border-color:rgba(139,92,246,0.25); }
+
+.card-body { padding:22px; }
+
+/* ─── Form Fields ─── */
+.field-group { margin-bottom:18px; }
+.field-group:last-child { margin-bottom:0; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.field-label {
+  font-size:11.5px; font-weight:600; color:var(--tx2);
+  margin-bottom:7px; display:flex; align-items:center; gap:6px;
+}
+.field-label .info-icon {
+  width:13px; height:13px; border-radius:50%;
+  background:var(--bg4); border:1px solid var(--tx3);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:8px; color:var(--tx3); cursor:help; transition:all 0.2s;
+}
+.field-label .info-icon:hover { border-color:var(--cyan); color:var(--cyan); }
+.field-input-wrap { position:relative; }
+.field-input {
+  width:100%; padding:10px 48px 10px 14px;
+  background:var(--bg4); border:1.5px solid var(--tx3);
+  border-radius:10px; color:var(--tx1);
+  font-size:13.5px; font-family:var(--mono);
+  transition:all 0.2s; outline:none; appearance:none;
+}
+.field-input:focus {
+  border-color:var(--blue);
+  background:rgba(30,111,255,0.06);
+  box-shadow:0 0 0 3px rgba(30,111,255,0.12);
+}
+.field-input.valid { border-color:var(--green); background:rgba(16,185,129,0.05); }
+.field-input.error { border-color:var(--red); background:rgba(239,68,68,0.05); }
+.field-input.warning { border-color:var(--gold); background:rgba(245,158,11,0.05); }
+.field-input.readonly-val {
+  border-color:rgba(0,212,255,0.25);
+  background:rgba(0,212,255,0.04);
+  color:var(--cyan); cursor:default;
+}
+.field-unit {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  font-size:10.5px; font-weight:600; color:var(--tx3);
+  font-family:var(--mono); pointer-events:none;
+}
+.field-range { font-size:10px; color:var(--tx3); font-family:var(--mono); margin-top:4px; }
+.field-hint  { margin-top:5px; font-size:11px; color:var(--tx2); display:flex; align-items:center; gap:5px; }
+
+.bearing-select {
+  width:100%; padding:10px 38px 10px 14px;
+  background:var(--bg4); border:1.5px solid var(--tx3);
+  border-radius:10px; color:var(--tx1);
+  font-size:13px; font-family:var(--font);
+  transition:all 0.2s; outline:none; cursor:pointer; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a93b4' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;
+}
+.bearing-select:focus { border-color:var(--blue); outline:none; box-shadow:0 0 0 3px rgba(30,111,255,0.12); }
+
+/* ─── Chip buttons ─── */
+.chip-group { display:flex; gap:7px; flex-wrap:wrap; margin-top:8px; }
+.chip {
+  padding:5px 11px; border-radius:7px; font-size:11px; font-weight:600;
+  background:var(--bg4); border:1px solid var(--tx3); color:var(--tx2);
+  cursor:pointer; transition:all 0.18s; font-family:var(--mono);
+}
+.chip:hover { border-color:var(--cyan); color:var(--cyan); }
+.chip.selected { background:rgba(0,212,255,0.1); border-color:var(--cyan); color:var(--cyan); }
+
+/* ─── Calc step / iteration display ─── */
+.calc-step {
+  background:var(--bg4); border:1px solid var(--bdr);
+  border-radius:12px; padding:14px 18px; margin-bottom:10px;
+  display:flex; align-items:flex-start; gap:14px;
+}
+.calc-step:last-child { margin-bottom:0; }
+.step-num {
+  width:28px; height:28px; border-radius:8px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; font-family:var(--mono);
+}
+.step-num.s-active { background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:var(--gold); }
+.step-num.s-done   { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:var(--green); }
+.step-num.s-idle   { background:var(--bg3); border:1px solid var(--tx3); color:var(--tx3); }
+.step-num.s-fail   { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:var(--red); }
+.step-content { flex:1; }
+.step-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+.step-detail { font-size:11.5px; color:var(--tx2); line-height:1.6; }
+.step-formula {
+  margin-top:8px; padding:8px 12px; border-radius:8px;
+  background:var(--bg2); border:1px solid var(--bdr);
+  font-family:var(--mono); font-size:11.5px; color:var(--teal);
+  line-height:1.7;
+}
+.step-result {
+  margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;
+}
+.res-chip {
+  padding:4px 10px; border-radius:7px; font-size:11px; font-weight:600;
+  font-family:var(--mono); background:rgba(0,212,255,0.08);
+  border:1px solid rgba(0,212,255,0.2); color:var(--cyan);
+}
+
+/* ─── Iteration Loop badge ─── */
+.iter-wrap {
+  background: rgba(245,158,11,0.07);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius:12px; padding:14px 18px; margin-bottom:16px;
+  display:flex; align-items:center; gap:12px;
+}
+.iter-icon { font-size:20px; flex-shrink:0; }
+.iter-title { font-size:13px; font-weight:700; color:var(--gold); margin-bottom:3px; }
+.iter-desc { font-size:11.5px; color:var(--tx2); }
+.iter-count {
+  margin-left:auto; font-family:var(--mono); font-size:11px;
+  background:rgba(245,158,11,0.12); color:var(--gold);
+  border:1px solid rgba(245,158,11,0.3); border-radius:7px;
+  padding:4px 10px; white-space:nowrap;
+}
+
+/* ─── Strength check table ─── */
+.check-table { width:100%; border-collapse:collapse; }
+.check-table th {
+  font-size:10.5px; font-weight:700; color:var(--tx3); letter-spacing:0.8px;
+  text-transform:uppercase; text-align:left;
+  padding:8px 12px; border-bottom:1px solid var(--bdr);
+}
+.check-table td {
+  padding:10px 12px; font-size:12.5px; border-bottom:1px solid rgba(30,111,255,0.06);
+}
+.check-table tr:last-child td { border-bottom:none; }
+.check-table .val-cell { font-family:var(--mono); color:var(--cyan); }
+.check-table .limit-cell { font-family:var(--mono); color:var(--tx2); }
+.check-state {
+  font-size:9.5px; padding:2px 8px; border-radius:5px;
+  font-weight:700; font-family:var(--mono);
+}
+.check-state.pass { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+.check-state.fail { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.2); }
+.check-state.idle { background:var(--bg4); color:var(--tx3); border:1px solid var(--tx3); }
+.check-state.calc { background:rgba(245,158,11,0.1); color:var(--gold); border:1px solid rgba(245,158,11,0.25); }
+
+/* ─── Output Result Panel ─── */
+.result-panel {
+  background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(16,185,129,0.03));
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius:16px; overflow:hidden;
+}
+.result-panel-header {
+  padding:16px 22px; border-bottom:1px solid rgba(0,212,255,0.12);
+  display:flex; align-items:center; gap:12px;
+}
+.result-panel-title { font-size:14px; font-weight:700; }
+.result-panel-sub { font-size:11px; color:var(--tx2); margin-top:2px; }
+.result-grid { padding:20px 22px; display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.result-grid-3 { padding:20px 22px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.result-item {
+  background:var(--bg4); border:1px solid var(--bdr); border-radius:12px;
+  padding:14px 16px; transition:border-color 0.2s;
+}
+.result-item:hover { border-color:rgba(0,212,255,0.25); }
+.result-item-label { font-size:10.5px; color:var(--tx2); font-weight:600; letter-spacing:0.6px; text-transform:uppercase; margin-bottom:6px; }
+.result-item-val {
+  font-family:var(--mono); font-size:20px; font-weight:700;
+  background:linear-gradient(135deg,var(--cyan),var(--teal));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.result-item-val span { font-size:12px; color:var(--tx2); -webkit-text-fill-color:var(--tx2); font-weight:400; }
+.result-item-sub { font-size:10px; color:var(--tx3); font-family:var(--mono); margin-top:4px; }
+
+/* ─── Moment Diagram placeholder ─── */
+.diagram-area {
+  background: var(--bg4); border: 1px solid var(--bdr); border-radius:14px;
+  height:200px; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:10px; cursor:pointer; transition:border-color 0.2s;
+  position:relative; overflow:hidden;
+}
+.diagram-area:hover { border-color:rgba(0,212,255,0.3); }
+.diagram-area svg.diag-svg { width:100%; height:100%; padding:20px; }
+.diagram-label {
+  font-size:12px; font-weight:600; color:var(--tx2);
+  font-family:var(--mono);
+}
+
+/* ─── Bearing card ─── */
+.bearing-result-card {
+  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(30,111,255,0.05));
+  border: 1px solid rgba(139,92,246,0.25); border-radius:14px; padding:20px;
+}
+.bearing-code {
+  font-family:var(--mono); font-size:28px; font-weight:700; color:var(--violet);
+  margin-bottom:4px;
+}
+.bearing-name { font-size:12px; color:var(--tx2); margin-bottom:14px; }
+.bearing-specs { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.bearing-spec-val {
+  font-family:var(--mono); font-size:15px; font-weight:700; color:var(--tx1);
+}
+.bearing-spec-val span { font-size:11px; color:var(--tx2); font-weight:400; }
+.bearing-spec-label { font-size:10px; color:var(--tx2); margin-top:3px; font-weight:500; }
+
+/* ─── Alert / warning ─── */
+.alert-box {
+  border-radius:10px; padding:12px 16px; margin-bottom:14px;
+  display:flex; align-items:flex-start; gap:10px; font-size:12px; line-height:1.5;
+}
+.alert-error   { background:rgba(239,68,68,0.08);  border:1px solid rgba(239,68,68,0.2);  color:var(--red); }
+.alert-warn    { background:rgba(245,158,11,0.08);  border:1px solid rgba(245,158,11,0.2); color:var(--gold); }
+.alert-info    { background:rgba(0,212,255,0.06);   border:1px solid rgba(0,212,255,0.15); color:var(--cyan); }
+.alert-success { background:rgba(16,185,129,0.07);  border:1px solid rgba(16,185,129,0.2); color:var(--green); }
+.alert-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+
+/* ─── CTA Bar ─── */
+.cta-bar {
+  background:var(--bg3); border:1px solid var(--bdr); border-radius:16px;
+  padding:20px 24px;
+  display:flex; align-items:center; gap:16px;
+  margin-top:24px;
+  animation: fadeUp 0.5s ease both 0.3s;
+}
+.cta-info { flex:1; }
+.cta-info-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+.cta-info-sub { font-size:12px; color:var(--tx2); }
+
+.btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 20px; border-radius:10px;
+  font-size:13px; font-weight:600; font-family:var(--font);
+  cursor:pointer; border:none; transition:all 0.2s; letter-spacing:0.2px;
+  white-space:nowrap;
+}
+.btn-primary {
+  background:linear-gradient(135deg,var(--blue),#0d4fd6);
+  color:#fff; box-shadow:0 4px 16px rgba(30,111,255,0.35);
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(30,111,255,0.45); }
+.btn-primary:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+.btn-gold {
+  background:linear-gradient(135deg,#c07800,var(--gold));
+  color:#fff; box-shadow:0 4px 16px rgba(245,158,11,0.35);
+}
+.btn-gold:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(245,158,11,0.45); }
+.btn-ghost {
+  background:var(--bg4); color:var(--tx2); border:1.5px solid var(--tx3);
+}
+.btn-ghost:hover { border-color:var(--blue); color:var(--tx1); }
+.btn-success {
+  background:linear-gradient(135deg,#0d8f60,var(--green));
+  color:#fff; box-shadow:0 4px 16px rgba(16,185,129,0.3);
+}
+.btn-success:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(16,185,129,0.4); }
+.btn-violet {
+  background:linear-gradient(135deg,#6d28d9,var(--violet));
+  color:#fff; box-shadow:0 4px 16px rgba(139,92,246,0.3);
+}
+.btn-violet:hover { transform:translateY(-1px); }
+
+@keyframes spin { to { transform:rotate(360deg); } }
+.spinner { animation:spin 0.7s linear infinite; display:inline-block; }
+@keyframes calcPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.calc-pulse { animation:calcPulse 1.2s ease infinite; }
+
+/* ─── Toast ─── */
+.toast-wrap {
+  position:fixed; bottom:30px; right:30px; z-index:999;
+  display:flex; flex-direction:column; gap:10px;
+}
+.toast {
+  background:var(--bg3); border:1px solid var(--bdr);
+  border-radius:12px; padding:14px 18px;
+  display:flex; align-items:center; gap:12px;
+  min-width:280px; max-width:380px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  animation: toastIn 0.3s ease both;
+  backdrop-filter:blur(12px);
+}
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+.toast.toast-error  { border-color:rgba(239,68,68,0.4); }
+.toast.toast-warn   { border-color:rgba(245,158,11,0.4); }
+.toast.toast-ok     { border-color:rgba(16,185,129,0.4); }
+.toast-icon { font-size:18px; flex-shrink:0; }
+.toast-msg  { font-size:13px; font-weight:500; flex:1; }
+.toast-close { font-size:16px; color:var(--tx3); cursor:pointer; flex-shrink:0; }
+.toast-close:hover { color:var(--tx1); }
+
+/* ─── Divider ─── */
+.divider { display:flex; align-items:center; gap:12px; margin:18px 0; }
+.divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--bdr); }
+.divider-label { font-size:10px; font-weight:700; color:var(--tx3); letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:10px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">Mecha<em>Mix</em></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-body">
+    <div class="sb-section">
+      <span class="sb-sec-label">Tổng quan</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dự án của tôi
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">Nhập liệu & Kiểm tra</span>
+      <a class="nav-link done" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Kiểm tra ngưỡng
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">Tính toán</span>
+      <a class="nav-link active" href="#" onclick="showTab('m2');return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Bộ truyền đai
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+        Bánh răng côn-trụ
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <circle cx="4" cy="12" r="2"/>
+          <circle cx="20" cy="12" r="2"/>
+        </svg>
+        Trục & Ổ lăn
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">AI & Tối ưu</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        Gợi ý linh kiện
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Tối ưu ML / GA
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-sec-label">Xuất & Chia sẻ</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Xuất bản vẽ lắp
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Xuất báo cáo PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="sb-bot">
+    <div class="user-row">
+      <div class="u-av">KT</div>
+      <div>
+        <div class="u-name">Thiên Kiều</div>
+        <div class="u-role">CS</div>
+      </div>
+      <div class="u-dots">···</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="tb-breadcrumb">
+      <span>MechaMix</span>
+      <span class="sep">›</span>
+      <span>Tính toán</span>
+      <span class="sep">›</span>
+      <span class="cur" id="tbCur">M2 - Bộ truyền đai</span>
+    </div>
+    <div class="tb-date" id="tbDate"></div>
+    <div class="tb-right">
+      <div class="tb-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Tìm kiếm...
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="tb-notif-dot"></div>
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    
+    <!-- Module Header -->
+    <div class="module-header">
+      <div class="module-header-glow"></div>
+      <div class="module-badge" id="modBadge">M2–M4</div>
+      <div class="module-meta">
+        <div class="module-title">Thực hiện tính toán thiết kế <span></div>
+        <div class="module-desc">Từ kết quả M1 (động cơ + tỉ số truyền), thực hiện thiết kế bộ truyền đai, hộp giảm tốc bánh răng và hệ thống trục–ổ lăn theo pipeline tuần tự tự động điều chỉnh tham số.</div>
+      </div>
+      <!-- Pipeline -->
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-dot done">M1</div>
+          <div class="pipe-label">Nhập & Kiểm tra</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot active" id="pip-m2">M2</div>
+          <div class="pipe-label">Bộ truyền đai</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot next" id="pip-m3">M3</div>
+          <div class="pipe-label">Bánh răng</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot next" id="pip-m4">M4</div>
+          <div class="pipe-label">Trục & Ổ lăn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-label">Tiến độ thiết kế</div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressFill" style="width:33%"></div>
+      </div>
+      <div class="progress-pct" id="progressPct">33%</div>
+      <div class="progress-steps">
+        <div class="ps-item ps-done">M1 · Hoàn tất</div>
+        <div class="ps-item ps-active" id="ps-m2">M2 · Đang tính</div>
+        <div class="ps-item ps-next" id="ps-m3">M3 · Chờ M2</div>
+        <div class="ps-item ps-next" id="ps-m4">M4 · Chờ M3</div>
+      </div>
+    </div>
+
+    <!-- ═══ MODULE TABS ═══ -->
+    <div class="module-tabs">
+      <div class="module-tab active" id="tab-m2" onclick="showTab('m2')">
+        <span class="tab-num">M2</span>
+        <span class="tab-dot"></span>
+        Bộ truyền đai
+      </div>
+      <div class="module-tab" id="tab-m3" onclick="showTab('m3')">
+        <span class="tab-num">M3</span>
+        <span class="tab-dot"></span>
+        Bánh răng Côn–Trụ
+      </div>
+      <div class="module-tab" id="tab-m4" onclick="showTab('m4')">
+        <span class="tab-num">M4</span>
+        <span class="tab-dot"></span>
+        Trục &amp; Ổ lăn
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         MODULE 2 – BỘ TRUYỀN ĐAI
+    ══════════════════════════════════════════ -->
+    <div class="module-panel active" id="panel-m2">
+
+      <div class="layout-grid">
+
+        <!-- LEFT: Input + Steps -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+          <!-- Input từ M1 -->
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Thông số đầu vào M2</div>
+              </div>
+            </div>
+            <div class="card-body">
+
+              <div class="field-row" style="margin-bottom:16px;">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Công suất trục I (P₁)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input readonly-val" value="5.28" readonly>
+                    <span class="field-unit">kW</span>
+                  </div>
+                  <div class="field-range">P₁ = P_dc × η_đai × η_ổ</div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Tỉ số truyền bộ truyền đai (u_đ)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input readonly-val" value="2.50" readonly>
+                    <span class="field-unit">—</span>
+                  </div>
+                  <div class="field-range">Phân bổ từ M1</div>
+                </div>
+              </div>
+
+              <div class="divider"><span class="divider-label">Loại bộ truyền</span></div>
+
+              <div class="field-group">
+                <div class="field-label">Chọn loại bộ truyền đai</div>
+                <div class="chip-group" id="driveTypeChips">
+                  <button class="chip" onclick="selectDrive('dai_rang')">⚙️ Đai răng</button>
+                  <button class="chip" onclick="selectDrive('xich')">🔗 Xích con lăn</button>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">
+                    Hệ số tải trọng K_đ
+                    <span class="info-icon" title="Hệ số điều kiện làm việc: tải nhẹ=1.0, tải vừa=1.25, tải nặng=1.5">?</span>
+                  </div>
+                  <select class="bearing-select" id="m2Kd" onchange="onM2Change()">
+                    <option value="1.0">1.0 — Tải nhẹ, êm</option>
+                    <option value="1.25" selected>1.25 — Tải vừa, va đập nhẹ</option>
+                    <option value="1.5">1.5 — Tải nặng, va đập mạnh</option>
+                  </select>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">
+                    Tiết diện đai
+                    <span class="info-icon" title="Chọn tiết diện đai theo công suất và tốc độ">?</span>
+                  </div>
+                  <select class="bearing-select" id="m2Section" onchange="onM2Change()">
+                    <option value="A">Tiết diện A — P ≤ 4 kW</option>
+                    <option value="B" selected>Tiết diện B — P ≤ 7.5 kW</option>
+                    <option value="C">Tiết diện C — P ≤ 15 kW</option>
+                    <option value="D">Tiết diện D — P ≤ 35 kW</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="divider"><span class="divider-label">Bước xích (nếu chọn xích)</span></div>
+
+              <div class="field-row">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Số răng đĩa xích chủ động (z₁)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m2z1" type="number" value="25" min="9" max="50" oninput="onM2Change()">
+                    <span class="field-unit">răng</span>
+                  </div>
+                  <div class="field-range">Khuyến nghị z₁ ≥ 9 · n ≤ 1500 rpm → z₁ ≥ 25</div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Khoảng cách trục sơ bộ (a_sb)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m2a" type="number" value="800" min="200" max="3000" oninput="onM2Change()">
+                    <span class="field-unit">mm</span>
+                  </div>
+                  <div class="field-range">Khuyến nghị: 30·p ≤ a ≤ 50·p</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Quy trình tính toán M2 -->
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Quy trình tính toán</div>
+              </div>
+              <div class="card-badge badge-auto">TỰ ĐỘNG</div>
+            </div>
+            <div class="card-body">
+
+              <div class="iter-wrap">
+                <div>
+                  <div class="iter-title">Vòng lặp tự điều chỉnh</div>
+                  <div class="iter-desc">Nếu không đạt bền → tăng tiết diện / số đai → tính lại</div>
+                </div>
+                <div class="iter-count" id="m2IterCount">Vòng lặp: 0</div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-done">1</div>
+                <div class="step-content">
+                  <div class="step-title">Chọn đường kính puli nhỏ (d₁)</div>
+                  <div class="step-detail">Tra bảng theo tiết diện đai B, tốc độ n₁ = 1455 rpm</div>
+                  <div class="step-formula">d₁ = 140 mm (tiêu chuẩn B, n₁ &lt; 1500 rpm)
+v_đai = π·d₁·n₁ / 60000 = 10.68 m/s ✓</div>
+                  <div class="step-result">
+                    <div class="res-chip">d₁ = 140 mm</div>
+                    <div class="res-chip">v = 10.68 m/s</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-done">2</div>
+                <div class="step-content">
+                  <div class="step-title">Đường kính puli lớn (d₂)</div>
+                  <div class="step-detail">Tính theo tỉ số truyền thực, có xét trượt ε = 0.01</div>
+                  <div class="step-formula">d₂ = d₁ · u_đ / (1-ε) = 140 × 2.5 / 0.99 ≈ 354 mm
+→ Chọn d₂ = 355 mm (tiêu chuẩn)</div>
+                  <div class="step-result">
+                    <div class="res-chip">d₂ = 355 mm</div>
+                    <div class="res-chip">u_t = 2.497</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-done">3</div>
+                <div class="step-content">
+                  <div class="step-title">Khoảng cách trục (a) và chiều dài đai (L)</div>
+                  <div class="step-formula">a_sb = 800 mm → L = 2a + π(d₁+d₂)/2 + (d₂-d₁)²/4a
+L = 2254 mm → Chọn L = 2240 mm (chuẩn)
+a_ct = 793 mm</div>
+                  <div class="step-result">
+                    <div class="res-chip">L = 2240 mm</div>
+                    <div class="res-chip">a = 793 mm</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-active" id="m2Step4Num">4</div>
+                <div class="step-content">
+                  <div class="step-title">Số đai cần thiết (z)</div>
+                  <div class="step-detail">Kiểm tra điều kiện: σ₀ ≤ [σ]</div>
+                  <div class="step-formula" id="m2Step4Formula">z = P₁·K_đ / (P₀·C_α·C_L·C_u·C_z)
+z ≥ <span id="m2Zval" class="calc-pulse">đang tính...</span></div>
+                  <div class="step-result" id="m2Step4Result" style="display:none;">
+                    <div class="res-chip" id="m2ResZ">z = 3 đai</div>
+                    <div class="res-chip" id="m2ResCa">C_α = 0.87</div>
+                    <div class="res-chip" id="m2ResCl">C_L = 1.02</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-idle" id="m2Step5Num">5</div>
+                <div class="step-content">
+                  <div class="step-title">Kiểm nghiệm lực tác dụng & tuổi thọ đai</div>
+                  <div class="step-detail">Tính F₀, F_r, kiểm tra ứng suất σ₁, σ₂, σ_u</div>
+                  <div class="step-formula">F₀ = 780·P₀·C_α / v + q_m·v²
+F_r = 2·F₀·z·sin(α/2) — lực tác dụng lên trục
+Tuổi thọ: h_đai = (σ_r/C_v·C_f)^m · N_HE / (u_z·f·n₁)</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Kiểm nghiệm + Kết quả -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+          <!-- Kiểm nghiệm bền M2 -->
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Kiểm nghiệm bền</div>
+                <div class="card-sub">Điều kiện làm việc đai thang B</div>
+              </div>
+              <div class="card-badge badge-check">KIỂM NGHIỆM</div>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table class="check-table">
+                <thead>
+                  <tr>
+                    <th>Điều kiện</th>
+                    <th>Giá trị</th>
+                    <th>Giới hạn</th>
+                    <th>Kết quả</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Vận tốc đai</td>
+                    <td class="val-cell">10.68 m/s</td>
+                    <td class="limit-cell">≤ 25 m/s</td>
+                    <td><span class="check-state pass">PASS</span></td>
+                  </tr>
+                  <tr>
+                    <td>Góc ôm α₁</td>
+                    <td class="val-cell">163.4°</td>
+                    <td class="limit-cell">≥ 120°</td>
+                    <td><span class="check-state pass">PASS</span></td>
+                  </tr>
+                  <tr>
+                    <td>Ứng suất tổng σ_max</td>
+                    <td class="val-cell" id="m2SigmaVal">— MPa</td>
+                    <td class="limit-cell">≤ 10 MPa</td>
+                    <td><span class="check-state calc" id="m2SigmaState">TÍNH</span></td>
+                  </tr>
+                  <tr>
+                    <td>Số đai z</td>
+                    <td class="val-cell" id="m2ZcheckVal">—</td>
+                    <td class="limit-cell">≤ 6 đai</td>
+                    <td><span class="check-state calc" id="m2ZcheckState">TÍNH</span></td>
+                  </tr>
+                  <tr>
+                    <td>Tuổi thọ đai</td>
+                    <td class="val-cell" id="m2LifeVal">—</td>
+                    <td class="limit-cell">≥ 1000 h</td>
+                    <td><span class="check-state calc" id="m2LifeState">TÍNH</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Kết quả đầu ra M2 -->
+          <div class="result-panel" id="m2ResultPanel">
+            <div class="result-panel-header">
+              <div>
+                <div class="result-panel-title">Kết quả M2 – Bộ truyền đai</div>
+              </div>
+              <div class="card-badge badge-output" style="margin-left:auto;">OUTPUT</div>
+            </div>
+            <div class="result-grid">
+              <div class="result-item">
+                <div class="result-item-label">Đường kính puli</div>
+                <div class="result-item-val">d₁/d₂ <span>mm</span></div>
+                <div class="result-item-sub" id="m2Rd">140 / 355 mm</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Số đai z</div>
+                <div class="result-item-val" id="m2Rz">—</div>
+                <div class="result-item-sub">Tiết diện B</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Lực trên trục F_r</div>
+                <div class="result-item-val" id="m2RFr">—<span> N</span></div>
+                <div class="result-item-sub">Tác dụng lên trục I</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Khoảng cách trục a</div>
+                <div class="result-item-val">793<span> mm</span></div>
+                <div class="result-item-sub">L = 2240 mm</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nút hành động M2 -->
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <button class="btn btn-gold" onclick="runM2()" style="width:100%;justify-content:center;">
+              <span>⚙️</span> Chạy tính toán M2
+            </button>
+            <button class="btn btn-ghost" onclick="showTab('m3')" id="btnM2Next" disabled style="width:100%;justify-content:center;">
+              Tiếp tục → M3: Bánh răng côn - trụ
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         MODULE 3 – HỘP GIẢM TỐC
+    ══════════════════════════════════════════ -->
+    <div class="module-panel" id="panel-m3">
+
+      <div class="layout-grid">
+        <!-- LEFT -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+          <!-- Input M3 -->
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Thông số đầu vào M3</div>
+              </div>
+              <div class="card-badge badge-input">TỪ M1</div>
+            </div>
+            <div class="card-body">
+
+              <div class="field-row" style="margin-bottom:16px;">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Tỉ số truyền HGT (u_hgt)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input readonly-val" value="5.82" readonly>
+                    <span class="field-unit">—</span>
+                  </div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Tốc độ trục I (n_I)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input readonly-val" value="582" readonly>
+                    <span class="field-unit">rpm</span>
+                  </div>
+                  <div class="field-range">n_I = n_dc / u_đ</div>
+                </div>
+              </div>
+
+              <div class="divider"><span class="divider-label">Phân phối tỉ số truyền</span></div>
+
+              <div class="field-row" style="margin-bottom:16px;">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Tỉ số truyền cấp 1 – Côn (u₁)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m3u1" type="number" value="2.50" min="1" max="5" step="0.05" oninput="onM3Change()">
+                    <span class="field-unit">—</span>
+                  </div>
+                  <div class="field-range">Khuyến nghị u₁ ∈ [2, 4.5]</div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Tỉ số truyền cấp 2 – Trụ (u₂)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input readonly-val" id="m3u2" value="2.33" readonly>
+                    <span class="field-unit">—</span>
+                  </div>
+                  <div class="field-range">u₂ = u_hgt / u₁</div>
+                </div>
+              </div>
+
+              <div class="divider"><span class="divider-label">Vật liệu bánh răng</span></div>
+
+              <div class="field-row">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Vật liệu bánh nhỏ</div>
+                  <select class="bearing-select" id="m3MatS" onchange="onM3Change()">
+                    <option value="C45_TT">C45 – Thường hóa (σb=750)</option>
+                    <option value="C45_TT_TL" selected>C45 – Tôi + Ram (σb=850)</option>
+                    <option value="40Cr">40Cr – Tôi cải thiện (σb=980)</option>
+                    <option value="18CrMnTi">18CrMnTi – Thấm C (σb=1100)</option>
+                  </select>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Vật liệu bánh lớn</div>
+                  <select class="bearing-select" id="m3MatB" onchange="onM3Change()">
+                    <option value="C45_TT" selected>C45 – Thường hóa (σb=750)</option>
+                    <option value="C45_TT_TL">C45 – Tôi + Ram (σb=850)</option>
+                    <option value="40Cr">40Cr – Tôi cải thiện (σb=980)</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Cấp 1: Bánh răng côn -->
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Cấp 1 – Bánh răng côn</div>
+                <div class="card-sub">Thiết kế và kiểm nghiệm bền tiếp xúc & uốn</div>
+              </div>
+              <div class="card-badge badge-iter">LẶP</div>
+            </div>
+            <div class="card-body">
+
+              <div class="field-row-3" style="margin-bottom:14px;">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Module côn m_e <span class="info-icon" title="Module tại đầu lớn bánh côn">?</span></div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m3me" type="number" value="3" min="1" max="10" step="0.5" oninput="onM3Change()">
+                    <span class="field-unit">mm</span>
+                  </div>
+                  <div class="field-range">Tiêu chuẩn: 1, 1.25, 1.5, 2, 2.5, 3, 4, 5</div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Số răng z₁ (côn)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m3z1c" type="number" value="17" min="13" max="35" oninput="onM3Change()">
+                    <span class="field-unit">răng</span>
+                  </div>
+                  <div class="field-range">z₁ ≥ 13 · thường z₁ ∈ [15–25]</div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Chiều rộng vành (b)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m3bc" type="number" value="40" min="10" max="120" oninput="onM3Change()">
+                    <span class="field-unit">mm</span>
+                  </div>
+                  <div class="field-range">b ≤ 0.3·R · b ≥ 10·m_e</div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-done">1</div>
+                <div class="step-content">
+                  <div class="step-title">Phân tích sơ bộ kích thước côn</div>
+                  <div class="step-formula">d_e1 = m_e × z₁ = 3 × 17 = 51 mm
+z₂ = u₁ × z₁ = 2.5 × 17 = 43 răng → z₂ = 43
+R_e = m_e/2 × √(z₁²+z₂²) = 66.8 mm</div>
+                  <div class="step-result">
+                    <div class="res-chip">d_e1 = 51 mm</div>
+                    <div class="res-chip">z₂ = 43</div>
+                    <div class="res-chip">R_e = 66.8 mm</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-active">2</div>
+                <div class="step-content">
+                  <div class="step-title">Kiểm nghiệm bền tiếp xúc (σ_H)</div>
+                  <div class="step-detail">Tính ứng suất tiếp xúc theo TCVN 11108</div>
+                  <div class="step-formula">σ_H = Z_M · Z_H · Z_ε · √(2T₁·K_H / (b·u·d_e1²))
+Z_M = 275 MPa^0.5 · Z_H = 1.76 · Z_ε = 0.88
+→ σ_H = <span id="m3SigHVal" class="calc-pulse">tính...</span></div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-active">3</div>
+                <div class="step-content">
+                  <div class="step-title">Kiểm nghiệm bền uốn (σ_F)</div>
+                  <div class="step-formula">σ_F1 = 2T₁·K_F·Y_F1 / (b·m_te·d_e1)
+→ σ_F1 = <span id="m3SigFVal" class="calc-pulse">tính...</span>
+→ σ_F2 = σ_F1 × Y_F2/Y_F1</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Cấp 2: Bánh răng trụ -->
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Cấp 2 – Bánh răng trụ răng nghiêng</div>
+                <div class="card-sub">Thiết kế và kiểm nghiệm bền</div>
+              </div>
+              <div class="card-badge badge-iter">LẶP</div>
+            </div>
+            <div class="card-body">
+
+              <div class="field-row-3" style="margin-bottom:14px;">
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Module pháp m_n <span class="info-icon" title="Module pháp tuyến răng trụ nghiêng">?</span></div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m3mn" type="number" value="2" min="1" max="8" step="0.5" oninput="onM3Change()">
+                    <span class="field-unit">mm</span>
+                  </div>
+                  <div class="field-range">Tiêu chuẩn: 1.5, 2, 2.5, 3, 4, 5</div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Số răng z₃ (trụ)</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m3z3" type="number" value="20" min="17" max="60" oninput="onM3Change()">
+                    <span class="field-unit">răng</span>
+                  </div>
+                  <div class="field-range">z₃ ≥ 17 để tránh cắt chân răng</div>
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                  <div class="field-label">Góc nghiêng β</div>
+                  <div class="field-input-wrap">
+                    <input class="field-input" id="m3beta" type="number" value="12" min="8" max="25" oninput="onM3Change()">
+                    <span class="field-unit">°</span>
+                  </div>
+                  <div class="field-range">Thường β ∈ [8° – 20°]</div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-done">1</div>
+                <div class="step-content">
+                  <div class="step-title">Thông số hình học bánh trụ</div>
+                  <div class="step-formula">z₄ = u₂ × z₃ = 2.33 × 20 = 47 răng
+d_w3 = m_n·z₃/cos(β) = 2×20/cos(12°) = 40.9 mm
+a_w = m_n(z₃+z₄)/(2·cos(β)) = 68.7 mm</div>
+                  <div class="step-result">
+                    <div class="res-chip">z₄ = 47</div>
+                    <div class="res-chip">d_w3 = 40.9 mm</div>
+                    <div class="res-chip">a_w = 68.7 mm</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calc-step">
+                <div class="step-num s-active">2</div>
+                <div class="step-content">
+                  <div class="step-title">Kiểm nghiệm bền tiếp xúc (σ_H)</div>
+                  <div class="step-formula">σ_H = Z_M·Z_H·Z_ε·Z_β · √(2T₃·K_H / (b_w·u₂·d_w3²))
+→ σ_H = <span id="m3SigH2Val" class="calc-pulse">tính...</span> ≤ [σ_H] = 495 MPa</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Kiểm nghiệm + Kết quả M3 -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+          <!-- Kiểm nghiệm bền M3 -->
+          <div class="section-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Kiểm nghiệm bền M3</div>
+                <div class="card-sub">Bánh răng côn & trụ</div>
+              </div>
+              <div class="card-badge badge-check">KIỂM NGHIỆM</div>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table class="check-table">
+                <thead>
+                  <tr>
+                    <th>Điều kiện</th>
+                    <th>σ tính</th>
+                    <th>[σ] cho phép</th>
+                    <th>KQ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Côn – Tiếp xúc σ_H</td>
+                    <td class="val-cell" id="m3CkH1v">—</td>
+                    <td class="limit-cell">495 MPa</td>
+                    <td><span class="check-state idle" id="m3CkH1s">IDLE</span></td>
+                  </tr>
+                  <tr>
+                    <td>Côn – Uốn σ_F1</td>
+                    <td class="val-cell" id="m3CkF1v">—</td>
+                    <td class="limit-cell">252 MPa</td>
+                    <td><span class="check-state idle" id="m3CkF1s">IDLE</span></td>
+                  </tr>
+                  <tr>
+                    <td>Côn – Uốn σ_F2</td>
+                    <td class="val-cell" id="m3CkF2v">—</td>
+                    <td class="limit-cell">236 MPa</td>
+                    <td><span class="check-state idle" id="m3CkF2s">IDLE</span></td>
+                  </tr>
+                  <tr>
+                    <td>Trụ – Tiếp xúc σ_H</td>
+                    <td class="val-cell" id="m3CkH2v">—</td>
+                    <td class="limit-cell">450 MPa</td>
+                    <td><span class="check-state idle" id="m3CkH2s">IDLE</span></td>
+                  </tr>
+                  <tr>
+                    <td>Trụ – Uốn σ_F3</td>
+                    <td class="val-cell" id="m3CkF3v">—</td>
+                    <td class="limit-cell">252 MPa</td>
+                    <td><span class="check-state idle" id="m3CkF3s">IDLE</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Kết quả M3 -->
+          <div class="result-panel" id="m3ResultPanel">
+            <div class="result-panel-header">
+              <div>
+                <div class="result-panel-title">Kết quả M3 – Bánh răng</div>
+              </div>
+              <div class="card-badge badge-output" style="margin-left:auto;">OUTPUT</div>
+            </div>
+            <div class="result-grid">
+              <div class="result-item">
+                <div class="result-item-label">Côn: d_e1 / d_e2</div>
+                <div class="result-item-val" id="m3Rde">51/129 <span>mm</span></div>
+                <div class="result-item-sub">m_e=3 · z₁=17 · z₂=43</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Trụ: d_w3 / d_w4</div>
+                <div class="result-item-val" id="m3Rdw">41/95 <span>mm</span></div>
+                <div class="result-item-sub">m_n=2 · z₃=20 · z₄=47</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Lực Ft trục II</div>
+                <div class="result-item-val" id="m3RFtII">—<span> N</span></div>
+                <div class="result-item-sub">Lực vòng bánh côn</div>
+              </div>
+              <div class="result-item">
+                <div class="result-item-label">Lực Ft trục III</div>
+                <div class="result-item-val" id="m3RFtIII">—<span> N</span></div>
+                <div class="result-item-sub">Lực vòng bánh trụ</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nút hành động M3 -->
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <button class="btn btn-gold" onclick="runM3()" style="width:100%;justify-content:center;">
+              <span>⚙️</span> Chạy tính toán M3
+            </button>
+            <button class="btn btn-ghost" onclick="showTab('m4')" id="btnM3Next" disabled style="width:100%;justify-content:center;">
+              Tiếp tục → M4: Trục & Ổ lăn
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         MODULE 4 – TRỤC & Ổ LĂN
+    ══════════════════════════════════════════ -->
+    <div class="module-panel" id="panel-m4">
+
+      <div style="display:flex; flex-direction:column; gap:24px;">
+
+        <!-- Thông số lực tổng hợp -->
+        <div class="layout-grid">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Input M4 -->
+            <div class="section-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Thông số lực tổng hợp</div>
+                  <div class="card-sub">Nhận từ M2 + M3</div>
+                </div>
+                <div class="card-badge badge-input">TỪ M2+M3</div>
+              </div>
+              <div class="card-body">
+                <div class="field-row-3" style="margin-bottom:14px;">
+                  <div class="field-group" style="margin-bottom:0;">
+                    <div class="field-label">F_r_đai (trục I)</div>
+                    <div class="field-input-wrap">
+                      <input class="field-input readonly-val" id="m4Fr1" value="1248" readonly>
+                      <span class="field-unit">N</span>
+                    </div>
+                    <div class="field-range">Từ M2</div>
+                  </div>
+                  <div class="field-group" style="margin-bottom:0;">
+                    <div class="field-label">F_t2 (trục II)</div>
+                    <div class="field-input-wrap">
+                      <input class="field-input readonly-val" id="m4Ft2" value="2060" readonly>
+                      <span class="field-unit">N</span>
+                    </div>
+                    <div class="field-range">Từ M3 – bánh côn</div>
+                  </div>
+                  <div class="field-group" style="margin-bottom:0;">
+                    <div class="field-label">F_t3 (trục III)</div>
+                    <div class="field-input-wrap">
+                      <input class="field-input readonly-val" id="m4Ft3" value="4820" readonly>
+                      <span class="field-unit">N</span>
+                    </div>
+                    <div class="field-range">Từ M3 – bánh trụ</div>
+                  </div>
+                </div>
+
+                <div class="field-row" style="margin-bottom:14px;">
+                  <div class="field-group" style="margin-bottom:0;">
+                    <div class="field-label">Tuổi thọ thiết kế L_h</div>
+                    <div class="field-input-wrap">
+                      <input class="field-input readonly-val" value="12000" readonly>
+                      <span class="field-unit">h</span>
+                    </div>
+                    <div class="field-range">Từ M1 đầu vào</div>
+                  </div>
+                  <div class="field-group" style="margin-bottom:0;">
+                    <div class="field-label">Vật liệu trục</div>
+                    <select class="bearing-select" id="m4ShaftMat" onchange="onM4Change()">
+                      <option value="C45" selected>C45 – σ_b=750 MPa</option>
+                      <option value="40Cr">40Cr – σ_b=980 MPa</option>
+                      <option value="30CrMnTi">30CrMnTi – σ_b=1150 MPa</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-group" style="margin-bottom:0;">
+                    <div class="field-label">Hãng ổ lăn</div>
+                    <select class="bearing-select" id="m4Brand" onchange="onM4Change()">
+                      <option value="SKF" selected>SKF – Thụy Điển</option>
+                      <option value="NTN">NTN – Nhật Bản</option>
+                    </select>
+                  </div>
+                  <div class="field-group" style="margin-bottom:0;">
+                    <div class="field-label">Loại ổ lăn ưu tiên</div>
+                    <select class="bearing-select" id="m4BearType" onchange="onM4Change()">
+                      <option value="ball" selected>Ổ bi đỡ (radial ball)</option>
+                      <option value="tapered">Ổ đũa côn (tapered roller)</option>
+                      <option value="angular">Ổ bi chặn (angular contact)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quy trình M4 – Tính đường kính trục -->
+            <div class="section-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Tính đường kính trục</div>
+                  <div class="card-sub">Theo tiết diện nguy hiểm</div>
+                </div>
+                <div class="card-badge badge-auto">TỰ ĐỘNG</div>
+              </div>
+              <div class="card-body">
+
+                <div class="calc-step">
+                  <div class="step-num s-done">1</div>
+                  <div class="step-content">
+                    <div class="step-title">Đường kính sơ bộ trục (d_sb)</div>
+                    <div class="step-detail">Ước tính từ momen xoắn, bỏ qua uốn</div>
+                    <div class="step-formula">d_I_sb = ∛(T₁ / (0.2·[τ])) = ∛(86900/7) ≈ 24 mm
+d_II_sb ≈ 28 mm · d_III_sb ≈ 35 mm</div>
+                    <div class="step-result">
+                      <div class="res-chip">d_I = 24 mm</div>
+                      <div class="res-chip">d_II = 28 mm</div>
+                      <div class="res-chip">d_III = 35 mm</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="calc-step">
+                  <div class="step-num s-active">2</div>
+                  <div class="step-content">
+                    <div class="step-title">Phản lực gối đỡ</div>
+                    <div class="step-detail">Giải hệ phương trình cân bằng moment</div>
+                    <div class="step-formula">ΣM_A = 0 → R_By = (F_t·l₂ + F_a·d/2 + F_r·cos(δ)·l₂) / L
+ΣF_y = 0 → R_Ay = F_t - R_By
+→ Tương tự mặt phẳng xz</div>
+                  </div>
+                </div>
+
+                <div class="calc-step">
+                  <div class="step-num s-idle">3</div>
+                  <div class="step-content">
+                    <div class="step-title">Biểu đồ momen uốn & xoắn</div>
+                    <div class="step-detail">Xác định tiết diện nguy hiểm</div>
+                  </div>
+                </div>
+
+                <div class="calc-step">
+                  <div class="step-num s-idle">4</div>
+                  <div class="step-content">
+                    <div class="step-title">Đường kính chính xác</div>
+                    <div class="step-formula">M_td = √(M_u² + 0.75·T²)
+d = ∛(M_td / (0.1·[σ])) → làm tròn lên chuẩn</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT: Biểu đồ momen + Ổ lăn -->
+          <div style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Biểu đồ momen -->
+            <div class="section-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Biểu đồ momen</div>
+                  <div class="card-sub">Trục II (tiết diện nguy hiểm)</div>
+                </div>
+                <div class="card-badge badge-output">TRỰC QUAN</div>
+              </div>
+              <div class="card-body" style="padding:14px;">
+
+                <!-- Moment diagram SVG mockup -->
+                <div class="diagram-area">
+                  <svg class="diag-svg" viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" id="momentDiagram">
+                    <!-- Shaft axis -->
+                    <line x1="30" y1="90" x2="330" y2="90" stroke="rgba(30,111,255,0.3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+                    <!-- Shaft beam -->
+                    <rect x="30" y="85" width="300" height="10" rx="3" fill="rgba(30,111,255,0.15)" stroke="rgba(30,111,255,0.4)" stroke-width="1"/>
+                    <!-- Support A -->
+                    <polygon points="80,95 72,115 88,115" fill="rgba(0,212,255,0.25)" stroke="var(--cyan)" stroke-width="1"/>
+                    <line x1="65" y1="117" x2="95" y2="117" stroke="var(--cyan)" stroke-width="1.5"/>
+                    <!-- Support B -->
+                    <polygon points="270,95 262,115 278,115" fill="rgba(0,212,255,0.25)" stroke="var(--cyan)" stroke-width="1"/>
+                    <line x1="255" y1="117" x2="285" y2="117" stroke="var(--cyan)" stroke-width="1.5"/>
+                    <!-- Bending moment Mx diagram -->
+                    <path d="M80,90 Q155,42 175,45 Q200,48 270,90" fill="rgba(0,212,255,0.08)" stroke="var(--cyan)" stroke-width="1.5"/>
+                    <!-- Mx labels -->
+                    <text x="172" y="38" fill="var(--cyan)" font-size="9" font-family="JetBrains Mono" text-anchor="middle">M_max</text>
+                    <text x="80" y="78" fill="var(--tx3)" font-size="8" font-family="JetBrains Mono" text-anchor="middle">A</text>
+                    <text x="270" y="78" fill="var(--tx3)" font-size="8" font-family="JetBrains Mono" text-anchor="middle">B</text>
+                    <!-- Torque My diagram below -->
+                    <rect x="80" y="130" width="190" height="18" rx="3" fill="rgba(0,201,167,0.12)" stroke="var(--teal)" stroke-width="1"/>
+                    <text x="175" y="143" fill="var(--teal)" font-size="9" font-family="JetBrains Mono" text-anchor="middle">T (const)</text>
+                    <!-- Labels -->
+                    <text x="18" y="45" fill="var(--tx2)" font-size="8" transform="rotate(-90,18,90)">M_u (N.mm)</text>
+                    <text x="18" y="138" fill="var(--tx2)" font-size="8" transform="rotate(-90,18,138)">T (N.mm)</text>
+                    <!-- Idle placeholder text -->
+                    <text x="180" y="165" fill="var(--tx3)" font-size="9" font-family="JetBrains Mono" text-anchor="middle" id="diagNote">Chạy M4 để cập nhật biểu đồ chính xác</text>
+                  </svg>
+                </div>
+
+                <!-- Trục selector -->
+                <div class="chip-group" style="margin-top:10px;">
+                  <button class="chip" onclick="selectShaftDiag('I')">Trục I</button>
+                  <button class="chip selected" onclick="selectShaftDiag('II')">Trục II</button>
+                  <button class="chip" onclick="selectShaftDiag('III')">Trục III</button>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Chọn và kiểm nghiệm ổ lăn -->
+            <div class="section-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Chọn &amp; Kiểm nghiệm ổ lăn</div>
+                  <div class="card-sub">Tra DB SKF · Kiểm tra tuổi thọ L₁₀h</div>
+                </div>
+                <div class="card-badge badge-check">KIỂM NGHIỆM</div>
+              </div>
+              <div class="card-body">
+
+                <div class="bearing-result-card">
+                  <div class="bearing-code" id="m4BearCode">6205</div>
+                  <div class="bearing-name" id="m4BearName">SKF 6205 – Ổ bi đỡ 1 dãy · d=25mm</div>
+                  <div class="bearing-specs">
+                    <div>
+                      <div class="bearing-spec-val" id="m4BearC">14.0<span> kN</span></div>
+                      <div class="bearing-spec-label">C – Tải động</div>
+                    </div>
+                    <div>
+                      <div class="bearing-spec-val" id="m4BearC0">7.8<span> kN</span></div>
+                      <div class="bearing-spec-label">C₀ – Tải tĩnh</div>
+                    </div>
+                    <div>
+                      <div class="bearing-spec-val" id="m4BearLife">—<span> h</span></div>
+                      <div class="bearing-spec-label">L₁₀h tính toán</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top:14px;">
+                  <table class="check-table">
+                    <thead>
+                      <tr>
+                        <th>Trục</th>
+                        <th>d chọn</th>
+                        <th>Mã ổ</th>
+                        <th>L₁₀h</th>
+                        <th>KQ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Trục I</td>
+                        <td class="val-cell" id="m4dI">25 mm</td>
+                        <td class="val-cell" id="m4bI">6205</td>
+                        <td class="val-cell" id="m4lI">—</td>
+                        <td><span class="check-state idle" id="m4sI">IDLE</span></td>
+                      </tr>
+                      <tr>
+                        <td>Trục II</td>
+                        <td class="val-cell" id="m4dII">30 mm</td>
+                        <td class="val-cell" id="m4bII">6206</td>
+                        <td class="val-cell" id="m4lII">—</td>
+                        <td><span class="check-state idle" id="m4sII">IDLE</span></td>
+                      </tr>
+                      <tr>
+                        <td>Trục III</td>
+                        <td class="val-cell" id="m4dIII">35 mm</td>
+                        <td class="val-cell" id="m4bIII">6207</td>
+                        <td class="val-cell" id="m4lIII">—</td>
+                        <td><span class="check-state idle" id="m4sIII">IDLE</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Kết quả tổng hợp M4 -->
+        <div class="result-panel" id="m4ResultPanel">
+          <div class="result-panel-header">
+            <div>
+              <div class="result-panel-title">Kết quả M4 – Trục &amp; Ổ lăn · Bộ thông số hoàn chỉnh</div>
+            </div>
+            <div class="card-badge badge-output" style="margin-left:auto;">OUTPUT CUỐI</div>
+          </div>
+          <div class="result-grid-3">
+            <div class="result-item">
+              <div class="result-item-label">Đường kính trục I</div>
+              <div class="result-item-val" id="m4RdI">25<span> mm</span></div>
+              <div class="result-item-sub">Tiết diện nguy hiểm C</div>
+            </div>
+            <div class="result-item">
+              <div class="result-item-label">Đường kính trục II</div>
+              <div class="result-item-val" id="m4RdII">30<span> mm</span></div>
+              <div class="result-item-sub">Tiết diện nguy hiểm D</div>
+            </div>
+            <div class="result-item">
+              <div class="result-item-label">Đường kính trục III</div>
+              <div class="result-item-val" id="m4RdIII">35<span> mm</span></div>
+              <div class="result-item-sub">Tiết diện nguy hiểm E</div>
+            </div>
+            <div class="result-item">
+              <div class="result-item-label">Ổ lăn – Trục I</div>
+              <div class="result-item-val" id="m4RbI" style="font-size:16px;">6205</div>
+              <div class="result-item-sub">SKF d=25 C=14kN</div>
+            </div>
+            <div class="result-item">
+              <div class="result-item-label">Ổ lăn – Trục II</div>
+              <div class="result-item-val" id="m4RbII" style="font-size:16px;">6206</div>
+              <div class="result-item-sub">SKF d=30 C=19.5kN</div>
+            </div>
+            <div class="result-item">
+              <div class="result-item-label">Ổ lăn – Trục III</div>
+              <div class="result-item-val" id="m4RbIII" style="font-size:16px;">6207</div>
+              <div class="result-item-sub">SKF d=35 C=25.5kN</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Actions M4 -->
+        <div class="cta-bar">
+          <div class="cta-info">
+            <div class="cta-info-title" id="m4Status">Sẵn sàng chạy tính toán M4</div>
+          </div>
+          <button class="btn btn-ghost" onclick="showTab('m3')">← Quay lại M3</button>
+          <button class="btn btn-gold" onclick="runM4()">
+            <span>⚙️</span> Chạy tính toán M4
+          </button>
+          <button class="btn btn-success" id="btnFinish" disabled onclick="finishDesign()">
+            🏁 Hoàn thành thiết kế
+          </button>
+        </div>
+
+      </div>
+    </div><!-- /panel-m4 -->
+
+  </div><!-- /content -->
+</main>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ── Date ──
+document.getElementById('tbDate').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+
+// ── State ──
+const state = {
+  driveType: 'dai_thang',
+  m2done: false,
+  m3done: false,
+  m4done: false,
+  m2iter: 0,
+  shaftDiag: 'II'
+};
+
+// ── Tab switching ──
+function showTab(tab) {
+  ['m2','m3','m4'].forEach(t => {
+    document.getElementById('panel-'+t).classList.remove('active');
+    document.getElementById('tab-'+t).classList.remove('active');
+  });
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+
+  const labels = { m2:'M2 – Bộ truyền đai', m3:'M3 – Bánh răng Côn–Trụ', m4:'M4 – Trục & Ổ lăn' };
+  document.getElementById('tbCur').textContent = labels[tab];
+
+  // Update sidebar active
+  ['m2','m3','m4'].forEach(t => {
+    const links = document.querySelectorAll('.nav-link');
+    links.forEach(l => {
+      if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'"+t+"'")) {
+        if (tab === t) l.classList.add('active'); else l.classList.remove('active');
+      }
+    });
+  });
+}
+
+// ── Drive type selector ──
+function selectDrive(type) {
+  state.driveType = type;
+  document.querySelectorAll('#driveTypeChips .chip').forEach(c => c.classList.remove('selected'));
+  event.target.classList.add('selected');
+  showToast('warn', `→ Đã chuyển sang thiết kế: ${type === 'dai_thang' ? 'Đai thang' : type === 'xich' ? 'Xích con lăn' : 'Đai răng'}`);
+}
+
+function selectShaftDiag(shaft) {
+  state.shaftDiag = shaft;
+  document.querySelectorAll('.chip').forEach(c => {
+    if (c.textContent.includes('Trục '+shaft)) c.classList.add('selected');
+  });
+  document.getElementById('diagNote').textContent = `Trục ${shaft} – Chạy M4 để cập nhật`;
+}
+
+function onM2Change() { }
+function onM3Change() {
+  // auto-compute u2
+  const u1 = parseFloat(document.getElementById('m3u1').value) || 2.5;
+  const u2 = (5.82 / u1).toFixed(2);
+  document.getElementById('m3u2').value = u2;
+}
+function onM4Change() { }
+
+// ── RUN M2 ──
+function runM2() {
+  state.m2iter++;
+  document.getElementById('m2IterCount').textContent = `Vòng lặp: ${state.m2iter}`;
+
+  // Simulate calculation
+  const Kd = parseFloat(document.getElementById('m2Kd').value);
+  // Computed results
+  const z = Math.ceil(3 * Kd);
+  const Fr = Math.round(2 * 624 * z * Math.sin((163.4/2) * Math.PI/180));
+  const sigma = (6.2 + 0.8 * Kd).toFixed(1);
+  const life  = Math.round(12000 * (10 / (parseFloat(sigma)+1)));
+
+  // Update step 4
+  document.getElementById('m2Zval').textContent = `z ≥ ${z} → Chọn z = ${z} đai`;
+  document.getElementById('m2Zval').classList.remove('calc-pulse');
+  document.getElementById('m2Step4Num').className = 'step-num s-done';
+  document.getElementById('m2Step5Num').className = 'step-num s-done';
+  document.getElementById('m2Step4Result').style.display = 'flex';
+  document.getElementById('m2ResZ').textContent = `z = ${z} đai`;
+
+  // Update checks
+  document.getElementById('m2SigmaVal').textContent = sigma + ' MPa';
+  const sigOk = parseFloat(sigma) <= 10;
+  document.getElementById('m2SigmaState').className = 'check-state ' + (sigOk ? 'pass' : 'fail');
+  document.getElementById('m2SigmaState').textContent = sigOk ? 'PASS' : 'FAIL';
+
+  document.getElementById('m2ZcheckVal').textContent = z + ' đai';
+  const zOk = z <= 6;
+  document.getElementById('m2ZcheckState').className = 'check-state ' + (zOk ? 'pass' : 'fail');
+  document.getElementById('m2ZcheckState').textContent = zOk ? 'PASS' : 'FAIL';
+
+  document.getElementById('m2LifeVal').textContent = life.toLocaleString() + ' h';
+  const lifeOk = life >= 1000;
+  document.getElementById('m2LifeState').className = 'check-state ' + (lifeOk ? 'pass' : 'fail');
+  document.getElementById('m2LifeState').textContent = lifeOk ? 'PASS' : 'FAIL';
+
+  // Results
+  document.getElementById('m2Rz').innerHTML = z + '<span> đai</span>';
+  document.getElementById('m2RFr').innerHTML = Fr + '<span> N</span>';
+  document.getElementById('m4Fr1').value = Fr;
+
+  const allOk = sigOk && zOk && lifeOk;
+  if (allOk) {
+    state.m2done = true;
+    document.getElementById('btnM2Next').disabled = false;
+    document.getElementById('tab-m3').classList.remove('active');
+    // Update pipeline
+    document.getElementById('pip-m2').className = 'pipe-dot done';
+    document.getElementById('pip-m3').className = 'pipe-dot active';
+    document.getElementById('ps-m2').className = 'ps-item ps-done';
+    document.getElementById('ps-m2').textContent = 'M2 · Hoàn tất';
+    document.getElementById('ps-m3').className = 'ps-item ps-active';
+    document.getElementById('ps-m3').textContent = 'M3 · Sẵn sàng';
+    document.getElementById('progressFill').style.width = '58%';
+    document.getElementById('progressPct').textContent = '58%';
+    document.getElementById('tab-m3').classList.add('done-tab');
+    showToast('ok', `✅ M2 hoàn tất! z=${z} đai · F_r=${Fr} N · ${state.m2iter} vòng lặp`);
+  } else {
+    showToast('warn', `⚠️ Vòng lặp ${state.m2iter}: Chưa đạt — điều chỉnh tham số và tính lại`);
+  }
+}
+
+// ── RUN M3 ──
+function runM3() {
+  const me = parseFloat(document.getElementById('m3me').value) || 3;
+  const z1c = parseInt(document.getElementById('m3z1c').value) || 17;
+  const mn = parseFloat(document.getElementById('m3mn').value) || 2;
+  const z3 = parseInt(document.getElementById('m3z3').value) || 20;
+  const u1 = parseFloat(document.getElementById('m3u1').value) || 2.5;
+
+  const z2c = Math.round(u1 * z1c);
+  const de1 = me * z1c;
+  const de2 = me * z2c;
+  const u2 = parseFloat(document.getElementById('m3u2').value) || 2.33;
+  const z4 = Math.round(u2 * z3);
+  const beta = parseFloat(document.getElementById('m3beta').value) || 12;
+  const dw3 = (mn * z3 / Math.cos(beta * Math.PI / 180)).toFixed(1);
+  const dw4 = (mn * z4 / Math.cos(beta * Math.PI / 180)).toFixed(1);
+
+  // Simulated stresses
+  const T2 = 86900 * 2.5 * 0.97;  // approx
+  const FtII = Math.round(2 * T2 / de1);
+  const T3 = T2 * u2 * 0.97;
+  const FtIII = Math.round(2 * T3 / parseFloat(dw3));
+
+  const sigH1 = (350 + 30/me).toFixed(0);
+  const sigF1 = (95 + 20/me).toFixed(0);
+  const sigF2 = (sigF1 * 0.92).toFixed(0);
+  const sigH2 = (320 + 20/mn).toFixed(0);
+  const sigF3 = (88 + 15/mn).toFixed(0);
+
+  // Update displays
+  document.getElementById('m3SigHVal').textContent = sigH1 + ' MPa';
+  document.getElementById('m3SigFVal').textContent = sigF1 + ' MPa';
+  document.getElementById('m3SigH2Val').textContent = sigH2 + ' MPa';
+  [document.getElementById('m3SigHVal'),document.getElementById('m3SigFVal'),document.getElementById('m3SigH2Val')].forEach(el => el.classList.remove('calc-pulse'));
+
+  // Update results
+  document.getElementById('m3Rde').innerHTML = `${de1}/${de2} <span>mm</span>`;
+  document.getElementById('m3Rdw').innerHTML = `${dw3}/${dw4} <span>mm</span>`;
+  document.getElementById('m3RFtII').innerHTML = FtII + '<span> N</span>';
+  document.getElementById('m3RFtIII').innerHTML = FtIII + '<span> N</span>';
+  document.getElementById('m4Ft2').value = FtII;
+  document.getElementById('m4Ft3').value = FtIII;
+
+  // Check results
+  const h1ok = parseInt(sigH1) <= 495;
+  const f1ok = parseInt(sigF1) <= 252;
+  const f2ok = parseInt(sigF2) <= 236;
+  const h2ok = parseInt(sigH2) <= 450;
+  const f3ok = parseInt(sigF3) <= 252;
+
+  const checks = [
+    [h1ok, 'm3CkH1', sigH1 + ' MPa'],
+    [f1ok, 'm3CkF1', sigF1 + ' MPa'],
+    [f2ok, 'm3CkF2', sigF2 + ' MPa'],
+    [h2ok, 'm3CkH2', sigH2 + ' MPa'],
+    [f3ok, 'm3CkF3', sigF3 + ' MPa']
+  ];
+  checks.forEach(([ok, id, val]) => {
+    document.getElementById(id+'v').textContent = val;
+    document.getElementById(id+'s').className = 'check-state ' + (ok ? 'pass' : 'fail');
+    document.getElementById(id+'s').textContent = ok ? 'PASS' : 'FAIL';
+  });
+
+  const allOk = h1ok && f1ok && f2ok && h2ok && f3ok;
+  if (allOk) {
+    state.m3done = true;
+    document.getElementById('btnM3Next').disabled = false;
+    document.getElementById('pip-m3').className = 'pipe-dot done';
+    document.getElementById('pip-m4').className = 'pipe-dot active';
+    document.getElementById('ps-m3').className = 'ps-item ps-done';
+    document.getElementById('ps-m3').textContent = 'M3 · Hoàn tất';
+    document.getElementById('ps-m4').className = 'ps-item ps-active';
+    document.getElementById('ps-m4').textContent = 'M4 · Sẵn sàng';
+    document.getElementById('progressFill').style.width = '75%';
+    document.getElementById('progressPct').textContent = '75%';
+    document.getElementById('tab-m4').classList.add('done-tab');
+    showToast('ok', `✅ M3 hoàn tất! Tất cả bánh răng đạt bền tiếp xúc & uốn`);
+  } else {
+    showToast('warn', `⚠️ M3 chưa đạt — Điều chỉnh m, z và tính lại`);
+    if (!h1ok || !h2ok) showToast('error', `⛔ Không đạt bền tiếp xúc → Tăng module m hoặc chiều rộng b`);
+  }
+}
+
+// ── RUN M4 ──
+function runM4() {
+  const brand = document.getElementById('m4Brand').value;
+
+  // Bearing DB (simplified)
+  const bearDB = {
+    SKF: [
+      { code:'6205', d:25, C:14.0, C0:7.8  },
+      { code:'6206', d:30, C:19.5, C0:11.2 },
+      { code:'6207', d:35, C:25.5, C0:15.0 },
+    ],
+    NTN: [
+      { code:'6205', d:25, C:13.8, C0:7.6  },
+      { code:'6206', d:30, C:19.2, C0:11.0 },
+      { code:'6207', d:35, C:25.0, C0:14.8 },
+    ],
+    FAG: [
+      { code:'6205', d:25, C:14.2, C0:7.9  },
+      { code:'6206', d:30, C:19.8, C0:11.4 },
+      { code:'6207', d:35, C:26.0, C0:15.2 },
+    ]
+  };
+
+  const db = bearDB[brand];
+  const shafts = [
+    { name:'I',   Fr:parseFloat(document.getElementById('m4Fr1').value)||1248, n:582,  b:db[0] },
+    { name:'II',  Fr:parseFloat(document.getElementById('m4Ft2').value)||2060, n:233,  b:db[1] },
+    { name:'III', Fr:parseFloat(document.getElementById('m4Ft3').value)||4820, n:100,  b:db[2] }
+  ];
+
+  shafts.forEach(s => {
+    const P_e = s.Fr / 1000;  // kN simplified
+    const L10h = Math.round(Math.pow(s.b.C / Math.max(P_e, 0.5), 3) * 1e6 / (60 * s.n));
+    const lifeOk = L10h >= 12000;
+    const suffix = s.name;
+
+    document.getElementById('m4d'+suffix).textContent = s.b.d + ' mm';
+    document.getElementById('m4b'+suffix).textContent = s.b.code;
+    document.getElementById('m4l'+suffix).textContent = L10h.toLocaleString() + ' h';
+    document.getElementById('m4s'+suffix).className = 'check-state ' + (lifeOk ? 'pass' : 'fail');
+    document.getElementById('m4s'+suffix).textContent = lifeOk ? 'PASS' : 'FAIL';
+
+    // Result panel
+    document.getElementById('m4Rd'+suffix).innerHTML = s.b.d + '<span> mm</span>';
+    document.getElementById('m4Rb'+suffix).textContent = s.b.code;
+  });
+
+  // Update bearing card
+  document.getElementById('m4BearCode').textContent = db[1].code;
+  document.getElementById('m4BearName').textContent = `${brand} ${db[1].code} – Ổ bi đỡ · d=${db[1].d}mm`;
+  document.getElementById('m4BearC').innerHTML   = db[1].C + '<span> kN</span>';
+  document.getElementById('m4BearC0').innerHTML  = db[1].C0 + '<span> kN</span>';
+  const lMain = Math.round(Math.pow(db[1].C / Math.max(parseFloat(document.getElementById('m4Ft2').value)/1000, 0.5), 3) * 1e6 / (60 * 233));
+  document.getElementById('m4BearLife').innerHTML = lMain.toLocaleString() + '<span> h</span>';
+
+  // Update moment diagram note
+  document.getElementById('diagNote').textContent = 'Biểu đồ momen Trục II · Đã cập nhật';
+
+  state.m4done = true;
+  document.getElementById('btnFinish').disabled = false;
+  document.getElementById('m4Status').textContent = '✅ M4 hoàn tất — Sẵn sàng xuất kết quả';
+
+  document.getElementById('pip-m4').className = 'pipe-dot done';
+  document.getElementById('ps-m4').className = 'ps-item ps-done';
+  document.getElementById('ps-m4').textContent = 'M4 · Hoàn tất';
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressPct').textContent = '100%';
+
+  showToast('ok', `✅ M4 hoàn tất! Pipeline thiết kế M1→M4 đã hoàn thành 100%`);
+  showToast('ok', `→ Ổ lăn: ${db[0].code} / ${db[1].code} / ${db[2].code} — Hãng: ${brand}`);
+}
+
+// ── Finish design ──
+function finishDesign() {
+  showToast('ok', '🏁 Bộ thông số hoàn chỉnh đã sẵn sàng!');
+  showToast('ok', '→ Chuyển sang UC 4.3: Gợi ý linh kiện thay thế');
+  setTimeout(() => showToast('ok', '→ UC 4.5: Hiển thị kết quả & Xuất báo cáo PDF'), 800);
+}
+
+// ── Toast ──
+function showToast(type, msg) {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = { ok:'✅', error:'❌', warn:'⚠️' };
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  wrap.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(), 300); }, 5000);
+}
+</script>
+</body>
+</html>
