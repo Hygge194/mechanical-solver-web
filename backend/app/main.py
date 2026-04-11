@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from services.motor_service import get_motor_recommendations
+from services.auth_service import register_user, authenticate_user
+
 app = FastAPI(title="Phần mềm thiết kế hệ dẫn động - BK")
 
 # Cấu hình CORS để cho phép frontend gọi API
@@ -15,6 +17,31 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "Backend API đang hoạt động bình thường! Hãy chạy ứng dụng từ giao diện Frontend (HTML).", "version": "1.0.0"}
+
+# --- AUTHENTICATION ROUTES ---
+
+@app.post("/api/v1/auth/register")
+async def register(data: dict):
+    try:
+        result = register_user(data)
+        return {"status": "success", "data": result}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.post("/api/v1/auth/login")
+async def login(data: dict):
+    try:
+        result = authenticate_user(data)
+        return {"status": "success", "data": result}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# --- MOTOR CALCULATION ROUTES ---
+
 
 @app.post("/api/v1/calculate/motor")
 async def calculate_motor(data: dict):
