@@ -504,13 +504,15 @@ body::before {
   </div>
 
   <div class="sb-bot">
-    <div class="user-row">
-      <div class="u-av">KT</div>
+    <div class="user-row" id="userLogoutBtn" title="Đăng xất" onclick="handleLogout()">
+      <div class="u-av" id="userInitials">--</div>
       <div>
-        <div class="u-name">Thiên Kiều</div>
-        <div class="u-role">CS</div>
+        <div class="u-name" id="userSidebarName">Đang tải...</div>
+        <div class="u-role">Đăng xuất</div>
       </div>
-      <div class="u-dots">···</div>
+      <div class="u-dots">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
     </div>
   </div>
 </aside>
@@ -541,7 +543,7 @@ body::before {
     <!-- ── HERO ── -->
     <div class="hero-wrap">
       <div class="hero-glow"></div>
-      <div class="hero-eyebrow">Xin chào, Thiên Kiều</div>
+      <div class="hero-eyebrow" id="heroGreeting">Xin chào...</div>
       <div class="hero-title">
         Thiết kế<br>
         <span> Hệ dẫn động thùng trộn </span>
@@ -565,7 +567,7 @@ body::before {
             <div class="feat-desc">Tạo hộp giảm tốc mới từ đầu. Nhập thông số đầu vào, chọn sơ đồ truyền động và để MechaMix lo phần còn lại.</div>
           </div>
           <div class="feat-action">
-            <button class="feat-btn feat-btn-primary">
+            <button class="feat-btn feat-btn-primary" onclick="window.location.href='m1/m1_input_validation.html'">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Tạo dự án
             </button>
@@ -615,6 +617,38 @@ body::before {
 
 
 <script>
+// Authentication Check
+if (!localStorage.getItem('access_token')) {
+  window.location.href = 'login.html';
+} else {
+  // Try to load user data
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.full_name) {
+      document.getElementById('heroGreeting').textContent = 'Xin chào, ' + user.full_name;
+      document.getElementById('userSidebarName').textContent = user.full_name;
+      // Get initials (first letter of first and last word)
+      const words = user.full_name.trim().split(' ');
+      let initials = '';
+      if(words.length > 0) initials += words[0][0];
+      if(words.length > 1) initials += words[words.length-1][0];
+      document.getElementById('userInitials').textContent = initials.toUpperCase() || user.username.substring(0,2).toUpperCase();
+    } else {
+      document.getElementById('heroGreeting').textContent = 'Xin chào, ' + user.username;
+      document.getElementById('userSidebarName').textContent = user.username;
+      document.getElementById('userInitials').textContent = user.username.substring(0,2).toUpperCase();
+    }
+  } catch (e) {
+    console.error("Lỗi đọc thông tin user", e);
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+
 // Update date
 const d = new Date();
 const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
