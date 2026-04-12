@@ -43,12 +43,6 @@ CREATE TABLE Thong_So_Cac_Truc (
     FOREIGN KEY (ID_DuAn) REFERENCES Du_An(ID_DuAn) ON DELETE CASCADE
 );
 
--- Hệ số tiêu chuẩn (Để Web tự tra, không cần user nhập)
-CREATE TABLE He_So_C_Alpha (
-    Goc_Alpha INT PRIMARY KEY,
-    Gia_Tri_Ca FLOAT
-);
-
 CREATE TABLE Thu_Vien_Dai (
     LoaiDai VARCHAR(10) PRIMARY KEY, -- Ví dụ: 'A', 'B', 'Б'
     bt FLOAT,
