@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MechaMix – M2: Bộ truyền đai hình thang</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS – khớp với M1
+═══════════════════════════════════════════ */
+:root {
+  --bg:#050c18; --bg1:#060e1c; --bg2:#07111f; --bg3:#0b1829; --bg4:#0f2038;
+  --blue:#1e6fff; --cyan:#00d4ff; --teal:#00c9a7; --violet:#8b5cf6;
+  --green:#10b981; --gold:#f59e0b; --red:#ef4444; --orange:#f97316;
+  --tx1:#e2e8f0; --tx2:#7a93b4; --tx3:#2e4460;
+  --bdr:rgba(30,111,255,0.14); --bdr2:rgba(0,212,255,0.28);
+  --font:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:var(--font);color:var(--tx1);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%,rgba(30,111,255,0.08) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 100%,rgba(139,92,246,0.06) 0%,transparent 50%),
+    linear-gradient(rgba(30,111,255,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(30,111,255,0.02) 1px,transparent 1px);
+  background-size:auto,auto,48px 48px,48px 48px;}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:228px;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:200;}
+.sb-top{padding:22px 18px 18px;border-bottom:1px solid var(--bdr);}
+.logo-row{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:38px;height:38px;border-radius:11px;flex-shrink:0;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(30,111,255,0.4);}
+.logo-mark svg{width:20px;height:20px;fill:none;stroke:white;stroke-width:2;}
+.logo-name{font-weight:800;font-size:18px;}
+.logo-name em{font-style:normal;color:var(--cyan);}
+.sb-body{flex:1;padding:14px 10px;overflow-y:auto;}
+.sb-section{margin-bottom:6px;}
+.sb-sec-label{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--tx3);text-transform:uppercase;padding:6px 10px 5px;display:block;}
+.nav-link{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;margin-bottom:2px;cursor:pointer;transition:all 0.18s;font-size:13px;font-weight:500;color:var(--tx2);text-decoration:none;}
+.nav-link:hover{background:var(--bg4);color:var(--tx1);}
+.nav-link.active{background:rgba(30,111,255,0.13);color:var(--cyan);border-left:2px solid var(--cyan);}
+.nav-link svg{width:14px;height:14px;flex-shrink:0;}
+.nav-tag{margin-left:auto;font-size:8.5px;padding:2px 6px;border-radius:4px;font-weight:700;font-family:var(--mono);}
+.tag-active{background:rgba(0,212,255,0.15);color:var(--cyan);border:1px solid rgba(0,212,255,0.3);}
+.tag-done{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.sb-bot{padding:12px 10px;border-top:1px solid var(--bdr);}
+.user-row{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;background:var(--bg3);}
+.u-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;}
+.u-name{font-size:12.5px;font-weight:600;}
+.u-role{font-size:10px;color:var(--tx2);}
+.u-dots{margin-left:auto;color:var(--tx3);font-size:16px;cursor:pointer;}
+
+/* ═══ MAIN ═══ */
+.main{margin-left:228px;min-height:100vh;position:relative;z-index:1;}
+
+/* ═══ TOPBAR (M1 style) ═══ */
+.topbar{height:56px;background:rgba(7,17,31,0.92);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 28px;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);}
+.tb-breadcrumb{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--tx2);}
+.tb-breadcrumb .sep{color:var(--tx3);}
+.tb-breadcrumb .cur{color:var(--cyan);font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.tb-date{font-size:11.5px;color:var(--tx2);font-family:var(--mono);}
+.tb-search{display:flex;align-items:center;gap:7px;padding:6px 14px;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;font-size:12px;color:var(--tx3);cursor:pointer;transition:0.2s;}
+.tb-search:hover{border-color:var(--blue);color:var(--tx2);}
+.tb-icon{width:32px;height:32px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:0.2s;}
+.tb-icon:hover{border-color:var(--blue);}
+.tb-notif-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid var(--bg2);}
+
+.content{padding:28px 28px 60px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ MODULE HEADER (M1 pipeline style) ═══ */
+.module-header{background:var(--bg3);border:1px solid var(--bdr);border-radius:18px;padding:24px 28px;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.module-header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),var(--gold),var(--teal),var(--cyan));}
+.module-header-glow{position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(245,158,11,0.07) 0%,transparent 70%);pointer-events:none;}
+.module-badge{width:52px;height:52px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(0,212,255,0.08));border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:13px;color:var(--gold);}
+.module-meta{flex:1;min-width:200px;}
+.module-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+.module-title span{color:var(--cyan);}
+.module-desc{font-size:12px;color:var(--tx2);line-height:1.55;}
+
+/* Pipeline */
+.pipeline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pipe-step{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.pipe-dot{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:var(--mono);transition:0.2s;}
+.pipe-dot.done{background:rgba(16,185,129,0.15);border:1.5px solid rgba(16,185,129,0.35);color:var(--green);}
+.pipe-dot.active{background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.5);color:var(--gold);box-shadow:0 0 14px rgba(245,158,11,0.2);}
+.pipe-dot.next{background:var(--bg4);border:1.5px solid var(--tx3);color:var(--tx3);}
+.pipe-label{font-size:10px;color:var(--tx2);white-space:nowrap;}
+.pipe-arrow{color:var(--tx3);font-size:14px;padding-bottom:14px;}
+
+/* ═══ SECTION CARD (M1 style) ═══ */
+.section-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:20px;animation:fadeUp 0.5s ease both;}
+.card-header{padding:16px 22px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;}
+.card-header-ico{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.card-title{font-size:14px;font-weight:700;color:var(--tx1);}
+.card-sub{font-size:11.5px;color:var(--tx2);margin-top:2px;}
+.card-body{padding:22px;}
+.card-badge{margin-left:auto;font-size:9px;padding:2px 9px;border-radius:7px;font-family:var(--mono);font-weight:700;border:1px solid;white-space:nowrap;}
+.badge-input{background:rgba(30,111,255,0.1);color:var(--blue);border-color:rgba(30,111,255,0.25);}
+.badge-auto{background:rgba(16,185,129,0.1);color:var(--green);border-color:rgba(16,185,129,0.25);}
+.badge-output{background:rgba(0,212,255,0.1);color:var(--cyan);border-color:rgba(0,212,255,0.25);}
+.badge-check{background:rgba(139,92,246,0.1);color:var(--violet);border-color:rgba(139,92,246,0.25);}
+
+/* Step visibility */
+.step-container{display:none;animation:fadeUp 0.5s ease forwards;}
+.step-container.active{display:block;}
+
+/* ═══ FORM FIELDS ═══ */
+.field-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.field-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px;}
+.field-group{}
+.field-label{font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:6px;display:block;}
+.inp-wrap{position:relative;}
+.field-input{width:100%;padding:9px 44px 9px 13px;background:var(--bg4);border:1.5px solid var(--tx3);border-radius:9px;color:var(--tx1);font-size:13px;font-family:var(--mono);transition:all 0.18s;outline:none;}
+.field-input:focus{border-color:var(--blue);background:rgba(30,111,255,0.05);box-shadow:0 0 0 3px rgba(30,111,255,0.1);}
+.inp-unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:var(--tx3);font-family:var(--mono);pointer-events:none;}
+.field-hint{font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:3px;}
+.field-select{width:100%;padding:9px 34px 9px 13px;background:var(--bg4);border:1.5px solid var(--tx3);border-radius:9px;color:var(--tx1);font-size:12.5px;font-family:var(--font);transition:all 0.18s;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%237a93b4' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.field-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(30,111,255,0.1);}
+
+/* ═══ DIVIDER ═══ */
+.divider-row{display:flex;align-items:center;gap:10px;margin:18px 0 16px;}
+.divider-row::before,.divider-row::after{content:'';flex:1;height:1px;background:var(--bdr);}
+.div-label{font-size:9.5px;font-weight:700;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-size:12.5px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:all 0.2s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:linear-gradient(135deg,#1249c7,var(--blue));color:#fff;box-shadow:0 3px 14px rgba(30,111,255,0.3);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,111,255,0.4);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-gold{background:linear-gradient(135deg,#b37000,var(--gold));color:#fff;box-shadow:0 3px 14px rgba(245,158,11,0.3);}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(245,158,11,0.4);}
+.btn-gold:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-ghost{background:var(--bg4);color:var(--tx2);border:1.5px solid var(--tx3);}
+.btn-ghost:hover{border-color:var(--blue);color:var(--tx1);}
+.btn-cyan{background:rgba(0,212,255,0.1);color:var(--cyan);border:1.5px solid rgba(0,212,255,0.3);}
+.btn-cyan:hover{background:rgba(0,212,255,0.18);border-color:var(--cyan);}
+.btn-teal{background:rgba(0,201,167,0.1);color:var(--teal);border:1.5px solid rgba(0,201,167,0.3);}
+.btn-teal:hover{background:rgba(0,201,167,0.18);border-color:var(--teal);}
+
+/* ═══ M1-STYLE STAT TILES ═══ */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:18px;}
+.stat-tile{background:var(--bg3);padding:16px 20px;border-radius:10px;border:1px solid var(--bdr);}
+.stat-tile.teal{border-color:rgba(0,201,167,0.2);}
+.stat-tile.blue{border-color:rgba(30,111,255,0.2);}
+.stat-tile.gold{border-color:rgba(245,158,11,0.2);}
+.stat-tile.cyan{border-color:rgba(0,212,255,0.2);}
+.stat-tile.violet{border-color:rgba(139,92,246,0.2);}
+.stat-tile.green{border-color:rgba(16,185,129,0.2);}
+.stat-label{color:var(--tx2);font-size:12px;margin-bottom:6px;}
+.stat-val{font-size:22px;font-family:var(--mono);font-weight:700;}
+.stat-val.teal{color:var(--teal);}
+.stat-val.blue{color:var(--blue);}
+.stat-val.gold{color:var(--gold);}
+.stat-val.cyan{color:var(--cyan);}
+.stat-val.violet{color:var(--violet);}
+.stat-val.green{color:var(--green);}
+.stat-val.red{color:var(--red);}
+
+/* ═══ CHECK TABLE ═══ */
+.chk-table{width:100%;border-collapse:collapse;}
+.chk-table th{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:0.8px;text-transform:uppercase;text-align:left;padding:10px 14px;border-bottom:1px solid var(--bdr);}
+.chk-table td{padding:11px 14px;font-size:12.5px;border-bottom:1px solid rgba(30,111,255,0.05);}
+.chk-table tr:last-child td{border-bottom:none;}
+.chk-table tr:hover td{background:rgba(30,111,255,0.025);}
+.val-mono{font-family:var(--mono);color:var(--cyan);}
+.lim-txt{font-family:var(--mono);color:var(--tx2);font-size:11px;}
+.chk-tag{font-size:9px;padding:2px 8px;border-radius:5px;font-weight:700;font-family:var(--mono);display:inline-block;}
+.chk-tag.pass{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);}
+.chk-tag.fail{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.chk-tag.idle{background:var(--bg4);color:var(--tx3);border:1px solid var(--tx3);}
+
+/* ═══ KINEMATICS TABLE (M1 style) ═══ */
+.result-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px;overflow:hidden;border-radius:8px;}
+.result-table th{background:rgba(30,111,255,0.05);color:var(--blue);padding:14px;text-align:center;border:1px solid var(--bdr);}
+.result-table td{padding:13px 14px;text-align:center;border:1px solid var(--bdr);font-family:var(--mono);color:var(--tx1);}
+.result-table tbody tr td:first-child{text-align:left;background:var(--bg2);color:var(--tx2);font-weight:600;font-family:inherit;font-size:13px;}
+.result-table .highlight{color:var(--gold);font-weight:700;}
+.result-table .highlight-teal{color:var(--teal);font-weight:700;}
+.result-table .highlight-cyan{color:var(--cyan);font-weight:700;}
+
+/* ═══ VERDICT ═══ */
+.verdict-box{border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:16px;}
+.verdict-pass{background:rgba(16,185,129,0.07);border:1.5px solid rgba(16,185,129,0.3);}
+.verdict-fail{background:rgba(239,68,68,0.07);border:1.5px solid rgba(239,68,68,0.3);}
+.verdict-title{font-size:15px;font-weight:800;}
+.verdict-title.green{color:var(--green);}
+.verdict-title.red{color:var(--red);}
+.verdict-sub{font-size:12px;color:var(--tx2);margin-top:3px;}
+
+/* ═══ ALERT ═══ */
+.alert{border-radius:9px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.5;}
+.alert-warn{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);color:var(--gold);}
+.alert-err{background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);color:var(--red);}
+.alert-ok{background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);color:var(--green);}
+
+/* M1 input-from banner */
+.m1-banner{background:linear-gradient(135deg,rgba(30,111,255,0.07),rgba(0,212,255,0.04));border:1px solid rgba(0,212,255,0.18);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.m1-banner-icon{font-size:18px;flex-shrink:0;}
+.m1-banner-text{font-size:12px;color:var(--tx2);line-height:1.5;}
+.m1-banner-text strong{color:var(--cyan);}
+
+/* Log area */
+.log-area{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:16px;font-family:var(--mono);font-size:10.5px;color:var(--tx2);line-height:1.85;white-space:pre-wrap;word-break:break-all;max-height:340px;overflow-y:auto;}
+.log-head{color:var(--cyan);font-weight:600;}
+.log-ok{color:var(--green);}
+.log-warn{color:var(--gold);}
+.log-val{color:var(--teal);}
+
+/* Progress bar */
+.progress-wrap{background:var(--bg3);border:1px solid var(--bdr);border-radius:11px;padding:14px 20px;margin-bottom:22px;display:flex;align-items:center;gap:16px;}
+.progress-label{font-size:11.5px;font-weight:600;color:var(--tx2);white-space:nowrap;}
+.progress-track{flex:1;height:5px;background:var(--bg4);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--teal),var(--cyan));box-shadow:0 0 8px rgba(0,212,255,0.4);transition:width 0.5s cubic-bezier(0.4,0,0.2,1);width:0%;}
+.progress-pct{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--cyan);min-width:36px;text-align:right;}
+
+/* ═══ MODAL ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,12,24,0.85);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity 0.28s ease;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{background:var(--bg2);border:1px solid var(--bdr2);border-radius:20px;width:100%;max-width:880px;overflow:hidden;transform:translateY(20px);transition:transform 0.32s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 24px 80px rgba(0,0,0,0.6);}
+.modal-overlay.open .modal-box{transform:translateY(0);}
+.modal-hd{padding:18px 24px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:14px;background:var(--bg3);position:sticky;top:0;z-index:10;}
+.modal-hd-ico{width:38px;height:38px;border-radius:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.modal-hd-title{font-size:14px;font-weight:800;}
+.modal-hd-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
+.modal-close{margin-left:auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--tx3);background:var(--bg4);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx2);font-size:15px;transition:all 0.18s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:22px 24px;}
+
+/* detail result panels inside modal */
+.detail-panel{background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;margin-bottom:16px;overflow:hidden;}
+.detail-panel:last-child{margin-bottom:0;}
+.detail-panel-hd{padding:13px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:rgba(30,111,255,0.03);}
+.detail-panel-title{font-size:13px;font-weight:700;}
+.detail-panel-sub{font-size:10.5px;color:var(--tx2);margin-top:2px;}
+.detail-table{width:100%;border-collapse:collapse;}
+.detail-table th{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;padding:9px 16px;border-bottom:1px solid rgba(0,212,255,0.1);text-align:left;}
+.detail-table td{padding:0;border-bottom:1px solid rgba(30,111,255,0.05);}
+.detail-table tr:last-child td{border-bottom:none;}
+.d-param{padding:10px 16px;font-size:12.5px;font-weight:500;color:var(--tx1);display:flex;align-items:center;gap:8px;}
+.d-sym{font-family:var(--mono);font-size:10px;color:var(--cyan);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15);padding:2px 6px;border-radius:4px;flex-shrink:0;min-width:34px;text-align:center;}
+.d-val{padding:10px 16px;font-family:var(--mono);font-size:13.5px;font-weight:700;color:var(--cyan);white-space:nowrap;}
+.d-val.gold{color:var(--gold);}
+.d-val.green{color:var(--green);}
+.d-val.red{color:var(--red);}
+.d-val.teal{color:var(--teal);}
+.d-unit{padding:10px 16px;font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap;}
+.d-status{padding:10px 16px;}
+.d-sec-hdr td{background:rgba(30,111,255,0.04);padding:7px 16px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr)!important;}
+
+/* ═══ TOAST ═══ */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--bg3);border:1px solid var(--bdr);border-radius:11px;padding:12px 16px;display:flex;align-items:center;gap:10px;min-width:260px;max-width:360px;box-shadow:0 8px 28px rgba(0,0,0,0.4);backdrop-filter:blur(12px);animation:toastIn 0.28s ease both;}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+.toast.t-err{border-color:rgba(239,68,68,0.35);}
+.toast.t-warn{border-color:rgba(245,158,11,0.35);}
+.toast.t-ok{border-color:rgba(16,185,129,0.35);}
+.toast-ico{font-size:16px;flex-shrink:0;}
+.toast-msg{font-size:12.5px;font-weight:500;flex:1;}
+.toast-x{font-size:15px;color:var(--tx3);cursor:pointer;}
+.toast-x:hover{color:var(--tx1);}
+
+/* Chart bars (M1 style) */
+.chart-row{display:flex;flex-direction:column;gap:5px;margin-bottom:18px;}
+.chart-row-label{font-size:11px;color:var(--tx2);display:flex;justify-content:space-between;align-items:center;}
+.chart-bar-track{height:28px;background:var(--bg4);border-radius:6px;overflow:hidden;position:relative;}
+.chart-bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:12px;font-family:var(--mono);font-size:11.5px;font-weight:600;color:#fff;transition:width 1s cubic-bezier(0.4,0,0.2,1);}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 0.7s linear infinite;display:inline-block;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div><div class="logo-name">Mecha<em>Mix</em></div></div>
+    </div>
+  </div>
+  <div class="sb-body">
+    <div class="sb-section">
+      <span class="sb-sec-label">Tổng quan</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dự án của tôi
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Nhập liệu & Kiểm tra</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Kiểm tra ngưỡng
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Tính toán</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Chọn động cơ
+        <span class="nav-tag tag-done">✓ DONE</span>
+      </a>
+      <a class="nav-link active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Bộ truyền đai
+        <span class="nav-tag tag-active">PLAY</span>
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+        Bánh răng côn-trụ
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></svg>
+        Trục & Ổ lăn
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">AI & Tối ưu</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        Gợi ý linh kiện
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Tối ưu ML / GA
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Xuất & Chia sẻ</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Xuất bản vẽ lắp
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Xuất báo cáo PDF
+      </a>
+    </div>
+  </div>
+  <div class="sb-bot">
+    <div class="user-row">
+      <div class="u-av">KT</div>
+      <div><div class="u-name">Thiên Kiều</div><div class="u-role">CS</div></div>
+      <div class="u-dots">···</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <header class="topbar">
+    <div class="tb-breadcrumb">
+      <span>MechaMix</span><span class="sep">›</span>
+      <span>Tính toán</span><span class="sep">›</span>
+      <span class="cur">M2 – Bộ truyền đai hình thang</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-date" id="tbDate"></div>
+      <div class="tb-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Tìm kiếm...
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="tb-notif-dot"></div>
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- MODULE HEADER with Pipeline -->
+    <div class="module-header">
+      <div class="module-header-glow"></div>
+      <div class="module-badge">M2</div>
+      <div class="module-meta">
+        <div class="module-title">Tính toán <span>Bộ truyền đai hình thang</span></div>
+        <div class="module-desc">Nhập P₁, n₁ và u_đ từ Module 1 (hoặc đề bài), chọn K_đ và loại đai rồi chạy tự động 11 bước theo Trịnh Chất – Lê Văn Uyển.</div>
+      </div>
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-dot done">M1</div>
+          <div class="pipe-label">Động cơ ✓</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot active">M2</div>
+          <div class="pipe-label">Bộ truyền đai</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot next">M3</div>
+          <div class="pipe-label">Bánh răng</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot next">M4</div>
+          <div class="pipe-label">Trục & Ổ lăn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-label">Tiến độ tính toán</div>
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-pct" id="progPct">0%</div>
+    </div>
+
+    <!-- ── STEP 1: Input ── -->
+    <div class="section-card step-container active" id="step1">
+      <div class="card-header">
+        <div class="card-header-ico" style="background:rgba(30,111,255,0.1);">📥</div>
+        <div>
+          <div class="card-title">Bước 1: Thông số đầu vào</div>
+          <div class="card-sub">Từ Module 1 hoặc đề bài — kiểm tra P₁, n₁, u_đ trước khi chạy</div>
+        </div>
+        <div class="card-badge badge-input">ĐẦU VÀO</div>
+      </div>
+      <div class="card-body">
+
+        <div class="m1-banner">
+          <div class="m1-banner-icon">🔗</div>
+          <div class="m1-banner-text">
+            Dữ liệu được nạp từ <strong>Module 1</strong>: P₁ = P_lv · n₁ = n_dc · u_đ từ phân phối TST.
+            Bạn có thể chỉnh tay nếu cần kiểm tra phương án khác.
+          </div>
+        </div>
+
+        <div class="field-grid-2">
+          <div class="field-group">
+            <label class="field-label">Công suất làm việc P₁</label>
+            <div class="inp-wrap"><input class="field-input" id="inP1" type="number" value="5.872" step="0.001" min="0.1" max="400"><span class="inp-unit">kW</span></div>
+            <div class="field-hint">P₁ = P_lv từ M1</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Tốc độ trục động cơ n₁</label>
+            <div class="inp-wrap"><input class="field-input" id="inN1" type="number" value="2922" step="1" min="100" max="10000"><span class="inp-unit">v/ph</span></div>
+            <div class="field-hint">n₁ = n_dc từ M1</div>
+          </div>
+        </div>
+        <div class="field-grid-2">
+          <div class="field-group">
+            <label class="field-label">Tỉ số truyền đai u_đ</label>
+            <div class="inp-wrap"><input class="field-input" id="inUd" type="number" value="2.5" step="0.05" min="1" max="6"><span class="inp-unit">—</span></div>
+            <div class="field-hint">Khuyến nghị: 2 ÷ 4</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Hệ số trượt ε</label>
+            <div class="inp-wrap"><input class="field-input" id="inEps" type="number" value="0.02" step="0.001" min="0.005" max="0.04"><span class="inp-unit">—</span></div>
+            <div class="field-hint">Đai thang: 0.01 ÷ 0.02</div>
+          </div>
+        </div>
+
+        <div class="divider-row"><span class="div-label">Điều kiện làm việc</span></div>
+
+        <div class="field-grid-2">
+          <div class="field-group">
+            <label class="field-label">Hệ số tải trọng K_đ</label>
+            <select class="field-select" id="inKd">
+              <option value="1.0">1.0 — Tải nhẹ, êm</option>
+              <option value="1.1">1.1 — Tải nhẹ, va đập nhẹ</option>
+              <option value="1.2" selected>1.2 — Tải vừa, va đập nhẹ</option>
+              <option value="1.25">1.25 — Tải vừa, va đập vừa</option>
+              <option value="1.5">1.5 — Tải nặng</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Loại đai</label>
+            <select class="field-select" id="inLoai">
+              <option value="auto" selected>Tự động theo P₁ & n₁</option>
+              <option value="O">O — P ≤ 4 kW</option>
+              <option value="A">A — P ≤ 12.5 kW</option>
+              <option value="Б">Б — P ≤ 31.5 kW</option>
+              <option value="В">В — P ≤ 80 kW</option>
+              <option value="Г">Г — P ≤ 200 kW</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="alertBox" style="margin-top:4px;"></div>
+
+        <div style="margin-top:22px;display:flex;align-items:center;gap:10px;">
+          <button class="btn btn-gold" id="btnRun" onclick="doRun()">
+            <span id="btnIco">⚙️</span> Chạy tính toán 11 bước
+          </button>
+          <button class="btn btn-ghost" onclick="doReset()">↺ Đặt lại</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Checks ── -->
+    <div class="section-card step-container" id="step2">
+      <div class="card-header">
+        <div class="card-header-ico" style="background:rgba(139,92,246,0.1);">🔍</div>
+        <div>
+          <div class="card-title">Bước 2: Kiểm nghiệm điều kiện thiết kế</div>
+          <div class="card-sub">5 ràng buộc kỹ thuật — tất cả phải PASS mới xuất kết quả</div>
+        </div>
+        <div class="card-badge badge-check">KIỂM TRA</div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table class="chk-table">
+          <thead><tr><th>Điều kiện</th><th>Giá trị tính</th><th>Giới hạn cho phép</th><th>Kết quả</th></tr></thead>
+          <tbody>
+            <tr><td>Vận tốc đai v</td><td class="val-mono" id="ck-v">—</td><td class="lim-txt">≤ 25 m/s</td><td><span class="chk-tag idle" id="cks-v">—</span></td></tr>
+            <tr><td>Góc ôm bánh nhỏ α₁</td><td class="val-mono" id="ck-a1">—</td><td class="lim-txt">≥ 120°</td><td><span class="chk-tag idle" id="cks-a1">—</span></td></tr>
+            <tr><td>Sai số tỉ số truyền Δu</td><td class="val-mono" id="ck-ss">—</td><td class="lim-txt">≤ 4%</td><td><span class="chk-tag idle" id="cks-ss">—</span></td></tr>
+            <tr><td>Số đai Z</td><td class="val-mono" id="ck-z">—</td><td class="lim-txt">≤ 6 đai</td><td><span class="chk-tag idle" id="cks-z">—</span></td></tr>
+            <tr><td>Số lần uốn đai i</td><td class="val-mono" id="ck-i">—</td><td class="lim-txt">≤ 10 /s</td><td><span class="chk-tag idle" id="cks-i">—</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Thông số chính ── -->
+    <div class="section-card step-container" id="step3">
+      <div class="card-header">
+        <div class="card-header-ico" style="background:rgba(0,212,255,0.08);">📊</div>
+        <div>
+          <div class="card-title">Bước 3: Thông số bộ truyền đai</div>
+          <div class="card-sub">Tổng hợp kết quả 11 bước tính toán — kiểu giống bảng Bước 4 M1</div>
+        </div>
+        <div class="card-badge badge-output">ĐẦU RA</div>
+      </div>
+      <div class="card-body">
+        <div id="verdictArea" style="margin-bottom:18px;"></div>
+        <table class="result-table" id="mainResultTable">
+          <thead>
+            <tr>
+              <th style="text-align:left;">Thông số</th>
+              <th>Ký hiệu</th>
+              <th>Giá trị</th>
+              <th>Đơn vị</th>
+            </tr>
+          </thead>
+          <tbody id="mainResultBody">
+            <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--tx3);font-style:italic;">Chưa có dữ liệu — nhấn Chạy tính toán ở Bước 1</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Bar chart giống M1 -->
+        <div style="margin-top:24px;padding-top:18px;border-top:1px dashed var(--bdr);">
+          <div class="card-title" style="font-size:14px;margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+            Biểu đồ trực quan: Lực trong bộ truyền (N)
+          </div>
+          <div id="chartForce">
+            <div style="color:var(--tx3);font-size:12px;font-style:italic;">Đang chờ dữ liệu tính toán...</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--bdr);flex-wrap:wrap;gap:12px;">
+          <button class="btn btn-cyan" onclick="openModal()">
+            📋 Xem log chi tiết 11 bước
+          </button>
+          <a href="#" class="btn btn-primary" style="padding:12px 24px;">
+            Tiếp tục: Chuyển sang Bánh răng côn-trụ (M3)
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- ═══ DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="detailModal" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <div class="modal-hd-ico">📋</div>
+      <div>
+        <div class="modal-hd-title">Log chi tiết 11 bước tính toán</div>
+        <div class="modal-hd-sub">Theo Trịnh Chất – Lê Văn Uyển, Tập 1</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA TABLES
+══════════════════════════════════════ */
+const DAI_TIET_DIEN={'O':{bt:8.5,b:10,h:6,y0:2.1,A:47,d1:[70,140],l:[400,2500]},'A':{bt:11,b:13,h:8,y0:2.8,A:81,d1:[100,200],l:[560,4000]},'Б':{bt:14,b:17,h:10.5,y0:4.0,A:138,d1:[140,280],l:[800,6300]},'В':{bt:19,b:22,h:13.5,y0:4.8,A:230,d1:[200,400],l:[1800,10600]},'Г':{bt:27,b:32,h:19.0,y0:6.9,A:476,d1:[315,630],l:[3150,15000]},'Д':{bt:32,b:38,h:23.5,y0:8.3,A:692,d1:[500,1000],l:[4500,18000]}};
+const DAI_BANH={'O':{H:10,h0:2.5,t:12,e:8},'A':{H:12.5,h0:3.3,t:15,e:10},'Б':{H:16,h0:4.2,t:19,e:12.5},'В':{H:21,h0:5.7,t:25.5,e:17},'Г':{H:27,h0:8.1,t:37,e:23},'Д':{H:32,h0:9.9,t:44.5,e:29}};
+const QM={'O':0.061,'A':0.105,'Б':0.178,'В':0.300,'Г':0.476,'Д':0.692};
+const P0_TABLE={'O':{_l0:1320,63:{3:0.33,5:0.49,10:0.83,15:1.04,20:1.14,25:null},90:{3:0.46,5:0.64,10:1.17,15:1.54,20:1.80,25:1.88},112:{3:0.48,5:0.75,10:1.33,15:1.78,20:2.12,25:2.30}},'A':{_l0:1700,112:{3:0.70,5:1.08,10:1.85,15:2.40,20:2.73,25:2.85},125:{3:0.78,5:1.17,10:2.00,15:2.75,20:3.08,25:3.26},140:{3:0.80,5:1.25,10:2.20,15:2.92,20:3.44,25:3.75},160:{3:0.84,5:1.32,10:2.34,15:3.14,20:3.78,25:4.09},180:{3:0.88,5:1.38,10:2.47,15:3.37,20:4.06,25:4.46}},'Б':{_l0:2240,125:{3:0.92,5:1.38,10:2.25,15:2.61,20:null,25:null},180:{3:1.20,5:2.13,10:3.38,15:4.61,20:5.34,25:5.93},224:{3:1.35,5:2.30,10:4.00,15:5.53,20:6.46,25:7.08},280:{3:1.65,5:2.51,10:4.47,15:5.57,20:7.38,25:8.22}},'В':{_l0:3750,200:{3:1.83,5:2.73,10:4.55,15:5.75,20:6.28,25:null},250:{3:2.30,5:3.54,10:6.02,15:8.00,20:9.23,25:9.69},280:{3:2.46,5:3.77,10:6.59,15:8.82,20:10.27,25:11.00},315:{3:2.63,5:3.88,10:7.39,15:9.71,20:11.33,25:12.27},355:{3:2.84,5:4.29,10:7.57,15:10.51,20:12.42,25:13.63},450:{3:3.08,5:4.74,10:8.54,15:11.53,20:14.15,25:15.62}},'Г':{_l0:6000,355:{3:null,5:6.67,10:11.17,15:14.91,20:16.50,25:17.51},500:{3:null,5:9.75,10:15.57,15:20.23,20:24.90,25:26.47},630:{3:null,5:10.76,10:17.46,15:23.60,20:27.89,25:32.19},800:{3:null,5:11.14,10:19.16,15:26.50,20:31.11,25:34.23}}};
+const CA_TABLE={180:1.00,170:0.98,160:0.95,150:0.92,140:0.89,130:0.86,120:0.82,110:0.78,100:0.73,90:0.68,80:0.62,70:0.56};
+const CL_TABLE={0.5:0.86,0.6:0.89,0.8:0.95,1.0:1.00,1.2:1.04,1.4:1.07,1.6:1.10,1.8:1.13,2.0:1.15,2.4:1.20};
+const CU_TABLE={1.0:1.000,1.2:1.070,1.6:1.110,1.8:1.120,2.2:1.130,2.4:1.135,3.0:1.140};
+const CZ_TABLE={1:1.00,2:0.95,3:0.95,4:0.90,5:0.90,6:0.85};
+const AD2_TABLE={1:1.50,2:1.20,3:1.00,4:0.95,5:0.90,6:0.85};
+const DAI_VUNG=[['O',2.0,4.0,800,5000],['A',2.0,12.5,630,3150],['Б',3.15,31.5,500,3000],['В',8.0,80.0,315,1250],['Г',20.0,200.0,200,800],['Д',80.0,400.0,200,800]];
+const D_TC=[63,71,80,90,100,112,125,140,160,180,200,224,250,280,315,355,400,450,500,560,630,710,800,900,1000,1120,1250,1400,1600,1800,2000,2240,2500,2800,3150,3550,4000];
+const L_CHINH=[400,450,500,560,630,710,750,800,900,1000,1120,1250,1400,1600,1800,2000,2240,2500,2800,3150,3550,4000,4500,5000,5600,6300,7100,8000,9000,10000,11200,12500,14000];
+const L_PHU=[425,475,530,600,670,750,850,950,1060,1180,1320,1500,1700,1900,2120,2360,2650,3000,3350,3750,4250];
+const L_TC=Array.from(new Set([...L_CHINH,...L_PHU])).sort((a,b)=>a-b);
+
+function lerp(tbl,x){const pts=Object.entries(tbl).filter(([,v])=>v!=null).map(([k,v])=>[+k,v]).sort((a,b)=>a[0]-b[0]);if(!pts.length)throw new Error("Empty table");if(x<=pts[0][0])return pts[0][1];if(x>=pts[pts.length-1][0])return pts[pts.length-1][1];for(let i=0;i<pts.length-1;i++){const[x1,y1]=pts[i],[x2,y2]=pts[i+1];if(x1<=x&&x<=x2)return y1+(x-x1)/(x2-x1)*(y2-y1);}}
+function nearestKey(tbl,x){return+Object.keys(tbl).reduce((a,b)=>Math.abs(+b-x)<Math.abs(+a-x)?b:a);}
+function chonLoaiDai(P,n){const c=[];for(const[t,pm,pM,nm,nM]of DAI_VUNG)if(pm<=P&&P<=pM&&nm<=n&&n<=nM)c.push(t);if(!c.length)throw new Error(`Không có loại đai phù hợp (P=${P} kW, n=${n} v/ph)`);return c[c.length-1];}
+function chonD2tc(d){return D_TC.reduce((a,b)=>Math.abs(b-d)<Math.abs(a-d)?b:a);}
+function traCa(a){return lerp(CA_TABLE,a);}
+function traCu(u){return lerp(CU_TABLE,u);}
+function traAd2(u){return lerp(AD2_TABLE,u);}
+function traCl(r){return CL_TABLE[nearestKey(CL_TABLE,r)];}
+function traCz(z){z=Math.ceil(z);if(z>=6)return 0.85;return CZ_TABLE[z]||0.85;}
+function traP0(loai,d1,v){const tbl=P0_TABLE[loai];if(!tbl)throw new Error(`Không có P0 cho đai '${loai}'`);const keys=Object.keys(tbl).filter(k=>k!=='_l0').map(Number).sort((a,b)=>a-b);const P0v=(row)=>{const vld=Object.fromEntries(Object.entries(row).filter(([,x])=>x!=null));return lerp(vld,v);};if(d1<=keys[0])return P0v(tbl[keys[0]]);if(d1>=keys[keys.length-1])return P0v(tbl[keys[keys.length-1]]);for(let i=0;i<keys.length-1;i++){const lo=keys[i],hi=keys[i+1];if(lo<=d1&&d1<=hi){const pl=P0v(tbl[lo]),ph=P0v(tbl[hi]);return pl+(d1-lo)/(hi-lo)*(ph-pl);}}throw new Error("P0 lookup error");}
+function chonLtc(Lc,loai,d1,d2,v,alpha_min=120,i_max=10,buoc=1){const td=DAI_TIET_DIEN[loai],[lm,lM]=td.l,log=[],warn=[];const filt=ds=>{let r=ds.filter(L=>L>=Lc&&lm<=L&&L<=lM);if(!r.length)r=ds.filter(L=>L>=Lc);return r;};const uvC=filt([...L_CHINH].sort((a,b)=>a-b)),uvP=filt([...L_PHU].sort((a,b)=>a-b));const tryList=(uv,lbl)=>{let ok=null;for(let i=0;i<uv.length;i++){const L=uv[i],lam=L-Math.PI*(d1+d2)/2,disc=lam**2-8*((d2-d1)/2)**2;if(disc<0){log.push(`  [${lbl}] L=${L} → disc<0, bỏ`);continue;}const a=(lam+Math.sqrt(disc))/4,al=180-(d2-d1)/a*57.3,id=v*1000/L;const oa=al>=alpha_min,oi=id<=i_max;let m='';if(oa&&oi&&ok===null){ok=i;m='  ← ok';}log.push(`  [${lbl}] L=${L} | a=${a.toFixed(1)} | α=${al.toFixed(1)}°${oa?'✓':'✗'} | i=${id.toFixed(3)}${oi?'✓':'✗'}${m}`);if(ok!==null&&i>=ok+buoc)break;}return ok;};let idx=tryList(uvC,'chính'),uv=uvC;if(idx===null&&uvP.length){log.push('  → thử L phụ...');idx=tryList(uvP,'phụ');uv=uvP;if(idx!==null)warn.push('⚠ Dùng L trong ngoặc (nhóm phụ).');}let Lch;if(idx===null||!uv.length){Lch=uvC.length?uvC[uvC.length-1]:L_TC[L_TC.length-1];warn.push('⚠ Không tìm được L thoả điều kiện, lấy L lớn nhất!');}else{const ic=Math.min(idx+buoc,uv.length-1);Lch=uv[ic];}const lam2=Lch-Math.PI*(d1+d2)/2,disc2=lam2**2-8*((d2-d1)/2)**2;const ac=(lam2+Math.sqrt(Math.max(disc2,0)))/4,alc=180-(d2-d1)/ac*57.3,ic=v*1000/Lch;if(alc<alpha_min)warn.push(`⚠ α=${alc.toFixed(1)}° < 120°`);if(ic>i_max)warn.push(`⚠ i=${ic.toFixed(3)} > 10`);return{L:Lch,a:+ac.toFixed(2),alpha:+alc.toFixed(2),i_dai:+ic.toFixed(4),log,warn};}
+
+function tinhDai(P1,n1,ud,Kd,eps,loaiOvr){
+  const log=[],kq={};const g=(s='')=>log.push(s);
+  g('═'.repeat(54));g('  TÍNH TOÁN BỘ TRUYỀN ĐAI HÌNH THANG');g('═'.repeat(54));
+  g(`  P₁=${P1} kW  |  n₁=${n1} v/ph  |  u_đ=${ud}  |  K_đ=${Kd}  |  ε=${eps}`);g();
+  const loai=loaiOvr&&loaiOvr!=='auto'?loaiOvr:chonLoaiDai(P1,n1);
+  const td=DAI_TIET_DIEN[loai],bd=DAI_BANH[loai];
+  g(`── B1: Đai loại ${loai}  (bt=${td.bt}, h=${td.h}, A=${td.A} mm²)`);kq.loai=loai;g();
+  const cands=D_TC.filter(d=>td.d1[0]<=d&&d<=td.d1[1]);
+  if(!cands.length)throw new Error('Không có d₁ tiêu chuẩn phù hợp!');
+  let d1=cands[0],bd2=Infinity;
+  for(const d of cands){const df=Math.abs(Math.PI*d*n1/60000-15);if(df<bd2){bd2=df;d1=d;}}
+  const v=+(Math.PI*d1*n1/60000).toFixed(3);
+  g(`── B2: d₁=${d1} mm | v=${v} m/s ${v<25?'✓':'⚠'}`);kq.d1=d1;kq.v=v;g();
+  const d2t=d1*ud/(1-eps),d2=chonD2tc(d2t),utt=d2/(d1*(1-eps)),ss=Math.abs(utt-ud)/ud*100;
+  g(`── B3: d₂=${d2} mm | u_tt=${utt.toFixed(3)} | Δ=${ss.toFixed(2)}%`);kq.d2=d2;kq.d2t=+d2t.toFixed(3);kq.utt=+utt.toFixed(3);kq.ss=+ss.toFixed(2);g();
+  const ar=traAd2(ud),asb=ar*d2t,amin=0.55*(d1+d2t)+td.h,amax=2*(d1+d2t);
+  let asb2=asb;if(!(amin<=asb&&asb<=amax)){asb2=(amin+amax)/2;}
+  g(`── B4: a_sb=${asb2.toFixed(2)} mm`);kq.asb=+asb2.toFixed(2);kq.amin=+amin.toFixed(2);kq.amax=+amax.toFixed(2);g();
+  const Lt=2*asb2+Math.PI*(d1+d2)/2+(d2-d1)**2/(4*asb2);
+  g(`── B5: L_tính=${Lt.toFixed(2)} mm`);
+  const rL=chonLtc(Lt,loai,d1,d2,v);rL.log.forEach(l=>g(l));rL.warn.forEach(w=>g(`  ${w}`));
+  const L=rL.L;g(`  → L=${L} mm (TC)`);kq.Lt=+Lt.toFixed(2);kq.L=L;kq.warnL=rL.warn;g();
+  const lam=L-Math.PI*(d1+d2)/2,delta=(d2-d1)/2;
+  const a=(lam+Math.sqrt(lam**2+8*delta**2))/4;
+  const adcmin=a-0.015*L,adcmax=a+0.030*L;
+  g(`── B6: a=${a.toFixed(3)} mm | DC:[${adcmin.toFixed(1)}–${adcmax.toFixed(1)}]`);kq.a=+a.toFixed(2);kq.adcS=`${adcmin.toFixed(1)} – ${adcmax.toFixed(1)}`;g();
+  const al1=180-(d2-d1)/a*57.3;
+  g(`── B7: α₁=${al1.toFixed(2)}° ${al1>=120?'✓':'⚠'}`);
+  if(al1<120)throw new Error(`α₁=${al1.toFixed(1)}° < 120° — Không hợp lệ!`);
+  kq.alpha1=+al1.toFixed(2);g();
+  const Ca=traCa(al1),l0=P0_TABLE[loai]._l0,rat=L/l0,Cl=traCl(rat),Cu=traCu(ud);
+  g(`── B8: Cα=${Ca.toFixed(3)} CL=${Cl.toFixed(3)} Cu=${Cu.toFixed(3)}`);kq.Ca=+Ca.toFixed(3);kq.Cl=+Cl.toFixed(3);kq.Cu=+Cu.toFixed(3);kq.l0=l0;kq.rat=+rat.toFixed(3);g();
+  const P0=traP0(loai,d1,v);
+  const Zt=P1*Kd/(P0*Ca*Cl*Cu*1.0),Zr=Math.ceil(Zt),Cz=traCz(Zr);
+  const Zc=P1*Kd/(P0*Ca*Cl*Cu*Cz),Z=Math.ceil(Zc);
+  g(`── B9: P₀=${P0.toFixed(3)} kW | Cz=${Cz.toFixed(2)} | Z=${Z}`);kq.P0=+P0.toFixed(3);kq.Cz=+Cz.toFixed(2);kq.Z=Z;kq.Kd=Kd;g();
+  const{t,e,h0}=bd;
+  const B=(Z-1)*t+2*e,da1=d1+2*h0,da2=d2+2*h0;
+  g(`── B10: B=${B} mm | da₁=${da1} mm | da₂=${da2} mm`);kq.B=+B.toFixed(1);kq.da1=da1;kq.da2=da2;kq.t=t;kq.e=e;kq.h0=h0;kq.H=bd.H;g();
+  const qm=QM[loai]||0.178,Fv=qm*v**2;
+  const Car=Math.floor(Ca*100)/100;
+  const F0=780*P1*Kd/(v*Car*Z)+Fv;
+  const Fr=2*F0*Z*Math.sin(al1/2*Math.PI/180);
+  const Ft=1000*P1/v;
+  g(`── B11: F₀=${F0.toFixed(2)} N | Fr=${Fr.toFixed(2)} N | Ft=${Ft.toFixed(2)} N`);kq.F0=+F0.toFixed(2);kq.Fr=+Fr.toFixed(2);kq.Ft=+Ft.toFixed(2);kq.Fv=+Fv.toFixed(2);kq.qm=qm;
+  kq.log=log;return kq;
+}
+
+/* ══════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════ */
+document.getElementById('tbDate').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+function setProgress(p){document.getElementById('progFill').style.width=p+'%';document.getElementById('progPct').textContent=p+'%';}
+
+function setCheck(id,val,pass,idle){
+  document.getElementById('ck-'+id).textContent=val;
+  const el=document.getElementById('cks-'+id);
+  if(idle){el.className='chk-tag idle';el.textContent='—';return;}
+  el.className='chk-tag '+(pass?'pass':'fail');el.textContent=pass?'PASS ✓':'FAIL ✗';
+}
+
+function showStep(id){
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.style.animationDelay='0.05s';
+}
+
+function renderLog(lines){
+  return lines.map(l=>{
+    if(l.includes('═')||l.includes('──'))return`<span class="log-head">${esc(l)}</span>`;
+    if(l.includes('✓'))return`<span class="log-ok">${esc(l)}</span>`;
+    if(l.includes('⚠'))return`<span class="log-warn">${esc(l)}</span>`;
+    if(l.match(/=\s*[\d\-]/))return`<span class="log-val">${esc(l)}</span>`;
+    return esc(l);
+  }).join('\n');
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function openModal(){document.getElementById('detailModal').classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('detailModal').classList.remove('open');document.body.style.overflow='';}
+function handleOverlayClick(e){if(e.target===document.getElementById('detailModal'))closeModal();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+function doReset(){
+  setProgress(0);
+  ['v','a1','ss','z','i'].forEach(id=>setCheck(id,'—',true,true));
+  document.getElementById('alertBox').innerHTML='';
+  document.getElementById('verdictArea').innerHTML='';
+  document.getElementById('mainResultBody').innerHTML='<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--tx3);font-style:italic;">Chưa có dữ liệu — nhấn Chạy tính toán ở Bước 1</td></tr>';
+  document.getElementById('chartForce').innerHTML='<div style="color:var(--tx3);font-size:12px;font-style:italic;">Đang chờ dữ liệu tính toán...</div>';
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step3').classList.remove('active');
+  document.getElementById('btnIco').textContent='⚙️';
+  document.getElementById('btnRun').disabled=false;
+}
+
+function renderAlerts(warns){
+  const c=document.getElementById('alertBox');c.innerHTML='';
+  warns.forEach(m=>{const d=document.createElement('div');d.className='alert alert-warn';d.innerHTML=`<span>⚠️</span><span>${m}</span>`;c.appendChild(d);});
+}
+
+/* M1-style bar chart */
+function renderBarChart(data){
+  const max=Math.max(...data.map(d=>d.val));
+  return data.map(d=>{
+    const pct=max>0?Math.round(d.val/max*100):0;
+    return`<div class="chart-row">
+      <div class="chart-row-label"><span>${d.label}</span><span style="font-family:var(--mono);font-size:12px;color:${d.color};">${d.val.toFixed(1)} N</span></div>
+      <div class="chart-bar-track">
+        <div class="chart-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${d.color}aa,${d.color});">${d.val.toFixed(0)} N</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* Result table rows */
+function rRow(label,sym,val,unit,cls=''){
+  const v=typeof val==='number'?val.toFixed(val%1===0?0:3):val;
+  return`<tr>
+    <td style="text-align:left;">${label}</td>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--cyan);text-align:center;">${sym}</td>
+    <td class="${cls||'highlight-cyan'}">${v}</td>
+    <td style="color:var(--tx3);font-family:var(--mono);font-size:11px;">${unit}</td>
+  </tr>`;
+}
+function rSec(label){
+  return`<tr><td colspan="4" style="background:rgba(30,111,255,0.04);padding:8px 14px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);border-top:1px solid var(--bdr);">${label}</td></tr>`;
+}
+
+/* ══════════════════════════════════════
+   MAIN RUN
+══════════════════════════════════════ */
+async function doRun(){
+  const P1=parseFloat(document.getElementById('inP1').value);
+  const n1=parseFloat(document.getElementById('inN1').value);
+  const ud=parseFloat(document.getElementById('inUd').value);
+  const eps=parseFloat(document.getElementById('inEps').value);
+  const Kd=parseFloat(document.getElementById('inKd').value);
+  const loai=document.getElementById('inLoai').value;
+  if(!P1||!n1||!ud||!eps||!Kd){toast('err','⛔ Vui lòng nhập đầy đủ thông số!');return;}
+  const btn=document.getElementById('btnRun');
+  btn.disabled=true;document.getElementById('btnIco').innerHTML='<span class="spin">⚙️</span>';
+  setProgress(10);await new Promise(r=>setTimeout(r,280));
+
+  try{
+    const kq=tinhDai(P1,n1,ud,Kd,eps,loai);
+    setProgress(80);await new Promise(r=>setTimeout(r,120));
+
+    const i_dai=+(kq.v*1000/kq.L).toFixed(3);
+
+    // Show steps
+    showStep('step2');
+    await new Promise(r=>setTimeout(r,100));
+
+    // Checks
+    setCheck('v',`${kq.v} m/s`,kq.v<=25);
+    setCheck('a1',`${kq.alpha1}°`,kq.alpha1>=120);
+    setCheck('ss',`${kq.ss}%`,kq.ss<=4);
+    setCheck('z',`${kq.Z} đai`,kq.Z<=6);
+    setCheck('i',`${i_dai} /s`,i_dai<=10);
+
+    // Alerts
+    const warns=[...(kq.warnL||[])];
+    if(kq.ss>4)warns.push(`Sai số tỉ số truyền ${kq.ss}% > 4% — xem lại d₂`);
+    if(kq.Z>6)warns.push(`Số đai Z=${kq.Z} > 6 — nên tăng tiết diện đai`);
+    renderAlerts(warns);
+
+    // Verdict
+    const allOk=kq.v<=25&&kq.alpha1>=120&&kq.ss<=4&&kq.Z<=6&&i_dai<=10;
+    const verdictEl=document.getElementById('verdictArea');
+    if(allOk){
+      verdictEl.innerHTML=`<div class="verdict-box verdict-pass" style="margin-bottom:0;">
+        <span style="font-size:24px;">✅</span>
+        <div>
+          <div class="verdict-title green">BỘ TRUYỀN ĐAI ĐẠT YÊU CẦU</div>
+          <div class="verdict-sub">Tất cả điều kiện v, α₁, Δu, Z, i đều thỏa mãn — Xuất Fr = ${kq.Fr} N sang Module 4.</div>
+        </div>
+      </div>`;
+      toast('ok',`✅ Đai ${kq.loai} · Z=${kq.Z} đai · Fr=${kq.Fr} N — Đạt`);
+    }else{
+      verdictEl.innerHTML=`<div class="verdict-box verdict-fail" style="margin-bottom:0;">
+        <span style="font-size:24px;">⛔</span>
+        <div>
+          <div class="verdict-title red">BỘ TRUYỀN CHƯA ĐẠT</div>
+          <div class="verdict-sub">Kiểm tra lại — điều chỉnh d₁, d₂, loại đai hoặc khoảng cách trục.</div>
+        </div>
+      </div>`;
+      toast('warn','⚠ Một số điều kiện kiểm nghiệm chưa đạt');
+    }
+
+    // Main result table (M1 kinematics style)
+    document.getElementById('mainResultBody').innerHTML=
+      rSec('Loại đai & Thông số tiết diện')+
+      rRow('Loại đai chọn','—',kq.loai,'—','highlight')+
+      rRow('Đường kính bánh nhỏ d₁','d₁',kq.d1,'mm','highlight')+
+      rRow('Đường kính bánh lớn d₂','d₂',kq.d2,'mm','highlight-teal')+
+      rRow('Vận tốc đai v','v',kq.v,'m/s',kq.v<=25?'highlight-cyan':'highlight red')+
+      rSec('Thông số hình học')+
+      rRow('Chiều dài đai tiêu chuẩn L','L',kq.L,'mm','highlight-cyan')+
+      rRow('Khoảng cách trục chính xác a','a',kq.a,'mm','highlight-cyan')+
+      rRow('Khoảng điều chỉnh trục a_DC','a_DC',kq.adcS,'mm')+
+      rRow('Góc ôm bánh nhỏ α₁','α₁',kq.alpha1+'°','—',kq.alpha1>=120?'highlight-teal':'highlight red')+
+      rRow('Tỉ số truyền thực u_tt','u_tt',kq.utt,'—')+
+      rRow('Sai số tỉ số truyền Δu','Δu',kq.ss+'%','—',kq.ss<=4?'highlight-cyan':'highlight red')+
+      rSec('Số đai & Hệ số hiệu chỉnh')+
+      rRow('Hệ số góc ôm Cα','Cα',kq.Ca,'—')+
+      rRow('Hệ số chiều dài CL','CL',kq.Cl,'—')+
+      rRow('Hệ số tỉ số truyền Cu','Cu',kq.Cu,'—')+
+      rRow('Hệ số số đai Cz','Cz',kq.Cz,'—')+
+      `<tr style="background:rgba(245,158,11,0.04);">
+        <td style="text-align:left;font-weight:700;">Số đai chọn Z</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--cyan);text-align:center;">Z</td>
+        <td style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--gold);">${kq.Z}</td>
+        <td style="color:var(--tx3);font-family:var(--mono);font-size:11px;">đai</td>
+      </tr>`+
+      rSec('Kích thước bánh đai')+
+      rRow('Chiều rộng bánh đai B','B',kq.B,'mm','highlight')+
+      rRow('Đường kính ngoài bánh dẫn da₁','da₁',kq.da1,'mm','highlight-cyan')+
+      rRow('Đường kính ngoài bánh bị dẫn da₂','da₂',kq.da2,'mm','highlight-teal')+
+      rSec('Lực trong bộ truyền → M4')+
+      rRow('Lực căng ban đầu F₀','F₀',kq.F0,'N')+
+      rRow('Lực vòng Ft','Ft',kq.Ft,'N')+
+      `<tr style="background:rgba(245,158,11,0.05);">
+        <td style="text-align:left;font-weight:700;">Lực tác dụng lên trục Fr → M4</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--gold);text-align:center;">Fr</td>
+        <td style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--gold);">${kq.Fr}</td>
+        <td style="color:var(--tx3);font-family:var(--mono);font-size:11px;">N</td>
+      </tr>`;
+
+    // Bar chart
+    document.getElementById('chartForce').innerHTML=renderBarChart([
+      {label:'Lực ly tâm Fv',val:kq.Fv,color:'var(--violet)'},
+      {label:'Lực căng ban đầu F₀',val:kq.F0,color:'var(--teal)'},
+      {label:'Lực vòng Ft',val:kq.Ft,color:'var(--blue)'},
+      {label:'Lực tác dụng trục Fr',val:kq.Fr,color:'var(--gold)'},
+    ]);
+
+    // Modal log
+    document.getElementById('modalBody').innerHTML=`
+      <div class="detail-panel">
+        <div class="detail-panel-hd">
+          <div><div class="detail-panel-title">Tóm tắt kết quả</div><div class="detail-panel-sub">11 bước theo Trịnh Chất – Lê Văn Uyển</div></div>
+          <div class="card-badge badge-output">ĐẦU RA</div>
+        </div>
+        <table class="detail-table">
+          <thead><tr><th style="width:45%">Thông số</th><th>Ký hiệu</th><th>Giá trị</th><th>Đơn vị</th></tr></thead>
+          <tbody>
+            <tr class="d-sec-hdr"><td colspan="10">Tiết diện & Hình học</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">Loại</span>Đai loại</div></td><td class="d-val gold">${kq.loai}</td><td class="d-unit">—</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">d₁</span>Đường kính bánh nhỏ</div></td><td class="d-val">${kq.d1}</td><td class="d-unit">mm</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">d₂</span>Đường kính bánh lớn</div></td><td class="d-val teal">${kq.d2}</td><td class="d-unit">mm</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">v</span>Vận tốc đai</div></td><td class="d-val ${kq.v<=25?'':'red'}">${kq.v}</td><td class="d-unit">m/s</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">L</span>Chiều dài đai</div></td><td class="d-val">${kq.L}</td><td class="d-unit">mm</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">a</span>Khoảng cách trục</div></td><td class="d-val">${kq.a}</td><td class="d-unit">mm</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">α₁</span>Góc ôm bánh nhỏ</div></td><td class="d-val ${kq.alpha1>=120?'green':'red'}">${kq.alpha1}°</td><td class="d-unit">—</td></tr>
+            <tr class="d-sec-hdr"><td colspan="10">Số đai & Kích thước bánh</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">Z</span>Số đai chọn</div></td><td class="d-val gold" style="font-size:20px;">${kq.Z}</td><td class="d-unit">đai</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">B</span>Chiều rộng bánh</div></td><td class="d-val">${kq.B}</td><td class="d-unit">mm</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">da₁</span>Đường kính ngoài bánh dẫn</div></td><td class="d-val">${kq.da1}</td><td class="d-unit">mm</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">da₂</span>Đường kính ngoài bánh bị dẫn</div></td><td class="d-val teal">${kq.da2}</td><td class="d-unit">mm</td></tr>
+            <tr class="d-sec-hdr"><td colspan="10">Lực → Module 4</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">F₀</span>Lực căng ban đầu</div></td><td class="d-val">${kq.F0}</td><td class="d-unit">N</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym">Ft</span>Lực vòng</div></td><td class="d-val">${kq.Ft}</td><td class="d-unit">N</td></tr>
+            <tr><td><div class="d-param"><span class="d-sym" style="color:var(--gold);background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);">Fr</span><strong>Lực tác dụng trục Fr → M4</strong></div></td><td class="d-val gold" style="font-size:18px;">${kq.Fr}</td><td class="d-unit">N</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="detail-panel" style="margin-bottom:0;">
+        <div class="detail-panel-hd">
+          <div><div class="detail-panel-title">Log tính toán trung gian</div><div class="detail-panel-sub">Toàn bộ các bước tính nội bộ</div></div>
+          <div class="card-badge badge-auto">LOG</div>
+        </div>
+        <div style="padding:16px;">
+          <div class="log-area">${renderLog(kq.log)}</div>
+        </div>
+      </div>
+    `;
+
+    showStep('step3');
+    setProgress(100);
+    toast('ok',`✅ Đai ${kq.loai} · d₁=${kq.d1}/d₂=${kq.d2}mm · Z=${kq.Z} · Fr=${kq.Fr}N`);
+
+  }catch(err){
+    document.getElementById('alertBox').innerHTML+=`<div class="alert alert-err"><span>❌</span><span>${err.message}</span></div>`;
+    toast('err',`❌ ${err.message}`);setProgress(0);
+  }
+  document.getElementById('btnIco').textContent='⚙️';
+  document.getElementById('btnRun').disabled=false;
+}
+
+function toast(type,msg){
+  const w=document.getElementById('toastWrap'),t=document.createElement('div');
+  t.className=`toast t-${type}`;
+  const ic={ok:'✅',err:'❌',warn:'⚠️'};
+  t.innerHTML=`<span class="toast-ico">${ic[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span><span class="toast-x" onclick="this.parentElement.remove()">✕</span>`;
+  w.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(16px)';t.style.transition='all 0.28s';setTimeout(()=>t.remove(),300);},5500);
+}
+</script>
+</body>
+</html>
