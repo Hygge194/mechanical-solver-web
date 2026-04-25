@@ -5,7 +5,7 @@ CREATE TABLE Thu_Vien_Dong_Co (
     ID_DongCo INT PRIMARY KEY AUTO_INCREMENT,
     Model VARCHAR(50) NOT NULL,
     CongSuat_kW FLOAT NOT NULL,
-    TocDo_vph INT NOT NULL,  -- n_dc
+    VanToc_vph INT NOT NULL,  -- n_dc
     HieuSuat FLOAT NOT NULL, -- n_%
     CosPhi FLOAT,
     Tmax_Tdn FLOAT,
