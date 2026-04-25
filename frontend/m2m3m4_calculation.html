@@ -728,10 +728,10 @@ body::before {
 
   <div class="sb-bot">
     <div class="user-row">
-      <div class="u-av">KT</div>
+      <div class="u-av" id="userInitials">--</div>
       <div>
-        <div class="u-name">Thiên Kiều</div>
-        <div class="u-role">CS</div>
+        <div class="u-name" id="userSidebarName">Đang tải...</div>
+        <div class="u-role">Kỹ sư</div>
       </div>
       <div class="u-dots">···</div>
     </div>
@@ -2091,6 +2091,22 @@ function showToast(type, msg) {
   wrap.appendChild(t);
   setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(), 300); }, 5000);
 }
+</script>
+<script>
+  (function() {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        const name = user.full_name || user.username || 'Người dùng';
+        document.getElementById('userSidebarName').textContent = name;
+        const words = name.trim().split(' ');
+        const initials = words.length >= 2
+          ? words[0][0] + words[words.length-1][0]
+          : name.substring(0, 2);
+        document.getElementById('userInitials').textContent = initials.toUpperCase();
+      }
+    } catch(e) {}
+  })();
 </script>
 </body>
 </html>

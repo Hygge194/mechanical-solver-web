@@ -351,8 +351,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   </div>
   <div class="sb-bot">
     <div class="user-row">
-      <div class="u-av">KT</div>
-      <div><div class="u-name">Thiên Kiều</div><div class="u-role">CS</div></div>
+      <div class="u-av" id="userInitials">--</div>
+      <div><div class="u-name" id="userSidebarName">Đang tải...</div><div class="u-role">Kỹ sư</div></div>
       <div class="u-dots">···</div>
     </div>
   </div>
@@ -927,5 +927,21 @@ function toast(type,msg){
   setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(16px)';t.style.transition='all 0.28s';setTimeout(()=>t.remove(),300);},5500);
 }
 </script>
+<script>
+  (function() {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        const name = user.full_name || user.username || 'Người dùng';
+        document.getElementById('userSidebarName').textContent = name;
+        const words = name.trim().split(' ');
+        const initials = words.length >= 2
+          ? words[0][0] + words[words.length-1][0]
+          : name.substring(0, 2);
+        document.getElementById('userInitials').textContent = initials.toUpperCase();
+      }
+    } catch(e) {}
+  })();
+</script>
 </body>
-</html>
+</html>

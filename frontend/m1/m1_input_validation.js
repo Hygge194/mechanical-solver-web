@@ -45,8 +45,17 @@ window.runStep1 = async function() {
     state.pt = pt; 
     state.niv = niv;
     
+    // Lấy project_id từ localStorage (đã được Dashboard lưu)
+    const currentProjectId = localStorage.getItem('current_project_id');
+    
     // Gửi payload lên API 1
-    const payload = { p_tai_w: pt * 1000, n_lv: niv, he_so_tai: 1.0 };
+    const payload = { 
+        p_tai_w: pt * 1000, 
+        n_lv: niv, 
+        he_so_tai: 1.0, 
+        project_id: currentProjectId ? parseInt(currentProjectId) : null 
+    };
+
     
     try {
         const res = await fetch(URL_STEP1, {
@@ -146,10 +155,12 @@ async function fetchStep34() {
     // Tạo bản sao của động cơ được chọn nhưng ghi đè P thành P_ct
     const customMotor = { ...state.selectedMotor, P: state.pct || state.selectedMotor.P };
     
+    const currentProjectId = localStorage.getItem('current_project_id');
     const payload = {
         motor: customMotor,
         k_qt: kqt,
-        n_iv: state.niv
+        n_iv: state.niv,
+        project_id: currentProjectId ? parseInt(currentProjectId) : null
     };
     
     try {
