@@ -310,20 +310,24 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <a class="nav-link" href="#">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
         Chọn động cơ
-        <span class="nav-tag tag-done">✓ DONE</span>
+        <span class="nav-tag tag-done">DONE</span>
       </a>
       <a class="nav-link active" href="#">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
         Bộ truyền đai
-        <span class="nav-tag tag-active">PLAY</span>
+      </a>
       </a>
       <a class="nav-link" href="#">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
-        Bánh răng côn-trụ
+        Bánh răng côn
       </a>
       <a class="nav-link" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></svg>
-        Trục & Ổ lăn
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <circle cx="4" cy="12" r="2"/>
+          <circle cx="20" cy="12" r="2"/>
+        </svg>
+        Bánh răng trụ
       </a>
     </div>
     <div class="sb-section">
@@ -364,7 +368,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="tb-breadcrumb">
       <span>MechaMix</span><span class="sep">›</span>
       <span>Tính toán</span><span class="sep">›</span>
-      <span class="cur">M2 – Bộ truyền đai hình thang</span>
+      <span class="cur">Bộ truyền đai hình thang</span>
     </div>
     <div class="tb-right">
       <div class="tb-date" id="tbDate"></div>
@@ -390,12 +394,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <div class="module-badge">M2</div>
       <div class="module-meta">
         <div class="module-title">Tính toán <span>Bộ truyền đai hình thang</span></div>
-        <div class="module-desc">Nhập P₁, n₁ và u_đ từ Module 1 (hoặc đề bài), chọn K_đ và loại đai rồi chạy tự động 11 bước theo Trịnh Chất – Lê Văn Uyển.</div>
+        <div class="module-desc">Nhập P₁, n₁ và u_đ từ Module 1, chọn K_đ và bộ truyền đai hình thang</div>
       </div>
       <div class="pipeline">
         <div class="pipe-step">
           <div class="pipe-dot done">M1</div>
-          <div class="pipe-label">Động cơ ✓</div>
+          <div class="pipe-label">Động cơ</div>
         </div>
         <div class="pipe-arrow">→</div>
         <div class="pipe-step">
@@ -405,37 +409,27 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
         <div class="pipe-arrow">→</div>
         <div class="pipe-step">
           <div class="pipe-dot next">M3</div>
-          <div class="pipe-label">Bánh răng</div>
+          <div class="pipe-label">Bánh răng côn</div>
         </div>
         <div class="pipe-arrow">→</div>
         <div class="pipe-step">
           <div class="pipe-dot next">M4</div>
-          <div class="pipe-label">Trục & Ổ lăn</div>
+          <div class="pipe-label">Bánh răng trụ</div>
         </div>
       </div>
-    </div>
-
-    <!-- Progress -->
-    <div class="progress-wrap">
-      <div class="progress-label">Tiến độ tính toán</div>
-      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
-      <div class="progress-pct" id="progPct">0%</div>
     </div>
 
     <!-- ── STEP 1: Input ── -->
     <div class="section-card step-container active" id="step1">
       <div class="card-header">
-        <div class="card-header-ico" style="background:rgba(30,111,255,0.1);">📥</div>
         <div>
           <div class="card-title">Bước 1: Thông số đầu vào</div>
-          <div class="card-sub">Từ Module 1 hoặc đề bài — kiểm tra P₁, n₁, u_đ trước khi chạy</div>
+          <div class="card-sub">Nhập thông số P₁, n₁, u_đ</div>
         </div>
-        <div class="card-badge badge-input">ĐẦU VÀO</div>
       </div>
       <div class="card-body">
 
         <div class="m1-banner">
-          <div class="m1-banner-icon">🔗</div>
           <div class="m1-banner-text">
             Dữ liệu được nạp từ <strong>Module 1</strong>: P₁ = P_lv · n₁ = n_dc · u_đ từ phân phối TST.
             Bạn có thể chỉnh tay nếu cần kiểm tra phương án khác.
@@ -497,9 +491,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
         <div style="margin-top:22px;display:flex;align-items:center;gap:10px;">
           <button class="btn btn-gold" id="btnRun" onclick="doRun()">
-            <span id="btnIco">⚙️</span> Chạy tính toán 11 bước
+            <span id="btnIco"></span>Thực hiện tính toán
           </button>
-          <button class="btn btn-ghost" onclick="doReset()">↺ Đặt lại</button>
+          <button class="btn btn-ghost" onclick="doReset()">Đặt lại</button>
         </div>
       </div>
     </div>
@@ -567,10 +561,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--bdr);flex-wrap:wrap;gap:12px;">
           <button class="btn btn-cyan" onclick="openModal()">
-            📋 Xem log chi tiết 11 bước
+            Xem log chi tiết 11 bước
           </button>
           <a href="#" class="btn btn-primary" style="padding:12px 24px;">
-            Tiếp tục: Chuyển sang Bánh răng côn-trụ (M3)
+            Tiếp tục: Chuyển sang Bánh răng côn - M3
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
         </div>
@@ -584,10 +578,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <div class="modal-overlay" id="detailModal" onclick="handleOverlayClick(event)">
   <div class="modal-box">
     <div class="modal-hd">
-      <div class="modal-hd-ico">📋</div>
       <div>
         <div class="modal-hd-title">Log chi tiết 11 bước tính toán</div>
-        <div class="modal-hd-sub">Theo Trịnh Chất – Lê Văn Uyển, Tập 1</div>
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
@@ -767,7 +759,7 @@ async function doRun(){
   const eps=parseFloat(document.getElementById('inEps').value);
   const Kd=parseFloat(document.getElementById('inKd').value);
   const loai=document.getElementById('inLoai').value;
-  if(!P1||!n1||!ud||!eps||!Kd){toast('err','⛔ Vui lòng nhập đầy đủ thông số!');return;}
+  if(!P1||!n1||!ud||!eps||!Kd){toast('err','Vui lòng nhập đầy đủ thông số!');return;}
   const btn=document.getElementById('btnRun');
   btn.disabled=true;document.getElementById('btnIco').innerHTML='<span class="spin">⚙️</span>';
   setProgress(10);await new Promise(r=>setTimeout(r,280));
@@ -806,7 +798,7 @@ async function doRun(){
           <div class="verdict-sub">Tất cả điều kiện v, α₁, Δu, Z, i đều thỏa mãn — Xuất Fr = ${kq.Fr} N sang Module 4.</div>
         </div>
       </div>`;
-      toast('ok',`✅ Đai ${kq.loai} · Z=${kq.Z} đai · Fr=${kq.Fr} N — Đạt`);
+      toast('ok',`Đai ${kq.loai} · Z=${kq.Z} đai · Fr=${kq.Fr} N — Đạt`);
     }else{
       verdictEl.innerHTML=`<div class="verdict-box verdict-fail" style="margin-bottom:0;">
         <span style="font-size:24px;">⛔</span>
@@ -815,7 +807,7 @@ async function doRun(){
           <div class="verdict-sub">Kiểm tra lại — điều chỉnh d₁, d₂, loại đai hoặc khoảng cách trục.</div>
         </div>
       </div>`;
-      toast('warn','⚠ Một số điều kiện kiểm nghiệm chưa đạt');
+      toast('warn','Một số điều kiện kiểm nghiệm chưa đạt');
     }
 
     // Main result table (M1 kinematics style)
@@ -908,11 +900,11 @@ async function doRun(){
 
     showStep('step3');
     setProgress(100);
-    toast('ok',`✅ Đai ${kq.loai} · d₁=${kq.d1}/d₂=${kq.d2}mm · Z=${kq.Z} · Fr=${kq.Fr}N`);
+    toast('ok',`Đai ${kq.loai} · d₁=${kq.d1}/d₂=${kq.d2}mm · Z=${kq.Z} · Fr=${kq.Fr}N`);
 
   }catch(err){
-    document.getElementById('alertBox').innerHTML+=`<div class="alert alert-err"><span>❌</span><span>${err.message}</span></div>`;
-    toast('err',`❌ ${err.message}`);setProgress(0);
+    document.getElementById('alertBox').innerHTML+=`<div class="alert alert-err"><span></span><span>${err.message}</span></div>`;
+    toast('err',` ${err.message}`);setProgress(0);
   }
   document.getElementById('btnIco').textContent='⚙️';
   document.getElementById('btnRun').disabled=false;
