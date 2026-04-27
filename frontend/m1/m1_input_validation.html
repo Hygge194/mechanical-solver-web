@@ -31,6 +31,12 @@
   .light-red { background: var(--red); box-shadow: 0 0 12px var(--red); }
   .kqt-input { width: 100px; padding: 10px; border: 1px solid var(--bdr); border-radius: 6px; background: var(--bg1); color: var(--tx1); outline: none; }
   .kqt-input:focus { border-color: var(--blue); }
+
+  .logo-row{display:flex;align-items:center;gap:10px;}
+  .logo-mark{width:38px;height:38px;border-radius:11px;flex-shrink:0;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(30,111,255,0.4);}
+  .logo-mark svg{width:20px;height:20px;fill:none;stroke:white;stroke-width:2;}
+  .logo-name{font-weight:800;font-size:18px;}
+  .logo-name em{font-style:normal;color:var(--cyan);}
 </style>
 </head>
 <body>
@@ -39,12 +45,8 @@
 <aside class="sidebar">
   <div class="sb-top">
     <div class="logo-row">
-      <div class="logo-mark">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div>
-        <div class="logo-name">Mecha<em>Mix</em></div>
-      </div>
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div><div class="logo-name">Mecha<em>Mix</em></div></div>
     </div>
   </div>
 
