@@ -35,7 +35,7 @@ def query_dong_co(cursor, p_ct, n_sb):
     # 1. P tăng dần (để lấy cái tiết kiệm nhất)
     # 2. Độ chênh lệch n_dc so với n_sb ít nhất
     query = """
-        SELECT *, ABS(VanToc_vph - %s) as diff_n
+        SELECT *, ABS(TocDo_vph - %s) as diff_n
         FROM Thu_Vien_Dong_Co
         WHERE CongSuat_kW >= %s
         ORDER BY CongSuat_kW ASC, diff_n ASC
@@ -67,7 +67,7 @@ def tinh_toan_he_thong_thuc_te(dc_chon, n_iv, u_dai_so_bo=2.5, u_con_so_bo=4.5):
     dc_chon: Dictionary chứa thông tin động cơ người dùng đã chọn từ list options
     n_iv: Tốc độ trục công tác (70 v/ph)
     """
-    n_dc_thuc = dc_chon['VanToc_vph']
+    n_dc_thuc = dc_chon['TocDo_vph']
     
     # 1. Tính tỷ số truyền tổng thực tế
     u_t_thuc = n_dc_thuc / n_iv

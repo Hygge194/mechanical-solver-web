@@ -80,7 +80,7 @@
         Chọn động cơ
         <span class="nav-tag tag-active"></span>
       </a>
-      <a class="nav-link" href="../m2m3m4_calculation.html">
+      <a class="nav-link" href="../m2/dai.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
         Bộ truyền đai
       </a>
@@ -101,12 +101,8 @@
     <div class="sb-section">
       <span class="sb-sec-label">AI & Tối ưu</span>
       <a class="nav-link" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
-        Gợi ý linh kiện
-      </a>
-      <a class="nav-link" href="#">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        Tối ưu ML / GA
+        Chatbot AI
       </a>
     </div>
 
@@ -146,7 +142,6 @@
       <span class="sep">›</span>
       <span class="cur">Chọn động cơ điện</span>
     </div>
-    <div class="tb-date" id="tbDate"></div>
     <div class="tb-right">
       <div class="tb-date" id="tbDate"></div>
       <div class="tb-search">
@@ -353,10 +348,23 @@
 
         <!-- Nút chuyển sang M2 -->
         <div style="display: flex; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--bdr);">
-           <a href="../m2m3m4_calculation.html" class="btn btn-primary" style="padding: 12px 24px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
-               Tiếp tục: Chuyển sang tính Bộ Truyền Đai (M2)
-               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-           </a>
+            
+          <button
+            class="btn btn-primary"
+            onclick="goToM2()"
+            style="padding:12px 24px;">
+
+            Tiếp tục: Bộ truyền đai (M2)
+
+        </button>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+
+          </a>
+
         </div>
 
       </div>
@@ -366,6 +374,21 @@
 <div class="toast-wrap" id="toastWrap"></div>
 
 <!-- Custom JS Application Logic -->
+<script src="../shared/storage.js"></script>
+<script src="../shared/workflow.js"></script>
+<script src="../shared/restore.js"></script>
 <script src="m1_input_validation.js"></script>
+
+<script>
+  // Hiển thị ngày giờ topbar
+  (function() {
+    const el = document.getElementById("tbDate");
+    if (!el) return;
+    const now = new Date();
+    el.textContent = now.toLocaleDateString("vi-VN", {
+      weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"
+    });
+  })();
+</script>
 </body>
 </html>

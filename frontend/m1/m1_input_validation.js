@@ -162,7 +162,7 @@ async function fetchStep34() {
         if (!res.ok) throw new Error("API call failed");
         
         const json = await res.json();
-        const val = json.validation;
+        const validation = json.validation;
         const kin = json.kinematics;
         const ratios = json.ratios;
         
@@ -171,11 +171,11 @@ async function fetchStep34() {
         const title = document.getElementById("valTitle");
         const desc = document.getElementById("valDesc");
         
-        if(val.is_valid) {
+        if(validation.is_valid) {
             light.className = "light-indicator light-green";
             title.textContent = "Đạt yêu cầu"; 
             title.style.color = "var(--green)";
-            desc.innerHTML = `Hệ số đáp ứng: ${val.message}`;
+            desc.innerHTML = `Hệ số đáp ứng: ${validation.message}`;
         } else {
             light.className = "light-indicator light-red";
             title.textContent = "Không đạt yêu cầu (Failed)"; 
@@ -192,34 +192,56 @@ async function fetchStep34() {
             const format_u = (v) => v ? parseFloat(v).toFixed(4) : '-'; // u: 4 chữ số thập phân
             
             // Hàm lấy an toàn
-            const val = (key, prop) => kin[key] && kin[key][prop] !== undefined ? kin[key][prop] : null;
+            const getVal = (key, prop) => kin[key] && kin[key][prop] !== undefined ? kin[key][prop] : null;
             
             // Cột: Động cơ
-            document.getElementById("t_P_dc").textContent = format_P(val('truc_dc', 'P'));
-            document.getElementById("t_n_dc").textContent = val('truc_dc', 'n') ? Math.round(val('truc_dc', 'n')) : '-'; // n_dc lấy nguyên
-            document.getElementById("t_T_dc").textContent = format_T(val('truc_dc', 'T'));
+            document.getElementById("t_P_dc").textContent = format_P(getVal('truc_dc', 'P'));
+            document.getElementById("t_n_dc").textContent = getVal('truc_dc', 'n') ? Math.round(val('truc_dc', 'n')) : '-'; // n_dc lấy nguyên
+            document.getElementById("t_T_dc").textContent = format_T(getVal('truc_dc', 'T'));
             document.getElementById("t_u_dc").textContent = '-';
             
             // Cột: Trục I
-            document.getElementById("t_P_1").textContent = format_P(val('truc_1', 'P'));
-            document.getElementById("t_n_1").textContent = format_n(val('truc_1', 'n'));
-            document.getElementById("t_T_1").textContent = format_T(val('truc_1', 'T'));
+            document.getElementById("t_P_1").textContent = format_P(getVal('truc_1', 'P'));
+            document.getElementById("t_n_1").textContent = format_n(getVal('truc_1', 'n'));
+            document.getElementById("t_T_1").textContent = format_T(getVal('truc_1', 'T'));
             document.getElementById("t_u_1").textContent = format_u(ratios.u_dai);
             
             // Cột: Trục II
-            document.getElementById("t_P_2").textContent = format_P(val('truc_2', 'P'));
-            document.getElementById("t_n_2").textContent = format_n(val('truc_2', 'n'));
-            document.getElementById("t_T_2").textContent = format_T(val('truc_2', 'T'));
+            document.getElementById("t_P_2").textContent = format_P(getVal('truc_2', 'P'));
+            document.getElementById("t_n_2").textContent = format_n(getVal('truc_2', 'n'));
+            document.getElementById("t_T_2").textContent = format_T(getVal('truc_2', 'T'));
             document.getElementById("t_u_2").textContent = format_u(ratios.u_1);
             
             // Cột: Trục III
-            document.getElementById("t_P_3").textContent = format_P(val('truc_3', 'P'));
-            document.getElementById("t_n_3").textContent = format_n(val('truc_3', 'n'));
-            document.getElementById("t_T_3").textContent = format_T(val('truc_3', 'T'));
+            document.getElementById("t_P_3").textContent = format_P(getVal('truc_3', 'P'));
+            document.getElementById("t_n_3").textContent = format_n(getVal('truc_3', 'n'));
+            document.getElementById("t_T_3").textContent = format_T(getVal('truc_3', 'T'));
             document.getElementById("t_u_3").textContent = format_u(ratios.u_2);
             
             // Vẽ biểu đồ Moment
             renderTorqueChart(kin);
+
+            // ───── SAVE DATA FOR M2 ─────
+            saveModuleData(STORAGE_KEYS.M1, {
+                input: {
+                    pt: state.pt,
+                    niv: state.niv
+                },
+
+                motor: state.selectedMotor,
+
+                power: {
+                    pct: state.pct
+                },
+
+                ratios: ratios,
+
+                kinematics: kin,
+
+                validation: validation,
+
+                timestamp: new Date().toISOString()
+            });
         }
     } catch(e) { 
         console.error(e);
@@ -280,3 +302,59 @@ window.reValidate = function() {
     if(!state.selectedMotor) return;
     fetchStep34();
 };
+
+window.addEventListener(
+    "DOMContentLoaded",
+    restoreM1State
+);
+
+function restoreM1State() {
+
+    const saved =
+        loadModuleData(STORAGE_KEYS.M1);
+
+    if(!saved) return;
+
+    // Restore input
+    restoreInput(
+        "inputPt",
+        saved.input.pt
+    );
+
+    restoreInput(
+        "inputNiv",
+        saved.input.niv
+    );
+
+    // Restore state
+    state.pt = saved.input.pt;
+
+    state.niv = saved.input.niv;
+
+    state.selectedMotor =
+        saved.motor;
+
+    state.pct =
+        saved.power.pct;
+
+    // Nếu muốn auto render lại
+    if(saved.kinematics) {
+
+        document
+            .getElementById("step2")
+            .classList.add("active");
+
+        document
+            .getElementById("step3")
+            .classList.add("active");
+
+        document
+            .getElementById("step4")
+            .classList.add("active");
+    }
+
+    showToast(
+        'ok',
+        'Đã khôi phục dữ liệu M1'
+    );
+}

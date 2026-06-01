@@ -28,7 +28,7 @@ def get_motor_recommendations(data):
         dc_chon_db = motors[0]
         # Tạo format JSON mong đợi từ tinh_toan_he_thong_thuc_te
         dc_chon = {
-            'VanToc_vph': dc_chon_db['n'],
+            'TocDo_vph': dc_chon_db['n'],
             'Model': dc_chon_db['code']
         }
         ti_so_truyen = tinh_toan_he_thong_thuc_te(dc_chon, n_lv)

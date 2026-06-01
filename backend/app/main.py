@@ -73,7 +73,7 @@ async def calculate_motor_step3_4(data: dict):
         is_valid, msg = kiem_nghiem_khoi_dong(dc_row, k_qt)
         
         # 2. Bảng động lực học
-        fake_dc_chon = {"VanToc_vph": motor_data.get("n", 1450), "Model": motor_data.get("code", "")}
+        fake_dc_chon = {"TocDo_vph": motor_data.get("n", 1450), "Model": motor_data.get("code", "")}
         # Tỉ số truyền tổng và phân phối
         ratios_dict = tinh_toan_he_thong_thuc_te(fake_dc_chon, n_iv)
         

@@ -1,6 +1,6 @@
 -- Taif lieuej trang 236-238 SGK
 USE dadn;
-INSERT INTO Thu_Vien_Dong_Co (Model, CongSuat_kW, VanToc_vph, HieuSuat, CosPhi, Tmax_Tdn, Tk_Tdn) 
+INSERT INTO Thu_Vien_Dong_Co (Model, CongSuat_kW, TocDo_vph, HieuSuat, CosPhi, Tmax_Tdn, Tk_Tdn) 
 VALUES 
 -- Nhóm Tốc độ đồng bộ 3000 v/ph (2 cực)
 ('4A80A2Y3', 1.1, 2825, 77.0, 0.84, 2.2, 2.0),

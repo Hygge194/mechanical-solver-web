@@ -183,7 +183,7 @@ def tinh_n_so_bo(n_iv, u_dai_sb=4, u_hgt_sb=10):
 def query_dong_co(cursor, p_ct, n_sb):
     """Truy vấn 3 động cơ phù hợp từ Database."""
     query = """
-        SELECT *, ABS(VanToc_vph - %s) AS diff_n
+        SELECT *, ABS(TocDo_vph - %s) AS diff_n
         FROM Thu_Vien_Dong_Co
         WHERE CongSuat_kW >= %s
         ORDER BY CongSuat_kW ASC, diff_n ASC
@@ -206,7 +206,7 @@ def tinh_toan_he_thong_thuc_te(dc_chon, n_iv, u_dai_so_bo=2.5, u_con_so_bo=4.5):
     Phân phối tỉ số truyền thực tế.
     Trả về dict chứa u_dai, u_1 (côn), u_2 (trụ).
     """
-    n_dc    = dc_chon['VanToc_vph']
+    n_dc    = dc_chon['TocDo_vph']
     u_t     = n_dc / n_iv
     u_dai   = u_dai_so_bo
     u_h     = u_t / u_dai
@@ -656,7 +656,7 @@ def chay_he_thong(
                     │
                     ├─► P_lv  = P_tai / 1000      → P1 cho Module 2
                     └─► u_dai = kq_u['u_dai']      → ud cho Module 2
-                    └─► n_dc  = dc_chon['VanToc_vph'] → n1 cho Module 2
+                    └─► n_dc  = dc_chon['TocDo_vph'] → n1 cho Module 2
                             │
                             └─► Module 2: tinh_bo_truyen_dai(P1=P_lv, n1=n_dc, ud=u_dai)
     """
@@ -692,7 +692,7 @@ def chay_he_thong(
           f"  |  u_côn = {kq_u['u_1']}  |  u_trụ = {kq_u['u_2']}")
 
     # ── Bước 1.4: Thông số các trục ─────────────────────────
-    n_dc  = dc_chon['VanToc_vph']
+    n_dc  = dc_chon['TocDo_vph']
     P_dc  = dc_chon['CongSuat_kW']
     u_list = [kq_u['u_dai'], kq_u['u_1'], kq_u['u_2']]
     kq_truc = tinh_thong_so_truc(P_dc, n_dc, u_list, eta_dict)
@@ -745,7 +745,7 @@ if __name__ == "__main__":
     DC_CHON = {
         'Model':        'ĐC_7.5kW_2922',
         'CongSuat_kW':  7.5,
-        'VanToc_vph':   2922,
+        'TocDo_vph':   2922,
         'Tk_Tdn':       2.0,
     }
 

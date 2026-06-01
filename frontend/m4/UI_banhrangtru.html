@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MechaMix – M3: Bánh Răng Trụ Răng Thẳng</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#050c18;--bg2:#07111f;--bg3:#0b1829;--bg4:#0f2038;
+  --blue:#1e6fff;--cyan:#00d4ff;--teal:#00c9a7;--violet:#8b5cf6;
+  --green:#10b981;--gold:#f59e0b;--red:#ef4444;--orange:#f97316;
+  --tx1:#e2e8f0;--tx2:#7a93b4;--tx3:#2e4460;
+  --bdr:rgba(30,111,255,0.14);--bdr2:rgba(0,212,255,0.28);
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:var(--font);color:var(--tx1);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 90% 60% at 5% 0%,rgba(30,111,255,0.09) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 100%,rgba(139,92,246,0.07) 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 45%,rgba(0,201,167,0.04) 0%,transparent 60%),
+    linear-gradient(rgba(30,111,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(30,111,255,0.025) 1px,transparent 1px);
+  background-size:auto,auto,auto,44px 44px,44px 44px;}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:228px;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:200;}
+.sb-top{padding:24px 20px 20px;border-bottom:1px solid var(--bdr);}
+.logo-row{display:flex;align-items:center;gap:11px;}
+.logo-mark{width:40px;height:40px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(30,111,255,0.45);position:relative;}
+.logo-mark::after{content:'';position:absolute;inset:0;border-radius:12px;border:1px solid rgba(255,255,255,0.15);}
+.logo-mark svg{width:22px;height:22px;fill:none;stroke:white;stroke-width:2;}
+.logo-name{font-weight:800;font-size:19px;}
+.logo-name em{font-style:normal;color:var(--cyan);}
+.sb-body{flex:1;padding:16px 12px;overflow-y:auto;}
+.sb-section{margin-bottom:6px;}
+.sb-sec-label{font-size:9.5px;font-weight:700;letter-spacing:1.8px;color:var(--tx3);text-transform:uppercase;padding:4px 10px 6px;display:block;}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;margin-bottom:2px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--tx2);text-decoration:none;transition:all 0.18s;}
+.nav-link:hover{background:var(--bg4);color:var(--tx1);}
+.nav-link.active{background:rgba(30,111,255,0.14);color:var(--cyan);border-left:2.5px solid var(--cyan);}
+.nav-link.done{background:rgba(16,185,129,0.08);color:var(--green);border-left:2.5px solid var(--green);}
+.nav-link svg{width:15px;height:15px;flex-shrink:0;}
+.nav-tag{margin-left:auto;font-size:9px;padding:1px 7px;border-radius:10px;font-family:var(--mono);font-weight:600;}
+.tag-done{background:rgba(16,185,129,0.18);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.tag-active{background:rgba(0,212,255,0.18);color:var(--cyan);border:1px solid rgba(0,212,255,0.3);}
+.sb-bot{padding:14px 12px;border-top:1px solid var(--bdr);}
+.user-row{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:10px;background:var(--bg3);cursor:pointer;}
+.u-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+.u-name{font-size:13px;font-weight:600;}
+.u-role{font-size:10.5px;color:var(--tx2);margin-top:1px;}
+.u-dots{margin-left:auto;color:var(--tx3);font-size:16px;}
+
+/* MAIN */
+/* ═══ MAIN ═══ */
+.main{margin-left:228px;min-height:100vh;position:relative;z-index:1;}
+
+/* ═══ TOPBAR (M1 style) ═══ */
+.topbar{height:56px;background:rgba(7,17,31,0.92);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 28px;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);}
+.tb-breadcrumb{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--tx2);}
+.tb-breadcrumb .sep{color:var(--tx3);}
+.tb-breadcrumb .cur{color:var(--cyan);font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.tb-date{font-size:11.5px;color:var(--tx2);font-family:var(--mono);}
+.tb-search{display:flex;align-items:center;gap:7px;padding:6px 14px;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;font-size:12px;color:var(--tx3);cursor:pointer;transition:0.2s;}
+.tb-search:hover{border-color:var(--blue);color:var(--tx2);}
+.tb-icon{width:32px;height:32px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:0.2s;}
+.tb-icon:hover{border-color:var(--blue);}
+.tb-notif-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid var(--bg2);}
+.content{padding:32px 36px 60px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* MODULE HEADER */
+.module-header{background:var(--bg3);border:1px solid var(--bdr);border-radius:20px;padding:28px 36px;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;margin-bottom:28px;display:flex;align-items:center;gap:24px;}
+.module-header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),var(--gold),var(--teal),var(--cyan));}
+.module-header-glow{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.06),transparent 70%);right:-80px;top:-80px;pointer-events:none;}
+.module-badge{width:60px;height:60px;border-radius:16px;flex-shrink:0;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(0,212,255,0.1));border:1px solid rgba(245,158,11,0.35);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:13px;color:var(--gold);box-shadow:0 0 24px rgba(245,158,11,0.15);position:relative;z-index:1;}
+.module-meta{flex:1;position:relative;z-index:1;}
+.module-eyebrow{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.module-eyebrow::before{content:'';width:16px;height:2px;background:var(--gold);border-radius:1px;}
+.module-title{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-0.3px;}
+.module-title span{color:var(--cyan);}
+.module-desc{font-size:13px;color:var(--tx2);line-height:1.6;max-width:620px;}
+
+/* CARDS */
+.section-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;animation:fadeUp 0.5s ease both;margin-bottom:20px;}
+.card-header{padding:16px 22px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;}
+.card-title{font-size:14.5px;font-weight:700;}
+.card-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
+.card-badge{margin-left:auto;font-size:9.5px;padding:3px 10px;border-radius:8px;font-family:var(--mono);font-weight:600;border:1px solid;white-space:nowrap;}
+.badge-input{background:rgba(30,111,255,0.1);color:var(--blue);border-color:rgba(30,111,255,0.25);}
+.badge-auto{background:rgba(16,185,129,0.1);color:var(--green);border-color:rgba(16,185,129,0.25);}
+.badge-output{background:rgba(0,212,255,0.1);color:var(--cyan);border-color:rgba(0,212,255,0.25);}
+.badge-check{background:rgba(139,92,246,0.1);color:var(--violet);border-color:rgba(139,92,246,0.25);}
+.card-body{padding:22px;}
+
+/* FORM */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+.field-row:last-child,.field-row-3:last-child{margin-bottom:0;}
+.field-group{margin-bottom:0;}
+.field-label{font-size:11.5px;font-weight:600;color:var(--tx2);margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.field-input-wrap{position:relative;}
+.field-input{width:100%;padding:10px 52px 10px 14px;background:var(--bg4);border:1.5px solid var(--tx3);border-radius:10px;color:var(--tx1);font-size:13.5px;font-family:var(--mono);transition:all 0.2s;outline:none;appearance:none;}
+.field-input:focus{border-color:var(--blue);background:rgba(30,111,255,0.06);box-shadow:0 0 0 3px rgba(30,111,255,0.12);}
+.field-unit{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10.5px;font-weight:600;color:var(--tx3);font-family:var(--mono);pointer-events:none;}
+.field-hint{margin-top:5px;font-size:10.5px;color:var(--tx3);font-family:var(--mono);}
+.field-select{width:100%;padding:10px 36px 10px 14px;background:var(--bg4);border:1.5px solid var(--tx3);border-radius:10px;color:var(--tx1);font-size:13px;font-family:var(--font);transition:all 0.2s;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a93b4' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(30,111,255,0.12);}
+
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0 14px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr);}
+.divider-label{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
+
+.section-group-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-group-label::before{content:'';width:12px;height:2px;background:var(--gold);border-radius:1px;}
+
+/* LAYOUT */
+.layout-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;margin-bottom:24px;}
+.col-stack{display:flex;flex-direction:column;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;font-size:13.5px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:all 0.2s;letter-spacing:0.2px;}
+.btn-gold{background:linear-gradient(135deg,#c07800,var(--gold));color:#fff;box-shadow:0 4px 16px rgba(245,158,11,0.35);}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,158,11,0.45);}
+.btn-ghost{background:var(--bg4);color:var(--tx2);border:1.5px solid var(--tx3);}
+.btn-ghost:hover{border-color:var(--blue);color:var(--tx1);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none!important;}
+
+/* CHECK TABLE */
+.check-table{width:100%;border-collapse:collapse;}
+.check-table th{font-size:10.5px;font-weight:700;color:var(--tx3);letter-spacing:0.8px;text-transform:uppercase;text-align:left;padding:10px 14px;border-bottom:1px solid var(--bdr);}
+.check-table td{padding:11px 14px;font-size:12.5px;border-bottom:1px solid rgba(30,111,255,0.06);vertical-align:middle;}
+.check-table tr:last-child td{border-bottom:none;}
+.check-table tr:hover td{background:rgba(30,111,255,0.03);}
+.val-cell{font-family:var(--mono);color:var(--cyan);font-weight:600;}
+.limit-cell{font-family:var(--mono);color:var(--tx2);}
+.check-state{font-size:9.5px;padding:3px 9px;border-radius:6px;font-weight:700;font-family:var(--mono);white-space:nowrap;display:inline-block;}
+.cs-pass{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);}
+.cs-fail{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.cs-idle{background:var(--bg4);color:var(--tx3);border:1px solid var(--tx3);}
+
+/* OUTPUT PANEL */
+.output-section{display:none;animation:fadeUp 0.5s ease both;}
+.result-panel{background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(16,185,129,0.03));border:1px solid rgba(0,212,255,0.2);border-radius:16px;overflow:hidden;margin-bottom:24px;}
+.result-panel-header{padding:16px 22px;border-bottom:1px solid rgba(0,212,255,0.12);display:flex;align-items:center;justify-content:space-between;}
+.result-panel-title{font-size:14.5px;font-weight:700;}
+.result-panel-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
+
+/* Pipeline */
+.pipeline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pipe-step{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.pipe-dot{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:var(--mono);transition:0.2s;}
+.pipe-dot.done{background:rgba(16,185,129,0.15);border:1.5px solid rgba(16,185,129,0.35);color:var(--green);}
+.pipe-dot.active{background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.5);color:var(--gold);box-shadow:0 0 14px rgba(245,158,11,0.2);}
+.pipe-dot.next{background:var(--bg4);border:1.5px solid var(--tx3);color:var(--tx3);}
+.pipe-label{font-size:10px;color:var(--tx2);white-space:nowrap;}
+.pipe-arrow{color:var(--tx3);font-size:14px;padding-bottom:14px;}
+
+/* RESULT TABLE */
+.res-table{width:100%;border-collapse:collapse;}
+.res-table th{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;padding:10px 18px;border-bottom:1px solid rgba(0,212,255,0.12);text-align:left;}
+.res-table td{padding:0;border-bottom:1px solid rgba(30,111,255,0.06);}
+.res-table tr:last-child td{border-bottom:none;}
+.res-table tr:hover .r-param{background:rgba(30,111,255,0.03);}
+.r-param{padding:10px 18px;font-size:13px;font-weight:500;color:var(--tx1);display:flex;align-items:center;gap:10px;}
+.r-symbol{font-family:var(--mono);font-size:11px;color:var(--cyan);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15);padding:2px 7px;border-radius:5px;flex-shrink:0;min-width:36px;text-align:center;}
+.r-val{padding:10px 18px;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--cyan);text-align:right;white-space:nowrap;}
+.r-val.teal{color:var(--teal);}
+.r-val.gold{color:var(--gold);}
+.r-val.green{color:var(--green);}
+.r-val.red{color:var(--red);}
+.r-unit{padding:10px 18px;font-size:11px;color:var(--tx3);font-family:var(--mono);text-align:left;white-space:nowrap;}
+.r-section-hdr td{background:rgba(30,111,255,0.05);padding:7px 18px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr)!important;}
+.r-status{padding:10px 18px;}
+.check-tag{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:700;font-family:var(--mono);display:inline-block;}
+.check-tag.pass{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);}
+.check-tag.fail{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.margin-badge{font-size:10px;padding:2px 8px;border-radius:5px;font-family:var(--mono);font-weight:700;display:inline-block;margin-left:6px;}
+.margin-ok{background:rgba(16,185,129,0.12);color:var(--green);}
+.margin-bad{background:rgba(239,68,68,0.1);color:var(--red);}
+
+/* VERDICT */
+.verdict-box{border-radius:14px;padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;font-size:14px;font-weight:600;}
+.verdict-pass{background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.3);color:var(--green);}
+.verdict-fail{background:rgba(239,68,68,0.07);border:1.5px solid rgba(239,68,68,0.3);color:var(--red);}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:30px;right:30px;z-index:999;display:flex;flex-direction:column;gap:10px;}
+.toast{background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;min-width:280px;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:toastIn 0.3s ease both;backdrop-filter:blur(12px);}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.toast-ok{border-color:rgba(16,185,129,0.4);}
+.toast.toast-error{border-color:rgba(239,68,68,0.4);}
+.toast-msg{font-size:13px;font-weight:500;flex:1;}
+.toast-close{font-size:16px;color:var(--tx3);cursor:pointer;}
+
+/* GEAR VISUAL */
+.gear-visual-wrap{display:flex;align-items:center;justify-content:center;padding:20px 0 8px;}
+#gearVisualWrap{opacity:0;transition:opacity 0.5s;}
+#gearVisualWrap.visible{opacity:1;}
+@keyframes gearSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes gearSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div><div class="logo-name">Mecha<em>Mix</em></div></div>
+    </div>
+  </div>
+  <div class="sb-body">
+    <div class="sb-section">
+      <span class="sb-sec-label">Tổng quan</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dự án của tôi
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Nhập liệu & Kiểm tra</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Kiểm tra ngưỡng
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Tính toán</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Chọn động cơ
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Bộ truyền đai
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+        Bánh răng côn
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <circle cx="4" cy="12" r="2"/>
+          <circle cx="20" cy="12" r="2"/>
+        </svg>
+        Bánh răng trụ
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">AI & Tối ưu</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        Gợi ý linh kiện
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Tối ưu ML / GA
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Xuất & Chia sẻ</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Xuất bản vẽ lắp
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Xuất báo cáo PDF
+      </a>
+    </div>
+  </div>
+  <div class="sb-bot">
+    <div class="user-row">
+      <div class="u-av">KT</div>
+      <div><div class="u-name">Thiên Kiều</div><div class="u-role">CS</div></div>
+      <div class="u-dots">···</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="tb-breadcrumb">
+      <span>MechaMix</span><span class="sep">›</span>
+      <span>Tính toán</span><span class="sep">›</span>
+      <span class="cur">Bộ truyền bánh răng trụ</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-date" id="tbDate"></div>
+      <div class="tb-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Tìm kiếm...
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="tb-notif-dot"></div>
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Module Header -->
+    <div class="module-header">
+      <div class="module-header-glow"></div>
+      <div class="module-badge">M4</div>
+      <div class="module-meta">
+        <div class="module-title">Tính toán <span>Bộ truyền bánh răng trụ - Răng thẳng</span></div>
+        <div class="module-desc">Nhập thông số vật liệu, tải trọng và hình học</div>
+      </div>
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-dot done">M1</div>
+          <div class="pipe-label">Động cơ</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot done">M2</div>
+          <div class="pipe-label">Bộ truyền đai</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot done">M3</div>
+          <div class="pipe-label">Bánh răng côn</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot active">M4</div>
+          <div class="pipe-label">Bánh răng trụ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INPUT + PREVIEW GRID -->
+    <div class="layout-grid">
+
+      <!-- LEFT: Inputs -->
+      <div class="col-stack">
+
+        <!-- Tải trọng -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Thông số tải trọng & truyền động</div><div class="card-sub">Mômen xoắn, tốc độ, tỉ số truyền</div></div>
+          </div>
+          <div class="card-body">
+            <div class="field-row">
+              <div class="field-group">
+                <div class="field-label">Mômen xoắn T₁ (kiểm nghiệm)</div>
+                <div class="field-input-wrap"><input class="field-input" id="T1" type="number" value="223192" step="100"><span class="field-unit">N·mm</span></div>
+                <div class="field-hint">Dùng cho CT 6.33, 6.43, 6.48</div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Mômen xoắn T₁_sb (sơ bộ)</div>
+                <div class="field-input-wrap"><input class="field-input" id="T1sb" type="number" value="210538.22" step="100"><span class="field-unit">N·mm</span></div>
+                <div class="field-hint">Dùng cho CT 6.15a tính a_w</div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field-group">
+                <div class="field-label">Tỉ số truyền yêu cầu u</div>
+                <div class="field-input-wrap"><input class="field-input" id="u_yc" type="number" value="3.71" step="0.01"><span class="field-unit">—</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Hệ số quá tải Kqt</sub></div>
+                <div class="field-input-wrap"><input class="field-input" id="Kqt" type="number" value="2.2" step="0.05"><span class="field-unit">T_max/T</span></div>
+              </div>
+            </div>
+            <div class="field-row" style="margin-bottom:0">
+              <div class="field-group">
+                <div class="field-label">Tốc độ n₁ (vận tốc vòng)</div>
+                <div class="field-input-wrap"><input class="field-input" id="n1v" type="number" value="259.73" step="0.1"><span class="field-unit">rpm</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">d₁ dùng tính vận tốc</div>
+                <div class="field-input-wrap"><input class="field-input" id="d1v" type="number" value="89.45" step="0.1"><span class="field-unit">mm</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vật liệu -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Thông số vật liệu</div><div class="card-sub">Giới hạn mỏi và hệ số an toàn</div></div>
+          </div>
+          <div class="card-body">
+            <div class="section-group-label">Bánh nhỏ (chủ động)</div>
+            <div class="field-row-3">
+              <div class="field-group">
+                <div class="field-label">σ°Hlim₁</div>
+                <div class="field-input-wrap"><input class="field-input" id="sHlim1" type="number" value="570"><span class="field-unit">MPa</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">σ°Flim₁</div>
+                <div class="field-input-wrap"><input class="field-input" id="sFlim1" type="number" value="450"><span class="field-unit">MPa</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">σ<sub>ch</sub>₁</div>
+                <div class="field-input-wrap"><input class="field-input" id="sch1" type="number" value="580"><span class="field-unit">MPa</span></div>
+              </div>
+            </div>
+            <div class="field-row" style="margin-top:10px;">
+              <div class="field-group">
+                <div class="field-label">SH₁ · KHL₁</div>
+                <div style="display:flex;gap:8px;">
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="SH1" type="number" value="1.1" step="0.05"><span class="field-unit">SH</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KHL1" type="number" value="1.0" step="0.01"><span class="field-unit">KHL</span></div>
+                </div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">SF₁ · KFL₁</div>
+                <div style="display:flex;gap:8px;">
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="SF1" type="number" value="1.75" step="0.05"><span class="field-unit">SF</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KFL1" type="number" value="1.0" step="0.01"><span class="field-unit">KFL</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="divider"><span class="divider-label">Bánh lớn (bị động)</span></div>
+            <div class="field-row-3">
+              <div class="field-group">
+                <div class="field-label">σ°Hlim₂</div>
+                <div class="field-input-wrap"><input class="field-input" id="sHlim2" type="number" value="530"><span class="field-unit">MPa</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">σ°Flim₂</div>
+                <div class="field-input-wrap"><input class="field-input" id="sFlim2" type="number" value="414"><span class="field-unit">MPa</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">σ<sub>ch</sub>₂</div>
+                <div class="field-input-wrap"><input class="field-input" id="sch2" type="number" value="580"><span class="field-unit">MPa</span></div>
+              </div>
+            </div>
+            <div class="field-row" style="margin-top:10px;margin-bottom:0">
+              <div class="field-group">
+                <div class="field-label">SH₂ · KHL₂</div>
+                <div style="display:flex;gap:8px;">
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="SH2" type="number" value="1.1" step="0.05"><span class="field-unit">SH</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KHL2" type="number" value="1.0" step="0.01"><span class="field-unit">KHL</span></div>
+                </div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">SF₂ · KFL₂</div>
+                <div style="display:flex;gap:8px;">
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="SF2" type="number" value="1.75" step="0.05"><span class="field-unit">SF</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KFL2" type="number" value="1.0" step="0.01"><span class="field-unit">KFL</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hình học -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Thông số hình học & hệ số tải trọng</div><div class="card-sub">Kích thước bánh răng và hệ số kiểm nghiệm</div></div>
+          </div>
+          <div class="card-body">
+            <div class="section-group-label">Hình học bộ truyền</div>
+            <div class="field-row-3">
+              <div class="field-group">
+                <div class="field-label">Khoảng cách trục a_w</div>
+                <div class="field-input-wrap"><input class="field-input" id="aw" type="number" value="226.5" step="0.5"><span class="field-unit">mm</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Môđun m</div>
+                <select class="field-select" id="m" style="padding-left:14px;">
+                  <option value="1.25">1.25</option><option value="1.5">1.5</option>
+                  <option value="2.0">2.0</option><option value="2.5">2.5</option>
+                  <option value="3.0" selected>3.0</option><option value="4.0">4.0</option>
+                  <option value="5.0">5.0</option><option value="6.0">6.0</option>
+                  <option value="8.0">8.0</option><option value="10.0">10.0</option>
+                </select>
+                <div class="field-hint">Tiêu chuẩn TCVN</div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">ψ_a (hệ số chiều rộng)</div>
+                <div class="field-input-wrap"><input class="field-input" id="psi_a" type="number" value="0.3" step="0.05" min="0.1" max="0.6"><span class="field-unit">—</span></div>
+              </div>
+            </div>
+            <div class="field-row" style="margin-top:12px;">
+              <div class="field-group">
+                <div class="field-label">Số răng z₁</div>
+                <div class="field-input-wrap"><input class="field-input" id="z1" type="number" value="32" min="17"><span class="field-unit">răng</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Số răng z₂</div>
+                <div class="field-input-wrap"><input class="field-input" id="z2" type="number" value="119" min="17"><span class="field-unit">răng</span></div>
+              </div>
+            </div>
+            <div class="field-row" style="margin-top:8px;">
+              <div class="field-group">
+                <div class="field-label">Hệ số dịch chỉnh x₁</div>
+                <div class="field-input-wrap"><input class="field-input" id="x1" type="number" value="0" step="0.05"><span class="field-unit">—</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Hệ số dịch chỉnh x₂</div>
+                <div class="field-input-wrap"><input class="field-input" id="x2" type="number" value="0" step="0.05"><span class="field-unit">—</span></div>
+              </div>
+            </div>
+            <div class="divider"><span class="divider-label">Hệ số tải trọng kiểm nghiệm</span></div>
+            <div class="field-row">
+              <div class="field-group">
+                <div class="field-label">KHβ · KHα · KHv (tiếp xúc)</div>
+                <div style="display:flex;gap:8px;">
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KHb" type="number" value="1.02" step="0.01"><span class="field-unit">β</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KHa" type="number" value="1.13" step="0.01"><span class="field-unit">α</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KHv" type="number" value="1.05" step="0.01"><span class="field-unit">v</span></div>
+                </div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">KFβ · KFα · KFv (uốn)</div>
+                <div style="display:flex;gap:8px;">
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KFb" type="number" value="1.07" step="0.01"><span class="field-unit">β</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KFa" type="number" value="1.37" step="0.01"><span class="field-unit">α</span></div>
+                  <div class="field-input-wrap" style="flex:1"><input class="field-input" id="KFv" type="number" value="1.13" step="0.01"><span class="field-unit">v</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="field-row" style="margin-bottom:0;margin-top:8px;">
+              <div class="field-group">
+                <div class="field-label">KHβ sơ bộ</div>
+                <div class="field-input-wrap"><input class="field-input" id="KHbsb" type="number" value="1.02" step="0.01"><span class="field-unit">—</span></div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Cặp vật liệu</div>
+                <select class="field-select" id="capVL" style="padding-left:14px;">
+                  <option value="thep_thep" selected>Thép – Thép (ZM=274)</option>
+                  <option value="thep_gang">Thép – Gang (ZM=234)</option>
+                  <option value="gang_gang">Gang – Gang (ZM=209)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Run -->
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;">
+          <button class="btn btn-gold" onclick="runCalc()" style="flex:1;justify-content:center;padding:14px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Chạy tính toán đầy đủ
+          </button>
+          <button class="btn btn-ghost" onclick="resetForm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Reset
+          </button>
+        </div>
+
+      </div><!-- /left -->
+
+      <!-- RIGHT: Preview + Checks -->
+      <div class="col-stack">
+
+        <!-- Gear Visual -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Sơ đồ bộ truyền</div><div class="card-sub">Trực quan hóa tỉ lệ bánh răng</div></div>
+          </div>
+          <div class="card-body" style="padding:14px 22px 20px;">
+            <div class="gear-visual-wrap" id="gearVisualWrap">
+              <svg id="gearSvg" viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:400px;height:200px;">
+                <g id="gear1group" transform="translate(110,100)">
+                  <circle id="g1root" r="40" fill="rgba(30,111,255,0.08)" stroke="rgba(30,111,255,0.3)" stroke-width="1"/>
+                  <circle id="g1pitch" r="44" fill="none" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+                  <circle id="g1tip" r="50" fill="none" stroke="var(--cyan)" stroke-width="1.8"/>
+                  <path id="g1teeth" d="" fill="rgba(0,212,255,0.06)" stroke="rgba(0,212,255,0.6)" stroke-width="1.2"/>
+                  <circle r="5" fill="var(--cyan)" opacity="0.6"/>
+                  <text id="g1label" y="-58" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="var(--cyan)">z₁=32</text>
+                </g>
+                <g id="gear2group" transform="translate(260,100)">
+                  <circle id="g2root" r="40" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.2)" stroke-width="1"/>
+                  <circle id="g2pitch" r="44" fill="none" stroke="rgba(0,201,167,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+                  <circle id="g2tip" r="50" fill="none" stroke="var(--teal)" stroke-width="1.8"/>
+                  <path id="g2teeth" d="" fill="rgba(0,201,167,0.06)" stroke="rgba(0,201,167,0.6)" stroke-width="1.2"/>
+                  <circle r="5" fill="var(--teal)" opacity="0.6"/>
+                  <text id="g2label" y="-58" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="var(--teal)">z₂=119</text>
+                </g>
+                <circle id="meshPoint" cx="160" cy="100" r="4" fill="var(--gold)" opacity="0.8"/>
+                <text id="awLabel" x="180" y="190" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--tx3)">a_w = 226.5 mm</text>
+                <line x1="10" y1="170" x2="25" y2="170" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="4 3"/>
+                <text x="28" y="174" font-size="9" fill="var(--tx3)" font-family="JetBrains Mono">Vòng chia</text>
+                <line x1="10" y1="184" x2="25" y2="184" stroke="var(--cyan)" stroke-width="1.5"/>
+                <text x="28" y="188" font-size="9" fill="var(--tx3)" font-family="JetBrains Mono">Vòng đỉnh</text>
+              </svg>
+            </div>
+            <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:4px;">
+              <div style="text-align:center;">
+                <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);">d₁ vòng chia</div>
+                <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--cyan);" id="previewD1">96.0 mm</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);">d₂ vòng chia</div>
+                <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--teal);" id="previewD2">357.0 mm</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);">u thực tế</div>
+                <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--gold);" id="previewU">3.719</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Checks -->
+        <div class="section-card">
+          <div class="card-header">
+            <div><div class="card-title">Kiểm tra điều kiện ăn khớp</div><div class="card-sub">Sau khi chạy tính toán</div></div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="check-table">
+              <thead><tr><th>Điều kiện</th><th>Giá trị</th><th>Yêu cầu</th><th>Kết quả</th></tr></thead>
+              <tbody>
+                <tr><td>Số răng z₁ ≥ z_min</td><td class="val-cell" id="ck_z1v">—</td><td class="limit-cell">≥ 17</td><td><span class="check-state cs-idle" id="ck_z1s">—</span></td></tr>
+                <tr><td>Số răng z₂ ≥ z_min</td><td class="val-cell" id="ck_z2v">—</td><td class="limit-cell">≥ 17</td><td><span class="check-state cs-idle" id="ck_z2s">—</span></td></tr>
+                <tr><td>Hệ số trùng khớp εα</td><td class="val-cell" id="ck_epsv">—</td><td class="limit-cell">≥ 1.2</td><td><span class="check-state cs-idle" id="ck_epss">—</span></td></tr>
+                <tr><td>Tỷ lệ bw/m</td><td class="val-cell" id="ck_bwmv">—</td><td class="limit-cell">[8, 30]</td><td><span class="check-state cs-idle" id="ck_bwms">—</span></td></tr>
+                <tr><td>σH ≤ [σH]</td><td class="val-cell" id="ck_sHv">—</td><td class="limit-cell" id="ck_sHlim">—</td><td><span class="check-state cs-idle" id="ck_sHs">—</span></td></tr>
+                <tr><td>σF₁ ≤ [σF]₁</td><td class="val-cell" id="ck_sF1v">—</td><td class="limit-cell" id="ck_sF1lim">—</td><td><span class="check-state cs-idle" id="ck_sF1s">—</span></td></tr>
+                <tr><td>σF₂ ≤ [σF]₂</td><td class="val-cell" id="ck_sF2v">—</td><td class="limit-cell" id="ck_sF2lim">—</td><td><span class="check-state cs-idle" id="ck_sF2s">—</span></td></tr>
+                <tr><td>σH_max quá tải</td><td class="val-cell" id="ck_sHmv">—</td><td class="limit-cell" id="ck_sHmax_lim">—</td><td><span class="check-state cs-idle" id="ck_sHms">—</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /right -->
+    </div><!-- /layout-grid -->
+
+    <!-- ================================================================== -->
+    <!-- OUTPUT SECTION -->
+    <!-- ================================================================== -->
+    <div id="outputSection" class="output-section">
+
+      <!-- B1: Ứng suất cho phép -->
+      <div class="result-panel">
+        <div class="result-panel-header">
+          <div><div class="result-panel-title">Bước 1 – Ứng suất cho phép</div></div>
+        </div>
+        <table class="res-table">
+          <thead><tr><th style="width:40%">Thông số</th><th>Ký hiệu</th><th>Bánh nhỏ</th><th>Bánh lớn</th><th>Đơn vị</th></tr></thead>
+          <tbody id="tblStress"></tbody>
+        </table>
+      </div>
+
+      <!-- B2: Thông số hình học -->
+      <div class="result-panel">
+        <div class="result-panel-header">
+          <div><div class="result-panel-title">Bước 2 – Thông số hình học bộ truyền</div></div>
+        </div>
+        <table class="res-table">
+          <thead><tr><th style="width:36%">Thông số</th><th>Ký hiệu</th><th>Bánh nhỏ (z₁)</th><th>Bánh lớn (z₂)</th><th>Đơn vị</th></tr></thead>
+          <tbody id="tblGeo"></tbody>
+        </table>
+      </div>
+
+      <!-- B3: Kiểm nghiệm ăn khớp -->
+      <div class="result-panel">
+        <div class="result-panel-header">
+          <div><div class="result-panel-title">Bước 3 – Kiểm tra điều kiện ăn khớpc</div></div>
+        </div>
+        <table class="res-table">
+          <thead><tr><th style="width:36%">Thông số</th><th>Ký hiệu</th><th>Giá trị</th><th>Đơn vị</th><th>Kết quả</th></tr></thead>
+          <tbody id="tblMesh"></tbody>
+        </table>
+      </div>
+
+      <!-- B4+B5 grid -->
+      <div class="layout-grid" style="margin-bottom:0;">
+        <div class="result-panel" style="margin-bottom:0;">
+          <div class="result-panel-header">
+            <div><div class="result-panel-title">Bước 4 – Kiểm nghiệm tiếp xúc σH</div></div>
+          </div>
+          <table class="res-table">
+            <thead><tr><th style="width:44%">Thông số</th><th>Ký hiệu</th><th>Giá trị</th><th>Đơn vị</th></tr></thead>
+            <tbody id="tblContact"></tbody>
+          </table>
+        </div>
+        <div class="result-panel" style="margin-bottom:0;">
+          <div class="result-panel-header">
+            <div><div class="result-panel-title">Bước 5 – Kiểm nghiệm uốn σF</div></div>
+          </div>
+          <table class="res-table">
+            <thead><tr><th style="width:44%">Thông số</th><th>Ký hiệu</th><th>Giá trị</th><th>Đơn vị</th></tr></thead>
+            <tbody id="tblBending"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="height:24px;"></div>
+
+      <!-- B6: Quá tải -->
+      <div class="result-panel">
+        <div class="result-panel-header">
+          <div><div class="result-panel-title">Bước 6 – Kiểm nghiệm quá tải</div></div>
+        </div>
+        <table class="res-table">
+          <thead><tr><th style="width:36%">Thông số</th><th>Ký hiệu</th><th>Giá trị tính</th><th>Giới hạn cho phép</th><th>Đơn vị</th><th>Kết quả</th></tr></thead>
+          <tbody id="tblOverload"></tbody>
+        </table>
+      </div>
+
+      <!-- Verdict -->
+      <div id="verdictBox" class="verdict-box"></div>
+
+    </div><!-- /outputSection -->
+
+  </div><!-- /content -->
+</main>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// =====================================================================
+// CALCULATION ENGINE (ported from spur_gear.py)
+// =====================================================================
+const Z_MIN = 17;
+const ALPHA_STD = 20.0;
+const ZM_TABLE = {thep_thep:274, thep_gang:234, gang_gang:209};
+
+const YF_TABLE = [
+  [17,4.28],[20,4.09],[22,4.07],[25,3.90],[28,3.85],[30,3.80],
+  [32,3.78],[40,3.70],[50,3.65],[60,3.62],[80,3.61],[100,3.60],
+  [150,3.60],[200,3.60],[400,3.60]
+];
+
+const ZH_TABLE_0 = {
+  0.08:1.48, 0.05:1.52, 0.03:1.56, 0.02:1.62, 0.01:1.68,
+  0.005:1.71, 0.0:1.76, '-0.005':1.83, '-0.01':1.93, '-0.015':2.14
+};
+
+function lerp(table, x) {
+  if (x <= table[0][0]) return table[0][1];
+  if (x >= table[table.length-1][0]) return table[table.length-1][1];
+  for (let i=0;i<table.length-1;i++) {
+    const [x0,y0]=table[i],[x1,y1]=table[i+1];
+    if (x0<=x&&x<=x1) return y0+(y1-y0)*(x-x0)/(x1-x0);
+  }
+  return table[table.length-1][1];
+}
+
+function lookupYF(z) { return +lerp(YF_TABLE, z).toFixed(3); }
+
+function lookupZH(xSum=0) {
+  const row = ZH_TABLE_0;
+  const keys = Object.keys(row).map(Number).sort((a,b)=>b-a);
+  const K = xSum;
+  if (K >= keys[0]) return row[keys[0]];
+  if (K <= keys[keys.length-1]) return row[keys[keys.length-1]];
+  for (let i=0;i<keys.length-1;i++) {
+    const k0=keys[i], k1=keys[i+1];
+    if (k1<=K&&K<=k0) {
+      const t=(K-k0)/(k1-k0);
+      return +(row[k0]+(row[k1]-row[k0])*t).toFixed(4);
+    }
+  }
+  return 1.76;
+}
+
+function calcEpsAlpha(z1,z2,m,aw,x1=0,x2=0,alphaDeg=20) {
+  const alphaR=alphaDeg*Math.PI/180;
+  const d1=m*z1, d2=m*z2;
+  const da1=d1+2*(1+x1)*m, da2=d2+2*(1+x2)*m;
+  const rb1=(d1/2)*Math.cos(alphaR), rb2=(d2/2)*Math.cos(alphaR);
+  const ra1=da1/2, ra2=da2/2;
+  const alphaA1=Math.acos(Math.min(1,rb1/ra1));
+  const alphaA2=Math.acos(Math.min(1,rb2/ra2));
+  const eps=(z1*(Math.tan(alphaA1)-Math.tan(alphaR))+z2*(Math.tan(alphaA2)-Math.tan(alphaR)))/(2*Math.PI);
+  return +eps.toFixed(4);
+}
+
+function gearGeometry(m,z1,z2,aw,psiA=0.3,x1=0,x2=0) {
+  const u=z2/z1;
+  const d1=+(m*z1).toFixed(4), d2=+(m*z2).toFixed(4);
+  const dw1=+(2*aw/(u+1)).toFixed(4), dw2=+(2*aw*u/(u+1)).toFixed(4);
+  const da1=+(d1+2*(1+x1)*m).toFixed(4), da2=+(d2+2*(1+x2)*m).toFixed(4);
+  const df1=+(d1-(2.5-2*x1)*m).toFixed(4), df2=+(d2-(2.5-2*x2)*m).toFixed(4);
+  const xMean=(x1+x2)/2;
+  const ha=+((1+xMean)*m).toFixed(4);
+  const hf=+((1.25-xMean)*m).toFixed(4);
+  const h=+(ha+hf).toFixed(4), c=+(0.25*m).toFixed(4);
+  const p=+(Math.PI*m).toFixed(6), pb=+(Math.PI*m*Math.cos(ALPHA_STD*Math.PI/180)).toFixed(6);
+  const YF1=lookupYF(z1), YF2=lookupYF(z2);
+  const bw=+(psiA*aw).toFixed(2);
+  const eps=calcEpsAlpha(z1,z2,m,aw,x1,x2);
+  const ZH=lookupZH(x1+x2);
+  const alphaW=ALPHA_STD; // β=0, x=0 → αw=α
+  return {m,u:+u.toFixed(4),bw,d1,d2,dw1,dw2,da1,da2,df1,df2,
+          ha,hf,h,c,p,pb,YF1,YF2,eps_alpha:eps,ZH,alphaW,
+          x1,x2,z1,z2,aw,psiA};
+}
+
+// V1: Allowable contact stress
+function V1(sHlim,SH,KHL,sch) {
+  return {
+    sH: +(sHlim*KHL/SH).toFixed(3),
+    sHmax: +(2.8*sch).toFixed(3)
+  };
+}
+// V2: Allowable bending stress
+function V2(sFlim,SF,KFL,sch) {
+  return {
+    sF: +(sFlim*KFL/SF).toFixed(3),
+    sFmax: +(0.8*sch).toFixed(3)
+  };
+}
+// V3: Contact stress (CT 6.33)
+function V3(T1,u,d1,bw,KH,capVL,eps,sHallow,xSum=0) {
+  const ZM=ZM_TABLE[capVL]||274;
+  const ZH=lookupZH(xSum);
+  const Ze=+Math.sqrt((4-eps)/3).toFixed(4);
+  const inner=2*T1*KH*(u+1)/(bw*u*d1*d1);
+  const sigH=+(ZM*ZH*Ze*Math.sqrt(inner)).toFixed(3);
+  return {ZM,ZH,Ze,sigH,ok:sigH<=sHallow,
+          margin:+((1-sigH/sHallow)*100).toFixed(2)};
+}
+// V4: Bending stress (CT 6.43/6.44)
+function V4(T1,m,d1,bw,KF,z1,z2,eps,sF1allow,sF2allow) {
+  const YF1=lookupYF(z1), YF2=lookupYF(z2);
+  const Ye=+(1/eps).toFixed(4), Yb=1.0;
+  const sF1=+(2*T1*KF*YF1*Ye*Yb/(bw*d1*m)).toFixed(3);
+  const sF2=+(sF1*YF2/YF1).toFixed(3);
+  return {YF1,YF2,Ye,Yb,sF1,sF2,
+          ok1:sF1<=sF1allow,ok2:sF2<=sF2allow,
+          m1:+((1-sF1/sF1allow)*100).toFixed(2),
+          m2:+((1-sF2/sF2allow)*100).toFixed(2)};
+}
+// V5: Overload (CT 6.48/6.49)
+function V5(Kqt,sH_calc,sF1,sF2,sHallow,sHmax,sF1max,sF2max) {
+  const sqK=+Math.sqrt(Kqt).toFixed(4);
+  // σH_max = [σH]·√Kqt (bảo thủ, theo Trịnh Chất mục 3.3.7)
+  const sHm=+(sHallow*sqK).toFixed(3);
+  const sF1m=+(sF1*sqK).toFixed(3);
+  const sF2m=+(sF2*sqK).toFixed(3);
+  return {sqK,sHm,sF1m,sF2m,
+          okH:sHm<=sHmax,okF1:sF1m<=sF1max,okF2:sF2m<=sF2max,
+          mH:+((1-sHm/sHmax)*100).toFixed(2),
+          mF1:+((1-sF1m/sF1max)*100).toFixed(2),
+          mF2:+((1-sF2m/sF2max)*100).toFixed(2)};
+}
+
+// =====================================================================
+// UI HELPERS
+// =====================================================================
+const gv = id => parseFloat(document.getElementById(id).value)||0;
+const gi = id => parseInt(document.getElementById(id).value)||0;
+const gs = id => document.getElementById(id).value;
+const f2 = v => typeof v==='number'?v.toFixed(2):v;
+const f3 = v => typeof v==='number'?v.toFixed(3):v;
+const f4 = v => typeof v==='number'?v.toFixed(4):v;
+
+function ckClass(ok){return ok?'cs-pass':'cs-fail';}
+function ckText(ok){return ok?'ĐẠT ✓':'KHÔNG ĐẠT ✗';}
+function setCheck(idV,idS,val,ok){
+  document.getElementById(idV).textContent=val;
+  const el=document.getElementById(idS);
+  el.className='check-state '+ckClass(ok);
+  el.textContent=ckText(ok);
+}
+function chkTag(ok){
+  return `<span class="check-tag ${ok?'pass':'fail'}">${ckText(ok)}</span>`;
+}
+function marginBadge(val,limit,ok){
+  const pct=Math.abs((val/limit-1)*100).toFixed(1);
+  const cls=ok?'margin-ok':'margin-bad';
+  const txt=ok?`DP ${pct}%`:`Vượt ${pct}%`;
+  return `<span class="margin-badge ${cls}">${txt}</span>`;
+}
+
+// Table row builders
+function rowHdr(label){
+  return `<tr class="r-section-hdr"><td colspan="10">${label}</td></tr>`;
+}
+// Two-value row (Bánh nhỏ / Bánh lớn)
+function row2(name, sym, v1, v2, unit, highlight=false){
+  const s=highlight?'font-weight:700;':'';
+  return `<tr>
+    <td><div class="r-param" style="${s}"><span class="r-symbol">${sym}</span>${name}</div></td>
+    <td class="r-val">${f3(v1)}</td>
+    <td class="r-val teal">${f3(v2)}</td>
+    <td class="r-unit">${unit}</td>
+  </tr>`;
+}
+// Two-value row with 5 cols (stress table: sym separate)
+function row2s(name, sym, v1, v2, unit, highlight=false){
+  const s=highlight?'font-weight:700;':'';
+  return `<tr>
+    <td><div class="r-param" style="${s}">${name}</div></td>
+    <td class="r-unit" style="color:var(--cyan);font-weight:600;">${sym}</td>
+    <td class="r-val">${f3(v1)}</td>
+    <td class="r-val teal">${f3(v2)}</td>
+    <td class="r-unit">${unit}</td>
+  </tr>`;
+}
+// Single value row
+function row1(name, sym, val, unit, extra='', valClass=''){
+  return `<tr>
+    <td><div class="r-param"><span class="r-symbol">${sym}</span>${name}</div></td>
+    <td class="r-val ${valClass}" style="font-size:${valClass?'15':'14'}px;">${f3(val)}${extra}</td>
+    <td class="r-unit">${unit}</td>
+  </tr>`;
+}
+// Single value + status row (4 cols for contact/bending)
+function row1s(name, sym, val, unit, extra=''){
+  return `<tr>
+    <td><div class="r-param">${name}</div></td>
+    <td class="r-unit" style="color:var(--cyan);font-weight:600;">${sym}</td>
+    <td class="r-val">${f3(val)}</td>
+    <td class="r-unit">${unit}</td>
+  </tr>`;
+}
+// Overload row (6 cols)
+function rowOL(name, sym, val, limit, unit, ok){
+  return `<tr>
+    <td><div class="r-param"><span class="r-symbol">${sym}</span>${name}</div></td>
+    <td class="r-unit" style="color:var(--cyan);font-weight:600;">${sym}</td>
+    <td class="r-val">${f3(val)}</td>
+    <td class="r-val teal">${f3(limit)}</td>
+    <td class="r-unit">${unit}</td>
+    <td class="r-status">${chkTag(ok)} ${marginBadge(val,limit,ok)}</td>
+  </tr>`;
+}
+// Geo table row (5 cols)
+function rowGeo(name, sym, v1, v2, unit, highlight=false){
+  const s=highlight?'font-weight:700;':'';
+  return `<tr>
+    <td><div class="r-param" style="${s}">${name}</div></td>
+    <td class="r-unit" style="color:var(--cyan);font-weight:600;text-align:center;">${sym}</td>
+    <td class="r-val">${typeof v1==='number'?v1.toFixed(v1%1===0&&v1<1000?0:3):v1}</td>
+    <td class="r-val teal">${typeof v2==='number'?v2.toFixed(v2%1===0&&v2<1000?0:3):v2}</td>
+    <td class="r-unit">${unit}</td>
+  </tr>`;
+}
+// Mesh row (5 cols)
+function rowMesh(name, sym, val, unit, ok, display=''){
+  const dv=display||f4(val);
+  return `<tr>
+    <td><div class="r-param">${name}</div></td>
+    <td class="r-unit" style="color:var(--cyan);font-weight:600;text-align:center;">${sym}</td>
+    <td class="r-val">${dv}</td>
+    <td class="r-unit">${unit}</td>
+    <td class="r-status">${chkTag(ok)}</td>
+  </tr>`;
+}
+
+// =====================================================================
+// GEAR VISUAL
+// =====================================================================
+function updateGearVisual(){
+  const m=parseFloat(gs('m'))||3, z1=gi('z1')||32, z2=gi('z2')||119;
+  const aw=gv('aw')||226.5;
+  const d1=m*z1, d2=m*z2, u=z2/z1;
+  document.getElementById('previewD1').textContent=d1.toFixed(1)+' mm';
+  document.getElementById('previewD2').textContent=d2.toFixed(1)+' mm';
+  document.getElementById('previewU').textContent=u.toFixed(3);
+  const maxR=Math.min(d2/2,85);
+  const scale=maxR/(d2/2);
+  const r1tip=d1/2*scale, r2tip=d2/2*scale;
+  const r1root=r1tip-2.5*scale*m, r2root=r2tip-2.5*scale*m;
+  const r1pitch=r1tip-1.5*scale*m, r2pitch=r2tip-1.5*scale*m;
+  const cx1=180-r2tip+r1tip, cx2=180+r2tip-10;
+  function gPath(rT,rR,n){
+    const pts=[];
+    for(let i=0;i<n*2;i++){
+      const a=(i/(n*2))*2*Math.PI;
+      const r=i%2===0?rT:rR;
+      pts.push(`${r*Math.cos(a)},${r*Math.sin(a)}`);
+    }
+    return `M ${pts.join(' L ')} Z`;
+  }
+  const g1=document.getElementById('gear1group');
+  g1.setAttribute('transform',`translate(${cx1},100)`);
+  document.getElementById('g1root').setAttribute('r',Math.max(2,r1root));
+  document.getElementById('g1pitch').setAttribute('r',r1pitch);
+  document.getElementById('g1tip').setAttribute('r',r1tip);
+  document.getElementById('g1teeth').setAttribute('d',gPath(r1tip,r1root,Math.min(z1,32)));
+  document.getElementById('g1label').textContent=`z₁=${z1} · m=${m}`;
+  document.getElementById('g1label').setAttribute('y',-(r1tip+12));
+  const g2=document.getElementById('gear2group');
+  g2.setAttribute('transform',`translate(${cx2},100)`);
+  document.getElementById('g2root').setAttribute('r',Math.max(2,r2root));
+  document.getElementById('g2pitch').setAttribute('r',r2pitch);
+  document.getElementById('g2tip').setAttribute('r',r2tip);
+  document.getElementById('g2teeth').setAttribute('d',gPath(r2tip,r2root,Math.min(z2,48)));
+  document.getElementById('g2label').textContent=`z₂=${z2}`;
+  document.getElementById('g2label').setAttribute('y',-(r2tip+12));
+  document.getElementById('meshPoint').setAttribute('cx',cx1+r1tip);
+  document.getElementById('awLabel').textContent=`a_w = ${aw} mm  |  u = ${u.toFixed(3)}`;
+  document.getElementById('gearVisualWrap').classList.add('visible');
+}
+
+// =====================================================================
+// MAIN CALCULATION
+// =====================================================================
+function runCalc(){
+  const T1=gv('T1'), T1sb=gv('T1sb'), Kqt=gv('Kqt');
+  const n1v=gv('n1v'), d1v=gv('d1v');
+  const sHlim1=gv('sHlim1'),sFlim1=gv('sFlim1'),sch1=gv('sch1');
+  const SH1=gv('SH1'),KHL1=gv('KHL1'),SF1=gv('SF1'),KFL1=gv('KFL1');
+  const sHlim2=gv('sHlim2'),sFlim2=gv('sFlim2'),sch2=gv('sch2');
+  const SH2=gv('SH2'),KHL2=gv('KHL2'),SF2=gv('SF2'),KFL2=gv('KFL2');
+  const aw=gv('aw'), m=parseFloat(gs('m')), psiA=gv('psi_a');
+  const z1=gi('z1'), z2=gi('z2'), x1=gv('x1'), x2=gv('x2');
+  const KHb=gv('KHb'),KHa=gv('KHa'),KHv=gv('KHv');
+  const KFb=gv('KFb'),KFa=gv('KFa'),KFv=gv('KFv');
+  const capVL=gs('capVL');
+
+  // Validation
+  if(z1<Z_MIN||z2<Z_MIN){showToast('error','⚠️ z₁, z₂ phải ≥ 17 (z_min tránh cắt chân răng)');return;}
+  if(m<=0||aw<=0){showToast('error','⚠️ Kiểm tra lại m và a_w');return;}
+  if(T1<=0){showToast('error','⚠️ T₁ phải > 0');return;}
+
+  // === BƯỚC 1: Ứng suất cho phép ===
+  const aH1=V1(sHlim1,SH1,KHL1,sch1);
+  const aH2=V1(sHlim2,SH2,KHL2,sch2);
+  const aF1=V2(sFlim1,SF1,KFL1,sch1);
+  const aF2=V2(sFlim2,SF2,KFL2,sch2);
+  const sHallow=Math.min(aH1.sH,aH2.sH);
+  const sHmax=aH1.sHmax, sF1max=aF1.sFmax, sF2max=aF2.sFmax;
+  const sF1allow=aF1.sF, sF2allow=aF2.sF;
+
+  // === BƯỚC 2: Hình học ===
+  const geo=gearGeometry(m,z1,z2,aw,psiA,x1,x2);
+  const bw=geo.bw, uReal=geo.u, d1=geo.d1, eps=geo.eps_alpha;
+  const bwm=+(bw/m).toFixed(2);
+
+  // Velocity
+  const v=+(Math.PI*d1v*n1v/60000).toFixed(2);
+
+  // Load factors
+  const KH=+(KHb*KHa*KHv).toFixed(4);
+  const KF=+(KFb*KFa*KFv).toFixed(4);
+
+  // === BƯỚC 3: Ăn khớp ===
+  const meshOk = {
+    z1: z1>=Z_MIN, z2: z2>=Z_MIN,
+    eps: eps>=1.2, bwm: bwm>=8&&bwm<=30,
+    uReal: Math.abs(uReal-gv('u_yc'))/gv('u_yc')*100<5
+  };
+
+  // === BƯỚC 4: Tiếp xúc ===
+  const cont=V3(T1,uReal,d1,bw,KH,capVL,eps,sHallow,x1+x2);
+
+  // === BƯỚC 5: Uốn ===
+  const bend=V4(T1,m,d1,bw,KF,z1,z2,eps,sF1allow,sF2allow);
+
+  // === BƯỚC 6: Quá tải ===
+  const over=V5(Kqt,cont.sigH,bend.sF1,bend.sF2,sHallow,sHmax,sF1max,sF2max);
+
+  // ── Update quick-check panel ──
+  setCheck('ck_z1v','ck_z1s',z1,meshOk.z1);
+  setCheck('ck_z2v','ck_z2s',z2,meshOk.z2);
+  setCheck('ck_epsv','ck_epss',eps.toFixed(4),meshOk.eps);
+  setCheck('ck_bwmv','ck_bwms',bwm,meshOk.bwm);
+  document.getElementById('ck_sHlim').textContent=`≤ ${sHallow.toFixed(1)} MPa`;
+  setCheck('ck_sHv','ck_sHs',cont.sigH.toFixed(2)+' MPa',cont.ok);
+  document.getElementById('ck_sF1lim').textContent=`≤ ${sF1allow.toFixed(1)} MPa`;
+  setCheck('ck_sF1v','ck_sF1s',bend.sF1.toFixed(2)+' MPa',bend.ok1);
+  document.getElementById('ck_sF2lim').textContent=`≤ ${sF2allow.toFixed(1)} MPa`;
+  setCheck('ck_sF2v','ck_sF2s',bend.sF2.toFixed(2)+' MPa',bend.ok2);
+  document.getElementById('ck_sHmax_lim').textContent=`≤ ${sHmax.toFixed(0)} MPa`;
+  setCheck('ck_sHmv','ck_sHms',over.sHm.toFixed(2)+' MPa',over.okH);
+
+  // ══════════════════════════════════════════
+  // BUILD OUTPUT TABLES
+  // ══════════════════════════════════════════
+
+  // --- Bảng 1: Ứng suất cho phép ---
+  document.getElementById('tblStress').innerHTML = `
+    ${rowHdr('Ứng suất tiếp xúc cho phép')}
+    ${row2s('Giới hạn mỏi tiếp xúc','σ°Hlim',sHlim1,sHlim2,'MPa')}
+    ${row2s('Hệ số an toàn tiếp xúc','SH',SH1,SH2,'—')}
+    ${row2s('Hệ số tuổi thọ tiếp xúc','KHL',KHL1,KHL2,'—')}
+    ${row2s('Ứng suất tiếp xúc cho phép','[σH]',aH1.sH,aH2.sH,'MPa',true)}
+    <tr>
+      <td><div class="r-param" style="font-weight:700;">Bộ truyền (lấy min của 2 bánh)</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">[σH]</td>
+      <td class="r-val" colspan="2" style="font-size:16px;">${sHallow.toFixed(3)}</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    <tr>
+      <td><div class="r-param">Tiếp xúc quá tải = 2.8·σch₁</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">[σH]max</td>
+      <td class="r-val">${sHmax.toFixed(3)}</td>
+      <td class="r-val teal">—</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    ${rowHdr('Ứng suất uốn cho phép')}
+    ${row2s('Giới hạn mỏi uốn','σ°Flim',sFlim1,sFlim2,'MPa')}
+    ${row2s('Hệ số an toàn uốn','SF',SF1,SF2,'—')}
+    ${row2s('Hệ số tuổi thọ uốn','KFL',KFL1,KFL2,'—')}
+    ${row2s('Ứng suất uốn cho phép','[σF]',aF1.sF,aF2.sF,'MPa',true)}
+    ${row2s('Uốn quá tải = 0.8·σch','[σF]max',sF1max,sF2max,'MPa')}
+  `;
+
+  // --- Bảng 2: Hình học ---
+  document.getElementById('tblGeo').innerHTML = `
+    ${rowHdr('Thông số cơ bản')}
+    ${rowGeo('Môđun pháp','m',m,m,'mm')}
+    ${rowGeo('Khoảng cách trục','aw',aw,aw,'mm')}
+    ${rowGeo('Chiều rộng vành răng = ψa·aw','bw',bw,bw,'mm',true)}
+    ${rowGeo('Tỉ số truyền thực = z₂/z₁','u',uReal,uReal,'—')}
+    ${rowGeo('Số răng','z',z1,z2,'răng',true)}
+    ${rowGeo('Hệ số dịch chỉnh','x',x1,x2,'—')}
+    ${rowGeo('Hệ số trùng khớp ngang','εα',eps,'—','—')}
+    ${rowGeo('Hệ số hình dạng bề mặt tx','ZH',geo.ZH,'—','—')}
+    ${rowHdr('Đường kính các vòng')}
+    ${rowGeo('Đường kính vòng chia d = m·z','d',geo.d1,geo.d2,'mm',true)}
+    ${rowGeo('Đường kính vòng lăn','dw',geo.dw1,geo.dw2,'mm')}
+    ${rowGeo('Đường kính đỉnh răng da = d+2(1+x)m','da',geo.da1,geo.da2,'mm')}
+    ${rowGeo('Đường kính đáy răng df = d−(2.5−2x)m','df',geo.df1,geo.df2,'mm')}
+    ${rowHdr('Thông số hình dạng răng')}
+    ${rowGeo('Chiều cao đầu răng ha = (1+x)m','ha',geo.ha,geo.ha,'mm')}
+    ${rowGeo('Chiều cao chân răng hf = (1.25−x)m','hf',geo.hf,geo.hf,'mm')}
+    ${rowGeo('Chiều cao toàn phần h = ha+hf','h',geo.h,geo.h,'mm')}
+    ${rowGeo('Khe hở hướng tâm c = 0.25m','c',geo.c,geo.c,'mm')}
+    ${rowGeo('Bước răng p = π·m','p',geo.p,geo.p,'mm')}
+    ${rowGeo('Bước cơ sở pb = p·cosα','pb',geo.pb,geo.pb,'mm')}
+    ${rowGeo('Hệ số dạng răng (Bảng 6.7)','YF',geo.YF1,geo.YF2,'—',true)}
+  `;
+
+  // --- Bảng 3: Điều kiện ăn khớp ---
+  const uErr=+(Math.abs(uReal-gv('u_yc'))/gv('u_yc')*100).toFixed(2);
+  document.getElementById('tblMesh').innerHTML = `
+    ${rowMesh('Số răng bánh nhỏ ≥ 17','z₁',z1,'răng',meshOk.z1,z1)}
+    ${rowMesh('Số răng bánh lớn ≥ 17','z₂',z2,'răng',meshOk.z2,z2)}
+    ${rowMesh('Hệ số trùng khớp ≥ 1.2','εα',eps,'—',meshOk.eps,eps.toFixed(4))}
+    ${rowMesh('Tỷ lệ bw/m ∈ [8, 30]','bw/m',bwm,'—',meshOk.bwm,bwm.toFixed(2))}
+    ${rowMesh('Sai lệch tỉ số truyền < 5%','Δu%',uErr,'%',uErr<5,uErr+'%')}
+    ${rowMesh('Vận tốc vòng v = π·d₁ᵥ·n₁/60000','v',v,'m/s',true,v+' m/s')}
+  `;
+
+  // --- Bảng 4: Tiếp xúc ---
+  document.getElementById('tblContact').innerHTML = `
+    ${rowHdr('Hệ số và thông số trung gian')}
+    <tr><td><div class="r-param">Hệ số cơ tính vật liệu</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">ZM</td><td class="r-val">${cont.ZM.toFixed(0)}</td><td class="r-unit">MPa^0.5</td></tr>
+    <tr><td><div class="r-param">Hệ số hình dạng bề mặt tx (Bảng 6.12)</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">ZH</td><td class="r-val">${cont.ZH.toFixed(4)}</td><td class="r-unit">—</td></tr>
+    <tr><td><div class="r-param">Hệ số trùng khớp Zε = √((4−εα)/3)</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">Zε</td><td class="r-val">${cont.Ze.toFixed(4)}</td><td class="r-unit">—</td></tr>
+    <tr><td><div class="r-param">Tổng hệ số tải trọng KH=KHβ·KHα·KHv</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">KH</td><td class="r-val">${KH.toFixed(4)}</td><td class="r-unit">—</td></tr>
+    ${rowHdr('Kết quả kiểm nghiệm')}
+    <tr>
+      <td><div class="r-param" style="font-weight:700;">Ứng suất tiếp xúc tính được</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">σH</td>
+      <td class="r-val" style="font-size:17px;color:${cont.ok?'var(--green)':'var(--red)'};">${cont.sigH.toFixed(2)}</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    <tr>
+      <td><div class="r-param">Ứng suất tiếp xúc cho phép</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">[σH]</td>
+      <td class="r-val teal">${sHallow.toFixed(2)}</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:10px 18px;">${chkTag(cont.ok)} ${marginBadge(cont.sigH,sHallow,cont.ok)}</td>
+      <td colspan="2"></td>
+    </tr>
+  `;
+
+  // --- Bảng 5: Uốn ---
+  document.getElementById('tblBending').innerHTML = `
+    ${rowHdr('Hệ số và thông số trung gian')}
+    <tr><td><div class="r-param">Hệ số dạng răng bánh nhỏ (Bảng 6.7)</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">YF₁</td><td class="r-val">${bend.YF1.toFixed(3)}</td><td class="r-unit">—</td></tr>
+    <tr><td><div class="r-param">Hệ số dạng răng bánh lớn (Bảng 6.7)</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">YF₂</td><td class="r-val">${bend.YF2.toFixed(3)}</td><td class="r-unit">—</td></tr>
+    <tr><td><div class="r-param">Hệ số trùng khớp Yε = 1/εα</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">Yε</td><td class="r-val">${bend.Ye.toFixed(4)}</td><td class="r-unit">—</td></tr>
+    <tr><td><div class="r-param">Hệ số nghiêng răng (β=0°)</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">Yβ</td><td class="r-val">${bend.Yb.toFixed(1)}</td><td class="r-unit">—</td></tr>
+    <tr><td><div class="r-param">Tổng hệ số tải trọng KF=KFβ·KFα·KFv</div></td><td class="r-unit" style="color:var(--cyan);font-weight:600;">KF</td><td class="r-val">${KF.toFixed(4)}</td><td class="r-unit">—</td></tr>
+    ${rowHdr('Kết quả')}
+    <tr>
+      <td><div class="r-param" style="font-weight:700;">Ứng suất uốn bánh nhỏ</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">σF₁</td>
+      <td class="r-val" style="font-size:16px;color:${bend.ok1?'var(--green)':'var(--red)'};">${bend.sF1.toFixed(2)}</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    <tr>
+      <td><div class="r-param">Ứng suất uốn cho phép bánh nhỏ</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">[σF]₁</td>
+      <td class="r-val teal">${sF1allow.toFixed(2)}</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:8px 18px;">${chkTag(bend.ok1)} ${marginBadge(bend.sF1,sF1allow,bend.ok1)}</td>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td><div class="r-param" style="font-weight:700;">Ứng suất uốn bánh lớn</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">σF₂</td>
+      <td class="r-val" style="font-size:16px;color:${bend.ok2?'var(--green)':'var(--red)'};">${bend.sF2.toFixed(2)}</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    <tr>
+      <td><div class="r-param">Ứng suất uốn cho phép bánh lớn</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">[σF]₂</td>
+      <td class="r-val teal">${sF2allow.toFixed(2)}</td>
+      <td class="r-unit">MPa</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:8px 18px;">${chkTag(bend.ok2)} ${marginBadge(bend.sF2,sF2allow,bend.ok2)}</td>
+      <td colspan="2"></td>
+    </tr>
+  `;
+
+  // --- Bảng 6: Quá tải ---
+  document.getElementById('tblOverload').innerHTML = `
+    <tr>
+      <td><div class="r-param">Hệ số quá tải</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">Kqt</td>
+      <td class="r-val">${Kqt.toFixed(2)}</td>
+      <td class="r-val teal">—</td>
+      <td class="r-unit">T_max/T</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><div class="r-param">Căn bậc hai hệ số quá tải</div></td>
+      <td class="r-unit" style="color:var(--cyan);font-weight:600;">√Kqt</td>
+      <td class="r-val">${over.sqK}</td>
+      <td class="r-val teal">—</td>
+      <td class="r-unit">—</td>
+      <td></td>
+    </tr>
+    ${rowOL('Tiếp xúc quá tải = [σH]·√Kqt','σH_max',over.sHm,sHmax,'MPa',over.okH)}
+    ${rowOL('Uốn quá tải bánh nhỏ = σF₁·√Kqt','σF₁_max',over.sF1m,sF1max,'MPa',over.okF1)}
+    ${rowOL('Uốn quá tải bánh lớn = σF₂·√Kqt','σF₂_max',over.sF2m,sF2max,'MPa',over.okF2)}
+  `;
+
+  // --- Verdict ---
+  const allOk=cont.ok&&bend.ok1&&bend.ok2&&over.okH&&over.okF1&&over.okF2&&meshOk.z1&&meshOk.z2&&meshOk.eps&&meshOk.bwm;
+  const verd=document.getElementById('verdictBox');
+  if(allOk){
+    verd.className='verdict-box verdict-pass';
+    verd.innerHTML=`<span style="font-size:26px;">✅</span><div><div style="font-size:16px;font-weight:800;">BỘ TRUYỀN ĐẠT YÊU CẦU</div><div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:4px;">Tất cả điều kiện bền tiếp xúc, uốn và quá tải đều thỏa mãn — bộ truyền đạt thiết kế.</div></div>`;
+    showToast('ok','✅ Tính toán hoàn tất — Bộ truyền đạt tất cả điều kiện bền!');
+  } else {
+    verd.className='verdict-box verdict-fail';
+    verd.innerHTML=`<span style="font-size:26px;">⛔</span><div><div style="font-size:16px;font-weight:800;">BỘ TRUYỀN CHƯA ĐẠT</div><div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:4px;">Kiểm tra lại thông số — Điều chỉnh m, z₁, z₂, bw hoặc thay đổi vật liệu.</div></div>`;
+    showToast('error','⛔ Bộ truyền chưa đạt — Xem bảng kết quả để điều chỉnh thông số.');
+  }
+
+  updateGearVisual();
+  document.getElementById('outputSection').style.display='block';
+  setTimeout(()=>document.getElementById('outputSection').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function resetForm(){
+  document.getElementById('outputSection').style.display='none';
+  ['ck_z1s','ck_z2s','ck_epss','ck_bwms','ck_sHs','ck_sF1s','ck_sF2s','ck_sHms'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.className='check-state cs-idle';el.textContent='—';
+  });
+  ['ck_z1v','ck_z2v','ck_epsv','ck_bwmv','ck_sHv','ck_sF1v','ck_sF2v','ck_sHmv'].forEach(id=>{
+    document.getElementById(id).textContent='—';
+  });
+  document.getElementById('ck_sHlim').textContent='—';
+  document.getElementById('ck_sF1lim').textContent='—';
+  document.getElementById('ck_sF2lim').textContent='—';
+  document.getElementById('ck_sHmax_lim').textContent='—';
+  showToast('ok','🔄 Đã reset — Nhập lại thông số và chạy tính toán mới.');
+}
+
+function showToast(type,msg){
+  const w=document.getElementById('toastWrap');
+  const t=document.createElement('div');
+  t.className=`toast toast-${type}`;
+  t.innerHTML=`<span style="font-size:18px;">${type==='ok'?'✅':'❌'}</span><span class="toast-msg">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  w.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all 0.3s';setTimeout(()=>t.remove(),300);},5500);
+}
+
+// Init
+document.getElementById('tbDate').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+updateGearVisual();
+['m','z1','z2','aw'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){el.addEventListener('input',updateGearVisual);el.addEventListener('change',updateGearVisual);}
+});
+</script>
+</body>
+</html>
