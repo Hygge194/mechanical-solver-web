@@ -559,11 +559,15 @@ function saveM3Data(R, params) {
  * Ưu tiên gọi workflow.js nếu tồn tại, fallback về location.href.
  */
 function goToM4() {
+  if (typeof window.navigateTo === 'function') {
+    window.navigateTo('../m4/UI_banhrangtru.html');
+    return;
+  }
   if (typeof goToModule === 'function') {
     goToModule('M4');
     return;
   }
-  window.location.href = 'M4_BanhRangTru.html';
+  window.location.href = '../m4/UI_banhrangtru.html';
 }
 
 
@@ -651,7 +655,6 @@ function runCalc() {
         const btnNext = document.getElementById('btnNext');
         if (btnNext) {
           btnNext.removeAttribute('disabled');
-          btnNext.onclick = goToM4;
         }
 
         showToast('ok', '✅ M3 hoàn tất! Dữ liệu đã lưu. Sẵn sàng chuyển M4.');
@@ -770,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnNext = document.getElementById('btnNext');
   if (btnNext) {
     btnNext.addEventListener('click', (e) => {
-      if (btnNext.hasAttribute('disabled')) { e.preventDefault(); return; }
+      e.preventDefault();
       goToM4();
     });
   }

@@ -1,8 +1,8 @@
 const STORAGE_KEYS = {
-    M1: "MODULE_M1",
-    M2: "MODULE_M2",
-    M3: "MODULE_M3",
-    M4: "MODULE_M4",
+    M1: "M1_Data",
+    M2: "M2_Data",
+    M3: "M3_Data",
+    M4: "M4_Data",
     PROJECT: "PROJECT_DATA"
 };
 
@@ -14,6 +14,14 @@ function saveModuleData(key, data) {
     );
 
     updateProjectData(key, data);
+}
+
+function saveData(key, data) {
+    saveModuleData(key, data);
+}
+
+function loadData(key) {
+    return loadModuleData(key);
 }
 
 function loadModuleData(key) {

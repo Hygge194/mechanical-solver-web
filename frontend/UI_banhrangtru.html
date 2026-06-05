@@ -2,6 +2,15 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<script>
+  if (!localStorage.getItem('access_token')) {
+    const isInSubfolder = window.location.pathname.includes('/m1/')
+        || window.location.pathname.includes('/m2/')
+        || window.location.pathname.includes('/m3/')
+        || window.location.pathname.includes('/m4/');
+    window.location.href = isInSubfolder ? '../login.html' : 'login.html';
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MechaMix – M3: Bánh Răng Trụ Răng Thẳng</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -288,8 +297,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   </div>
   <div class="sb-bot">
     <div class="user-row">
-      <div class="u-av">KT</div>
-      <div><div class="u-name">Thiên Kiều</div><div class="u-role">CS</div></div>
+      <div class="u-av">ND</div>
+      <div><div class="u-name">Người dùng</div><div class="u-role">CS</div></div>
       <div class="u-dots">···</div>
     </div>
   </div>
@@ -1285,11 +1294,42 @@ function showToast(type,msg){
 
 // Init
 document.getElementById('tbDate').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+// Cập nhật tên người dùng đăng nhập
+(function() {
+  try {
+    let user = null;
+    const stored = localStorage.getItem('user');
+    if (stored && stored !== 'undefined') {
+      user = JSON.parse(stored);
+    }
+    const displayName = (user && (user.full_name || user.username)) || 'Người dùng';
+    const nameEls = document.querySelectorAll('.u-name');
+    nameEls.forEach(e => e.textContent = displayName);
+    const avEls = document.querySelectorAll('.u-av');
+    const parts = displayName.trim().split(/\s+/);
+    let initials = "";
+    if (parts.length >= 2) {
+      initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    } else if (parts.length === 1 && parts[0].length > 0) {
+      initials = parts[0].substring(0, 2).toUpperCase();
+    }
+    if (initials) {
+      avEls.forEach(e => e.textContent = initials);
+    }
+  } catch(e) {
+    console.error(e);
+  }
+})();
 updateGearVisual();
 ['m','z1','z2','aw'].forEach(id=>{
   const el=document.getElementById(id);
   if(el){el.addEventListener('input',updateGearVisual);el.addEventListener('change',updateGearVisual);}
 });
 </script>
+<!-- Shared & Module JS Logic -->
+<script src="shared/storage.js"></script>
+<script src="shared/workflow.js"></script>
+<script src="shared/restore.js"></script>
+<script src="m4/M4_BanhRangTru.js"></script>
 </body>
 </html>

@@ -28,7 +28,9 @@ async def register(data: dict):
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/auth/login")
 async def login(data: dict):
@@ -38,7 +40,9 @@ async def login(data: dict):
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- MOTOR CALCULATION ROUTES ---
 
@@ -92,5 +96,77 @@ async def calculate_motor_step3_4(data: dict):
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+# --- BELT CALCULATION ROUTE ---
+
+@app.post("/api/v1/calculate/belt")
+async def calculate_belt(data: dict):
+    """
+    Endpoint tính toán bộ truyền đai hình thang.
+    Payload JSON từ frontend (dai.js → buildPayload()):
+      {
+        "power":       <float>  – công suất P1 (kW),
+        "speed":       <float>  – tốc độ n1 (v/ph),
+        "ratio":       <float>  – tỉ số truyền đai ud,
+        "load_factor": <float>  – hệ số tải Kd (mặc định 1.2),
+        "slip":        <float>  – hệ số trượt eps (mặc định 0.02),
+        "belt_type":   <str>    – loại đai ("auto" hoặc "A","Б",...),
+        "lifetime":    <float>  – tuổi thọ (không dùng trong tính toán, bỏ qua)
+      }
+    """
+    try:
+        from calculator.dai import tinh_bo_truyen_dai
+
+        P1  = float(data.get("power",       0))
+        n1  = float(data.get("speed",       0))
+        ud  = float(data.get("ratio",       0))
+        Kd  = float(data.get("load_factor", 1.2))
+        eps = float(data.get("slip",        0.02))
+
+        if P1 <= 0 or n1 <= 0 or ud <= 0:
+            raise ValueError(f"Thông số không hợp lệ: P1={P1}, n1={n1}, ud={ud}")
+
+        kq = tinh_bo_truyen_dai(P1=P1, n1=n1, ud=ud, Kd=Kd, eps=eps, verbose=False)
+
+        # Map kết quả sang schema frontend kỳ vọng (xem runLocal() trong dai.js)
+        result = {
+            "belt_type": kq.get("loai_dai"),
+            "d1":        kq.get("d1"),
+            "d2":        kq.get("d2"),
+            "v":         kq.get("v"),
+            "L":         kq.get("L"),
+            "a":         kq.get("a"),
+            "a_dc":      kq.get("a_dieu_chinh_min"),   # khoảng điều chỉnh min
+            "a_dc_max":  kq.get("a_dieu_chinh_max"),
+            "alpha1":    kq.get("alpha1"),
+            "u_actual":  kq.get("u_thucte"),
+            "delta_u":   kq.get("sai_so_pct"),
+            "Ca":        kq.get("Ca"),
+            "Cl":        kq.get("Cl"),
+            "Cu":        kq.get("Cu"),
+            "Cz":        kq.get("Cz"),
+            "Z":         kq.get("Z"),
+            "B":         kq.get("B"),
+            "da1":       kq.get("da1"),
+            "da2":       kq.get("da2"),
+            "F0":        kq.get("F0"),
+            "Ft":        kq.get("Ft"),
+            "Fr":        kq.get("Fr"),
+            "Fv":        kq.get("Fv"),
+            "P0":        kq.get("P0"),
+            "log":       kq.get("log", []),
+            "_source":   "backend",
+        }
+
+        return {"status": "success", "data": result}
+
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # Lệnh chạy server: python -m uvicorn main:app --reload

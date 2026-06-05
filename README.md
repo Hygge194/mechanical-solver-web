@@ -29,11 +29,12 @@ Thành phần hạt nhân của hệ thống giải quyết "Bước 1" của đ
 - **Động Lực Học Tự Động**: Hệ thống lập tức phân bổ Tỉ số truyền tổng ($u_t$) cho các cụm (Đai, Côn, Trụ...) và lan truyền nghịch lực $P$, $n$, $T$ trên từng trục.
 - **Biểu đồ động (Interactive Charts)**: Render ra giao diện HTML đồ thị biểu diễn biến thiên của Momen xoắn theo tốc độ của các trục dẫn để đối chiếu ngay lập tức.
 
-### 4. Module M2-M6: Chuyên sâu Kỹ thuật (Đang lộ trình phát triển)
-- **M2 (Đai) / M3 (Bánh răng)**: Module kiểm bền tiếp xúc, mỏi uốn, hệ số tải trọng động.
-- **M4 (Trục/Ổ Lăn)**: Tính toán tuổi thọ mạng tinh thể kim loại cho kết cấu trục.
-- **M5 (AI Optimizations)**: Gợi ý Tối ưu Khối lượng/Kích thước Hộp giảm tốc kết hợp thuật toán Di truyền (GA).
-- **M6 (Export Data)**: Xuất toàn bộ tiến trình ra tài liệu PDF quy chuẩn Đại Học.
+### 4. Các Module Chuyên sâu Kỹ thuật (M2 - M4)
+Hệ thống đã hoàn thiện các module tính toán thiết kế bộ truyền động:
+- **M2 (Bộ Truyền Đai)**: Tính toán thiết kế bộ truyền đai hình thang (xác định loại đai, số đai, khoảng cách trục, lực căng đai...).
+- **M3 (Bánh Răng Côn)**: Module tính toán thông số động học, kiểm nghiệm độ bền tiếp xúc, mỏi uốn, tính toán hệ số tải trọng động cho bánh răng côn.
+- **M4 (Bánh Răng Trụ)**: Module tính toán thiết kế chi tiết bộ truyền bánh răng trụ răng thẳng/nghiêng.
+*(Các phần Tính toán Trục, Ổ lăn, AI Optimization, và Xuất PDF đang nằm trong lộ trình phát triển tiếp theo)*
 
 ---
 

@@ -58,7 +58,13 @@ window.runStep1 = async function() {
         if (!res.ok) throw new Error("API call failed");
         
         const json = await res.json();
+        if (json.status === "error") {
+            throw new Error(json.message || "Lỗi backend không xác định");
+        }
         const data = json.data;
+        if (!data) {
+            throw new Error("Không nhận được dữ liệu tính toán");
+        }
         
         // Lưu trữ P_ct vào state để dùng cho các bước tính sau
         state.pct = data.muc_2_1_2.p_ct;
@@ -77,7 +83,7 @@ window.runStep1 = async function() {
         
     } catch(e) { 
         console.error(e);
-        showToast('error', 'Lỗi Backend: Hãy chắc chắn Server Python đang chạy!'); 
+        showToast('error', 'Lỗi Backend: ' + e.message); 
     }
 };
 
@@ -162,6 +168,9 @@ async function fetchStep34() {
         if (!res.ok) throw new Error("API call failed");
         
         const json = await res.json();
+        if (json.status === "error") {
+            throw new Error(json.message || "Lỗi kiểm nghiệm động cơ");
+        }
         const validation = json.validation;
         const kin = json.kinematics;
         const ratios = json.ratios;
@@ -180,7 +189,7 @@ async function fetchStep34() {
             light.className = "light-indicator light-red";
             title.textContent = "Không đạt yêu cầu (Failed)"; 
             title.style.color = "var(--red)";
-            desc.innerHTML = `Vui lòng chọn động cơ có mô-men khởi động <strong>Tk/Tdn lớn hơn</strong> hoặc tăng công suất. <br><em style="color:#d9534f">${val.message}</em>`;
+            desc.innerHTML = `Vui lòng chọn động cơ có mô-men khởi động <strong>Tk/Tdn lớn hơn</strong> hoặc tăng công suất. <br><em style="color:#d9534f">${validation.message}</em>`;
         }
         
         // ── XỬ LÝ BƯỚC 4: RENDER BẢNG MA TRẬN ĐỘNG LỰC HỌC ──
@@ -196,7 +205,7 @@ async function fetchStep34() {
             
             // Cột: Động cơ
             document.getElementById("t_P_dc").textContent = format_P(getVal('truc_dc', 'P'));
-            document.getElementById("t_n_dc").textContent = getVal('truc_dc', 'n') ? Math.round(val('truc_dc', 'n')) : '-'; // n_dc lấy nguyên
+            document.getElementById("t_n_dc").textContent = getVal('truc_dc', 'n') ? Math.round(getVal('truc_dc', 'n')) : '-'; // n_dc lấy nguyên
             document.getElementById("t_T_dc").textContent = format_T(getVal('truc_dc', 'T'));
             document.getElementById("t_u_dc").textContent = '-';
             
@@ -222,10 +231,12 @@ async function fetchStep34() {
             renderTorqueChart(kin);
 
             // ───── SAVE DATA FOR M2 ─────
+            const inputLifetime = document.getElementById("inputLifetime");
             saveModuleData(STORAGE_KEYS.M1, {
                 input: {
                     pt: state.pt,
-                    niv: state.niv
+                    niv: state.niv,
+                    lifetime: inputLifetime ? parseFloat(inputLifetime.value) : null
                 },
 
                 motor: state.selectedMotor,
@@ -324,6 +335,11 @@ function restoreM1State() {
     restoreInput(
         "inputNiv",
         saved.input.niv
+    );
+
+    restoreInput(
+        "inputLifetime",
+        saved.input.lifetime
     );
 
     // Restore state

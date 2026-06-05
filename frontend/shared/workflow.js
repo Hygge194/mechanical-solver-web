@@ -2,20 +2,37 @@ const WORKFLOW = {
 
     MODULES: {
 
-        M1: "../m1/m1.html",
+        M1: "../m1/m1_input_validation.html",
 
         M2: "../m2/dai.html",
 
-        M3: "../m3/banhrangcon.html",
+        M3: "../m3/UI_banhrangcon.html",
 
-        M4: "../m4/banhrangtru.html"
+        M4: "../m4/UI_banhrangtru.html"
     }
 };
 
-/**
- * MechaMix – shared/workflow.js
- * Điều hướng giữa các Module và quản lý trạng thái workflow
- */
+// ── Hàm điều hướng chung tự nhận diện thư mục gốc/con ──────────────────
+window.navigateTo = function(pathFromSub) {
+    const isRoot = !window.location.pathname.includes("/m1/") &&
+                   !window.location.pathname.includes("/m2/") &&
+                   !window.location.pathname.includes("/m3/") &&
+                   !window.location.pathname.includes("/m4/");
+    let target = pathFromSub;
+    if (isRoot) {
+        target = pathFromSub.replace(/^\.\.\//, "");
+    }
+    window.location.href = target;
+};
+
+function goToM1() {
+    saveModuleData(STORAGE_KEYS.PROJECT, {
+        currentStep: "M1",
+        updatedAt: new Date().toISOString()
+    });
+
+    window.navigateTo("../m1/m1_input_validation.html");
+}
 
 /**
  * Chuyển sang Module M2 – Bộ truyền đai
@@ -41,7 +58,7 @@ function goToM2() {
     });
 
     // Chuyển trang sang M2
-    window.location.href = "../m2/dai.html";
+    window.navigateTo("../m2/dai.html");
 }
 
 /**
@@ -60,7 +77,7 @@ function goToM3() {
         updatedAt: new Date().toISOString()
     });
 
-    window.location.href = "../m3/banhrangcon.html";
+    window.navigateTo("../m3/UI_banhrangcon.html");
 }
 
 /**
@@ -79,5 +96,80 @@ function goToM4() {
         updatedAt: new Date().toISOString()
     });
 
-    window.location.href = "../m4/banhrangtru.html";
+    window.navigateTo("../m4/UI_banhrangtru.html");
 }
+
+// ── Fallback showToast để tránh ReferenceError ───────────────────
+if (typeof showToast !== "function") {
+    window.showToast = function(type, msg) {
+        if (typeof toast === "function") {
+            toast(type === "error" ? "err" : type, msg);
+        } else {
+            console.warn(`[Toast] [${type}] ${msg}`);
+        }
+    };
+}
+
+// ── Tự động gắn sự kiện chuyển trang cho sidebar và pipeline ────
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Patch all sidebar nav links
+    document.querySelectorAll(".nav-link").forEach(el => {
+        const text = el.textContent.toLowerCase();
+        if (text.includes("động cơ") || text.includes("m1")) {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM1 === "function") goToM1();
+                else window.navigateTo("../m1/m1_input_validation.html");
+            });
+        } else if (text.includes("đai") || text.includes("m2")) {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM2 === "function") goToM2();
+                else window.navigateTo("../m2/dai.html");
+            });
+        } else if (text.includes("côn") || text.includes("m3")) {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM3 === "function") goToM3();
+                else window.navigateTo("../m3/UI_banhrangcon.html");
+            });
+        } else if (text.includes("trụ") || text.includes("m4")) {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM4 === "function") goToM4();
+                else window.navigateTo("../m4/UI_banhrangtru.html");
+            });
+        }
+    });
+
+    // Patch progress pipeline steps
+    document.querySelectorAll(".pipe-step, .pipe-dot").forEach(el => {
+        const text = el.textContent.trim().toUpperCase();
+        if (text === "M1") {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM1 === "function") goToM1();
+                else window.navigateTo("../m1/m1_input_validation.html");
+            });
+        } else if (text === "M2") {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM2 === "function") goToM2();
+                else window.navigateTo("../m2/dai.html");
+            });
+        } else if (text === "M3") {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM3 === "function") goToM3();
+                else window.navigateTo("../m3/UI_banhrangcon.html");
+            });
+        } else if (text === "M4") {
+            el.addEventListener("click", (e) => {
+                e.preventDefault();
+                if (typeof goToM4 === "function") goToM4();
+                else window.navigateTo("../m4/UI_banhrangtru.html");
+            });
+        }
+    });
+});

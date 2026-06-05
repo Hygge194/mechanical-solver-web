@@ -96,8 +96,9 @@ function loadM3Data(strict = false) {
     if (strict) {
       const go = confirm('⚠️ Chưa có dữ liệu từ Module 3 (Bánh răng côn).\nChuyển về M3 để tính toán trước?');
       if (go) {
-        if (typeof goToModule === 'function') goToModule('M3');
-        else window.location.href = 'M3_BanhRangCon.html';
+        if (typeof window.navigateTo === 'function') window.navigateTo('../m3/UI_banhrangcon.html');
+        else if (typeof goToModule === 'function') goToModule('M3');
+        else window.location.href = '../m3/UI_banhrangcon.html';
       }
     }
   }

@@ -2,6 +2,15 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<script>
+  if (!localStorage.getItem('access_token')) {
+    const isInSubfolder = window.location.pathname.includes('/m1/')
+        || window.location.pathname.includes('/m2/')
+        || window.location.pathname.includes('/m3/')
+        || window.location.pathname.includes('/m4/');
+    window.location.href = isInSubfolder ? '../login.html' : 'login.html';
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MechaMix – M3: Bánh Răng Trụ Răng Thẳng</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -49,7 +58,22 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .u-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
 .u-name{font-size:13px;font-weight:600;}
 .u-role{font-size:10.5px;color:var(--tx2);margin-top:1px;}
-.u-dots{margin-left:auto;color:var(--tx3);font-size:16px;}
+.u-dots{margin-left:auto;color:var(--tx3);font-size:16px;cursor:pointer;transition:color 0.2s;}
+.u-dots:hover{color:var(--tx1);}
+
+/* ═══ USER DROPDOWN ═══ */
+.user-dropdown-wrap{position:relative;}
+.user-dropdown{position:absolute;bottom:calc(100% + 8px);left:0;right:0;background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity 0.18s,transform 0.18s;z-index:500;min-width:200px;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:all;}
+.user-dropdown-header{padding:14px 16px;border-bottom:1px solid var(--bdr);background:rgba(30,111,255,0.05);}
+.user-dropdown-name{font-size:13px;font-weight:700;color:var(--tx1);}
+.user-dropdown-email{font-size:11px;color:var(--tx2);margin-top:2px;font-family:var(--mono);}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;color:var(--tx2);cursor:pointer;transition:background 0.15s,color 0.15s;text-decoration:none;}
+.user-dropdown-item:hover{background:var(--bg4);color:var(--tx1);}
+.user-dropdown-item svg{width:14px;height:14px;flex-shrink:0;}
+.user-dropdown-item.danger{color:var(--red);}
+.user-dropdown-item.danger:hover{background:rgba(239,68,68,0.08);color:var(--red);}
+.user-dropdown-sep{height:1px;background:var(--bdr);margin:4px 0;}
 
 /* MAIN */
 /* ═══ MAIN ═══ */
@@ -287,10 +311,31 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     </div>
   </div>
   <div class="sb-bot">
-    <div class="user-row">
-      <div class="u-av">KT</div>
-      <div><div class="u-name">Thiên Kiều</div><div class="u-role">CS</div></div>
-      <div class="u-dots">···</div>
+    <div class="user-dropdown-wrap">
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="user-dropdown-name" id="dropName">Người dùng</div>
+          <div class="user-dropdown-email" id="dropEmail">—</div>
+        </div>
+        <a class="user-dropdown-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Hồ sơ cá nhân
+        </a>
+        <a class="user-dropdown-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Cài đặt
+        </a>
+        <div class="user-dropdown-sep"></div>
+        <div class="user-dropdown-item danger" id="btnLogout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Đăng xuất
+        </div>
+      </div>
+      <div class="user-row" id="userRowBtn">
+        <div class="u-av" id="userAv">?</div>
+        <div><div class="u-name" id="userName">Đang tải...</div><div class="u-role" id="userRole">—</div></div>
+        <div class="u-dots" id="userDots">···</div>
+      </div>
     </div>
   </div>
 </aside>
@@ -1285,11 +1330,18 @@ function showToast(type,msg){
 
 // Init
 document.getElementById('tbDate').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+// User info & dropdown — handled by user-dropdown.js
 updateGearVisual();
 ['m','z1','z2','aw'].forEach(id=>{
   const el=document.getElementById(id);
   if(el){el.addEventListener('input',updateGearVisual);el.addEventListener('change',updateGearVisual);}
 });
 </script>
+<!-- Shared & Module JS Logic -->
+<script src="../shared/storage.js"></script>
+<script src="../shared/workflow.js"></script>
+<script src="../shared/restore.js"></script>
+<script src="../shared/user-dropdown.js"></script>
+<script src="M4_BanhRangTru.js"></script>
 </body>
 </html>

@@ -138,7 +138,13 @@ async function callBeltAPI(payload) {
         throw new Error(`API ${resp.status}: ${body.slice(0, 120)}`);
     }
 
-    return resp.json();
+    const json = await resp.json();
+
+    // Backend trả về { status, data: {...} } — unwrap để dùng như runLocal()
+    if (json.status !== "success") {
+        throw new Error(`API trả về lỗi: ${json.detail ?? json.message ?? JSON.stringify(json)}`);
+    }
+    return { ...json.data, _source: "api" };
 }
 
 /**
@@ -398,7 +404,9 @@ function _renderChecks(r) {
  * @param {object} result  – kết quả đã chuẩn hoá
  */
 function saveM2(payload, result) {
-    saveModuleData(STORAGE_KEYS.M2, {
+    const { ok, data: m1 } = loadM1();
+
+    const m2Data = {
         input: payload,
         result: {
             belt_type: result.belt_type,
@@ -419,7 +427,16 @@ function saveM2(payload, result) {
             delta_u:   result.delta_u,
         },
         timestamp: new Date().toISOString(),
-    });
+    };
+
+    if (ok && m1) {
+        m2Data.n2 = m1.kinematics?.truc_1?.n ?? "";
+        m2Data.T2 = m1.kinematics?.truc_1?.T ?? "";
+        m2Data.u_hop = m1.ratios?.u_1 ?? "";
+        m2Data.t_h = m1.input?.lifetime ?? "";
+    }
+
+    saveModuleData(STORAGE_KEYS.M2, m2Data);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -458,7 +475,11 @@ function goToM3() {
         updatedAt: new Date().toISOString(),
     });
 
-    window.location.href = "../m3/con.html";
+    if (typeof window.navigateTo === "function") {
+        window.navigateTo("../m3/UI_banhrangcon.html");
+    } else {
+        window.location.href = "../m3/UI_banhrangcon.html";
+    }
 }
 
 /* ══════════════════════════════════════════════════════════════

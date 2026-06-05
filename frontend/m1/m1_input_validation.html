@@ -2,6 +2,15 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<script>
+  if (!localStorage.getItem('access_token')) {
+    const isInSubfolder = window.location.pathname.includes('/m1/')
+        || window.location.pathname.includes('/m2/')
+        || window.location.pathname.includes('/m3/')
+        || window.location.pathname.includes('/m4/');
+    window.location.href = isInSubfolder ? '../login.html' : 'login.html';
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MechaMix – M1: Quy trình 4 Bước Chọn Động cơ</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -121,9 +130,9 @@
 
   <div class="sb-bot">
     <div class="user-row">
-      <div class="u-av">KT</div>
+      <div class="u-av">ND</div>
       <div>
-        <div class="u-name">Thiên Kiều</div>
+        <div class="u-name">Người dùng</div>
         <div class="u-role">CS</div>
       </div>
       <div class="u-dots">···</div>
@@ -211,10 +220,9 @@
             <div class="field-label">Vòng quay thùng trộn (v/ph)</div>
             <input type="number" id="inputNiv" class="field-input" placeholder="Thường dao động 20 v/ph đến 100 v/ph">
           </div>
-        </div>
           <div style="flex: 1; min-width: 250px;">
-            <div class="field-label">Tuổi thọ thiết kế L</div>
-            <input type="number" id="inputNiv" class="field-input" placeholder="Thường dao động 15.000 giờ đến 50.000 giờ">
+            <div class="field-label">Tuổi thọ thiết kế L (giờ)</div>
+            <input type="number" id="inputLifetime" class="field-input" placeholder="Thường dao động 15.000 giờ đến 50.000 giờ">
           </div>
         </div>
         <div style="margin-top:20px;">
@@ -380,14 +388,38 @@
 <script src="m1_input_validation.js"></script>
 
 <script>
-  // Hiển thị ngày giờ topbar
+  // Hiển thị ngày giờ topbar & cập nhật tên người dùng đăng nhập
   (function() {
     const el = document.getElementById("tbDate");
-    if (!el) return;
-    const now = new Date();
-    el.textContent = now.toLocaleDateString("vi-VN", {
-      weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"
-    });
+    if (el) {
+      const now = new Date();
+      el.textContent = now.toLocaleDateString("vi-VN", {
+        weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"
+      });
+    }
+    try {
+      let user = null;
+      const stored = localStorage.getItem('user');
+      if (stored && stored !== 'undefined') {
+        user = JSON.parse(stored);
+      }
+      const displayName = (user && (user.full_name || user.username)) || 'Người dùng';
+      const nameEls = document.querySelectorAll('.u-name');
+      nameEls.forEach(e => e.textContent = displayName);
+      const avEls = document.querySelectorAll('.u-av');
+      const parts = displayName.trim().split(/\s+/);
+      let initials = "";
+      if (parts.length >= 2) {
+        initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      } else if (parts.length === 1 && parts[0].length > 0) {
+        initials = parts[0].substring(0, 2).toUpperCase();
+      }
+      if (initials) {
+        avEls.forEach(e => e.textContent = initials);
+      }
+    } catch(e) {
+      console.error(e);
+    }
   })();
 </script>
 </body>

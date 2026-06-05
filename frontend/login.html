@@ -157,7 +157,7 @@ body::before {
 
 <script>
   if(localStorage.getItem('access_token')) {
-    window.location.href = 'mechcalc_dashboard_v2.html';
+    window.location.href = 'm1/m1_input_validation.html';
   }
 
   document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -181,7 +181,7 @@ body::before {
       if(res.ok && data.status === 'success') {
         localStorage.setItem('access_token', data.data.access_token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
-        window.location.href = 'mechcalc_dashboard_v2.html';
+        window.location.href = 'm1/m1_input_validation.html';
       } else {
         err.textContent = data.detail || data.message || 'Lỗi đăng nhập';
         err.style.display = 'block';

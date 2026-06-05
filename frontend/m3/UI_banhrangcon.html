@@ -2,6 +2,15 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<script>
+  if (!localStorage.getItem('access_token')) {
+    const isInSubfolder = window.location.pathname.includes('/m1/')
+        || window.location.pathname.includes('/m2/')
+        || window.location.pathname.includes('/m3/')
+        || window.location.pathname.includes('/m4/');
+    window.location.href = isInSubfolder ? '../login.html' : 'login.html';
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MechaMix – M3: Thiết kế Bánh Răng Côn</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -50,7 +59,22 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .u-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;}
 .u-name{font-size:12.5px;font-weight:600;}
 .u-role{font-size:10px;color:var(--tx2);}
-.u-dots{margin-left:auto;color:var(--tx3);font-size:16px;cursor:pointer;}
+.u-dots{margin-left:auto;color:var(--tx3);font-size:16px;cursor:pointer;transition:color 0.2s;}
+.u-dots:hover{color:var(--tx1);}
+
+/* ═══ USER DROPDOWN ═══ */
+.user-dropdown-wrap{position:relative;}
+.user-dropdown{position:absolute;bottom:calc(100% + 8px);left:0;right:0;background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity 0.18s,transform 0.18s;z-index:500;min-width:200px;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:all;}
+.user-dropdown-header{padding:14px 16px;border-bottom:1px solid var(--bdr);background:rgba(30,111,255,0.05);}
+.user-dropdown-name{font-size:13px;font-weight:700;color:var(--tx1);}
+.user-dropdown-email{font-size:11px;color:var(--tx2);margin-top:2px;font-family:var(--mono);}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;color:var(--tx2);cursor:pointer;transition:background 0.15s,color 0.15s;text-decoration:none;}
+.user-dropdown-item:hover{background:var(--bg4);color:var(--tx1);}
+.user-dropdown-item svg{width:14px;height:14px;flex-shrink:0;}
+.user-dropdown-item.danger{color:var(--red);}
+.user-dropdown-item.danger:hover{background:rgba(239,68,68,0.08);color:var(--red);}
+.user-dropdown-sep{height:1px;background:var(--bdr);margin:4px 0;}
 
 /* ═══ MAIN ═══ */
 .main{margin-left:228px;min-height:100vh;position:relative;z-index:1;}
@@ -295,10 +319,31 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     </div>
   </div>
   <div class="sb-bot">
-    <div class="user-row">
-      <div class="u-av">KT</div>
-      <div><div class="u-name">Thiên Kiều</div><div class="u-role">CS</div></div>
-      <div class="u-dots">···</div>
+    <div class="user-dropdown-wrap">
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="user-dropdown-name" id="dropName">Người dùng</div>
+          <div class="user-dropdown-email" id="dropEmail">—</div>
+        </div>
+        <a class="user-dropdown-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Hồ sơ cá nhân
+        </a>
+        <a class="user-dropdown-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Cài đặt
+        </a>
+        <div class="user-dropdown-sep"></div>
+        <div class="user-dropdown-item danger" id="btnLogout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Đăng xuất
+        </div>
+      </div>
+      <div class="user-row" id="userRowBtn" style="cursor:pointer;">
+        <div class="u-av" id="userAv">?</div>
+        <div><div class="u-name" id="userName">Đang tải...</div><div class="u-role" id="userRole">—</div></div>
+        <div class="u-dots" id="userDots">···</div>
+      </div>
     </div>
   </div>
 </aside>
@@ -749,7 +794,7 @@ K_H = K_Hβ·K_Hα·K_Hv ; vH = δ_H·g₀·v·√(dm1·(u+1)/u)</div>
       </div>
 
       <div style="display:flex;justify-content:flex-end;padding:0 22px 22px;">
-        <a href="#" class="btn btn-primary" id="btnNext" style="padding:12px 24px;" disabled>
+        <a href="../m4/UI_banhrangtru.html" class="btn btn-primary" id="btnNext" style="padding:12px 24px;" onclick="event.preventDefault(); goToM4();">
           Tiếp tục: Chuyển sang Bánh răng trụ - M4
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
@@ -1253,6 +1298,72 @@ function showToast(type, msg) {
 }
 
 document.getElementById('tbDate').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+// Cập nhật thông tin người dùng + dropdown đăng xuất
+(function() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const displayName = user?.full_name || user?.username || 'Người dùng';
+    const email       = user?.email || '—';
+
+    // Cập nhật sidebar user-row
+    const nameEl  = document.getElementById('userName');
+    const avEl    = document.getElementById('userAv');
+    const roleEl  = document.getElementById('userRole');
+    if (nameEl) nameEl.textContent = displayName;
+    if (roleEl) roleEl.textContent = user?.role || 'CS';
+
+    // Avatar initials
+    const parts = displayName.trim().split(/\s+/);
+    const initials = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+      : parts[0].substring(0,2).toUpperCase();
+    if (avEl) avEl.textContent = initials;
+
+    // Dropdown header
+    const dropName  = document.getElementById('dropName');
+    const dropEmail = document.getElementById('dropEmail');
+    if (dropName)  dropName.textContent  = displayName;
+    if (dropEmail) dropEmail.textContent = email;
+
+  } catch(e) { console.error(e); }
+})();
+
+// Dropdown toggle & đăng xuất
+(function() {
+  const row      = document.getElementById('userRowBtn');
+  const dropdown = document.getElementById('userDropdown');
+  const btnLogout= document.getElementById('btnLogout');
+
+  if (!row || !dropdown) return;
+
+  // Mở/đóng dropdown khi click user-row
+  row.addEventListener('click', function(e) {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+
+  // Đóng khi click ra ngoài
+  document.addEventListener('click', function() {
+    dropdown.classList.remove('open');
+  });
+
+  // Đăng xuất
+  if (btnLogout) {
+    btnLogout.addEventListener('click', function() {
+      if (!confirm('Bạn có chắc muốn đăng xuất?')) return;
+      // Xóa thông tin phiên, giữ lại kết quả tính toán nếu muốn
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth_token');
+      // Tính đường dẫn login tương đối
+      window.location.href = '../login.html';
+    });
+  }
+})();
 </script>
+<!-- Shared & Module JS Logic -->
+<script src="../shared/storage.js"></script>
+<script src="../shared/workflow.js"></script>
+<script src="../shared/restore.js"></script>
+<script src="M3_BanhRangCon.js"></script>
 </body>
 </html>
