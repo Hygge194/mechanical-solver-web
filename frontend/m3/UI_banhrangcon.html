@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<script>
+  if (!localStorage.getItem('access_token')) {
+    const isInSubfolder = window.location.pathname.includes('/m1/')
+        || window.location.pathname.includes('/m2/')
+        || window.location.pathname.includes('/m3/')
+        || window.location.pathname.includes('/m4/');
+    window.location.href = isInSubfolder ? '../login.html' : 'login.html';
+  }
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MechaMix – M3: Thiết kế Bánh Răng Côn</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS – khớp với M1/M2
+═══════════════════════════════════════════ */
+:root {
+  --bg:#050c18; --bg1:#060e1c; --bg2:#07111f; --bg3:#0b1829; --bg4:#0f2038;
+  --blue:#1e6fff; --cyan:#00d4ff; --teal:#00c9a7; --violet:#8b5cf6;
+  --green:#10b981; --gold:#f59e0b; --red:#ef4444; --orange:#f97316;
+  --tx1:#e2e8f0; --tx2:#7a93b4; --tx3:#2e4460;
+  --bdr:rgba(30,111,255,0.14); --bdr2:rgba(0,212,255,0.28);
+  --font:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:var(--font);color:var(--tx1);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%,rgba(30,111,255,0.08) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 100%,rgba(139,92,246,0.06) 0%,transparent 50%),
+    linear-gradient(rgba(30,111,255,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(30,111,255,0.02) 1px,transparent 1px);
+  background-size:auto,auto,48px 48px,48px 48px;}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:228px;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:200;}
+.sb-top{padding:22px 18px 18px;border-bottom:1px solid var(--bdr);}
+.logo-row{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:38px;height:38px;border-radius:11px;flex-shrink:0;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(30,111,255,0.4);}
+.logo-mark svg{width:20px;height:20px;fill:none;stroke:white;stroke-width:2;}
+.logo-name{font-weight:800;font-size:18px;}
+.logo-name em{font-style:normal;color:var(--cyan);}
+.sb-body{flex:1;padding:14px 10px;overflow-y:auto;}
+.sb-section{margin-bottom:6px;}
+.sb-sec-label{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--tx3);text-transform:uppercase;padding:6px 10px 5px;display:block;}
+.nav-link{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;margin-bottom:2px;cursor:pointer;transition:all 0.18s;font-size:13px;font-weight:500;color:var(--tx2);text-decoration:none;}
+.nav-link:hover{background:var(--bg4);color:var(--tx1);}
+.nav-link.active{background:rgba(30,111,255,0.13);color:var(--cyan);border-left:2px solid var(--cyan);}
+.nav-link svg{width:14px;height:14px;flex-shrink:0;}
+.nav-tag{margin-left:auto;font-size:8.5px;padding:2px 6px;border-radius:4px;font-weight:700;font-family:var(--mono);}
+.tag-active{background:rgba(0,212,255,0.15);color:var(--cyan);border:1px solid rgba(0,212,255,0.3);}
+.tag-done{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.sb-bot{padding:12px 10px;border-top:1px solid var(--bdr);}
+.user-row{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;background:var(--bg3);}
+.u-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e6fff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;}
+.u-name{font-size:12.5px;font-weight:600;}
+.u-role{font-size:10px;color:var(--tx2);}
+.u-dots{margin-left:auto;color:var(--tx3);font-size:16px;cursor:pointer;transition:color 0.2s;}
+.u-dots:hover{color:var(--tx1);}
+
+/* ═══ USER DROPDOWN ═══ */
+.user-dropdown-wrap{position:relative;}
+.user-dropdown{position:absolute;bottom:calc(100% + 8px);left:0;right:0;background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity 0.18s,transform 0.18s;z-index:500;min-width:200px;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:all;}
+.user-dropdown-header{padding:14px 16px;border-bottom:1px solid var(--bdr);background:rgba(30,111,255,0.05);}
+.user-dropdown-name{font-size:13px;font-weight:700;color:var(--tx1);}
+.user-dropdown-email{font-size:11px;color:var(--tx2);margin-top:2px;font-family:var(--mono);}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;color:var(--tx2);cursor:pointer;transition:background 0.15s,color 0.15s;text-decoration:none;}
+.user-dropdown-item:hover{background:var(--bg4);color:var(--tx1);}
+.user-dropdown-item svg{width:14px;height:14px;flex-shrink:0;}
+.user-dropdown-item.danger{color:var(--red);}
+.user-dropdown-item.danger:hover{background:rgba(239,68,68,0.08);color:var(--red);}
+.user-dropdown-sep{height:1px;background:var(--bdr);margin:4px 0;}
+
+/* ═══ MAIN ═══ */
+.main{margin-left:228px;min-height:100vh;position:relative;z-index:1;}
+
+/* ═══ TOPBAR (M1/M2 style) ═══ */
+.topbar{height:56px;background:rgba(7,17,31,0.92);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 28px;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);}
+.tb-breadcrumb{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--tx2);}
+.tb-breadcrumb .sep{color:var(--tx3);}
+.tb-breadcrumb .cur{color:var(--cyan);font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.tb-date{font-size:11.5px;color:var(--tx2);font-family:var(--mono);}
+.tb-search{display:flex;align-items:center;gap:7px;padding:6px 14px;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;font-size:12px;color:var(--tx3);cursor:pointer;transition:0.2s;}
+.tb-search:hover{border-color:var(--blue);color:var(--tx2);}
+.tb-icon{width:32px;height:32px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:0.2s;}
+.tb-icon:hover{border-color:var(--blue);}
+.tb-notif-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid var(--bg2);}
+
+.content{padding:28px 28px 60px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ MODULE HEADER (M1/M2 style) ═══ */
+.module-header{background:var(--bg3);border:1px solid var(--bdr);border-radius:18px;padding:24px 28px;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.module-header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),var(--gold),var(--teal),var(--cyan));}
+.module-header-glow{position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(245,158,11,0.07) 0%,transparent 70%);pointer-events:none;}
+.module-badge{width:52px;height:52px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(0,212,255,0.08));border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:13px;color:var(--gold);}
+.module-meta{flex:1;min-width:200px;}
+.module-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+.module-title span{color:var(--cyan);}
+.module-desc{font-size:12px;color:var(--tx2);line-height:1.55;}
+
+/* Pipeline */
+.pipeline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pipe-step{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.pipe-dot{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:var(--mono);transition:0.2s;}
+.pipe-dot.done{background:rgba(16,185,129,0.15);border:1.5px solid rgba(16,185,129,0.35);color:var(--green);}
+.pipe-dot.active{background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.5);color:var(--gold);box-shadow:0 0 14px rgba(245,158,11,0.2);}
+.pipe-dot.next{background:var(--bg4);border:1.5px solid var(--tx3);color:var(--tx3);}
+.pipe-label{font-size:10px;color:var(--tx2);white-space:nowrap;}
+.pipe-arrow{color:var(--tx3);font-size:14px;padding-bottom:14px;}
+
+/* ═══ SECTION CARD ═══ */
+.section-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:20px;animation:fadeUp 0.5s ease both;}
+.card-header{padding:16px 22px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;}
+.card-header-ico{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.card-title{font-size:14px;font-weight:700;color:var(--tx1);}
+.card-sub{font-size:11.5px;color:var(--tx2);margin-top:2px;}
+.card-body{padding:22px;}
+.card-badge{margin-left:auto;font-size:9px;padding:2px 9px;border-radius:7px;font-family:var(--mono);font-weight:700;border:1px solid;white-space:nowrap;}
+.badge-input{background:rgba(30,111,255,0.1);color:var(--blue);border-color:rgba(30,111,255,0.25);}
+.badge-auto{background:rgba(16,185,129,0.1);color:var(--green);border-color:rgba(16,185,129,0.25);}
+.badge-output{background:rgba(0,212,255,0.1);color:var(--cyan);border-color:rgba(0,212,255,0.25);}
+.badge-check{background:rgba(139,92,246,0.1);color:var(--violet);border-color:rgba(139,92,246,0.25);}
+
+/* ═══ FORM FIELDS ═══ */
+.field-group{margin-bottom:16px;}
+.field-group:last-child{margin-bottom:0;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.field-label{font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:6px;display:block;}
+.field-input-wrap{position:relative;}
+.field-input{width:100%;padding:9px 52px 9px 13px;background:var(--bg4);border:1.5px solid var(--tx3);border-radius:9px;color:var(--tx1);font-size:13px;font-family:var(--mono);transition:all 0.18s;outline:none;}
+.field-input:focus{border-color:var(--blue);background:rgba(30,111,255,0.05);box-shadow:0 0 0 3px rgba(30,111,255,0.1);}
+.field-unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:var(--tx3);font-family:var(--mono);pointer-events:none;}
+.field-range{font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:3px;}
+.sel{width:100%;padding:9px 34px 9px 13px;background:var(--bg4);border:1.5px solid var(--tx3);border-radius:9px;color:var(--tx1);font-size:12.5px;font-family:var(--font);transition:all 0.18s;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%237a93b4' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.sel:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(30,111,255,0.1);}
+
+/* ═══ DIVIDER ═══ */
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr);}
+.divider-label{font-size:9.5px;font-weight:700;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-size:12.5px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:all 0.2s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:linear-gradient(135deg,#1249c7,var(--blue));color:#fff;box-shadow:0 3px 14px rgba(30,111,255,0.3);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,111,255,0.4);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-gold{background:linear-gradient(135deg,#b37000,var(--gold));color:#fff;box-shadow:0 3px 14px rgba(245,158,11,0.3);}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(245,158,11,0.4);}
+.btn-gold:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-ghost{background:var(--bg4);color:var(--tx2);border:1.5px solid var(--tx3);}
+.btn-ghost:hover{border-color:var(--blue);color:var(--tx1);}
+.btn-success{background:linear-gradient(135deg,#0d8f60,var(--green));color:#fff;box-shadow:0 3px 14px rgba(16,185,129,0.3);}
+.btn-success:hover{transform:translateY(-1px);}
+
+/* ═══ CALC STEPS ═══ */
+.calc-step{background:var(--bg4);border:1px solid var(--bdr);border-radius:12px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;}
+.calc-step:last-child{margin-bottom:0;}
+.step-num{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--mono);}
+.s-done{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:var(--green);}
+.s-active{background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:var(--gold);}
+.s-idle{background:var(--bg3);border:1px solid var(--tx3);color:var(--tx3);}
+.step-content{flex:1;}
+.step-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.step-detail{font-size:11.5px;color:var(--tx2);line-height:1.6;}
+.step-formula{margin-top:8px;padding:8px 12px;border-radius:8px;background:var(--bg2);border:1px solid var(--bdr);font-family:var(--mono);font-size:11.5px;color:var(--teal);line-height:1.7;}
+.step-result{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}
+.res-chip{padding:4px 10px;border-radius:7px;font-size:11px;font-weight:600;font-family:var(--mono);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--cyan);}
+
+/* ═══ CHECK TABLE ═══ */
+.check-table{width:100%;border-collapse:collapse;}
+.check-table th{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:0.8px;text-transform:uppercase;text-align:left;padding:10px 14px;border-bottom:1px solid var(--bdr);}
+.check-table td{padding:11px 14px;font-size:12.5px;border-bottom:1px solid rgba(30,111,255,0.05);}
+.check-table tr:last-child td{border-bottom:none;}
+.check-table tr:hover td{background:rgba(30,111,255,0.025);}
+.val-cell{font-family:var(--mono);color:var(--cyan);}
+.limit-cell{font-family:var(--mono);color:var(--tx2);font-size:11px;}
+.check-state{font-size:9px;padding:2px 8px;border-radius:5px;font-weight:700;font-family:var(--mono);display:inline-block;}
+.pass{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);}
+.fail{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.idle{background:var(--bg4);color:var(--tx3);border:1px solid var(--tx3);}
+
+/* ═══ STATUS BAR ═══ */
+.status-bar{background:var(--bg3);border:1px solid var(--bdr);border-radius:11px;padding:14px 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.status-dot.idle{background:var(--tx3);}
+.status-dot.running{background:var(--gold);animation:pulse 1s infinite;}
+.status-dot.ok{background:var(--green);}
+.status-dot.err{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(245,158,11,0.4)}50%{opacity:0.7;box-shadow:0 0 0 6px rgba(245,158,11,0)}}
+.status-text{font-size:12.5px;font-weight:600;}
+.status-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
+
+/* ═══ RESULT PANEL ═══ */
+.result-panel{background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(16,185,129,0.03));border:1px solid rgba(0,212,255,0.2);border-radius:14px;overflow:hidden;margin-top:4px;}
+.result-panel-header{padding:16px 22px;border-bottom:1px solid rgba(0,212,255,0.12);display:flex;align-items:center;gap:12px;}
+.result-panel-title{font-size:14px;font-weight:700;}
+.result-grid-4{padding:20px 22px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.result-item{background:var(--bg4);border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;transition:border-color 0.2s;}
+.result-item:hover{border-color:rgba(0,212,255,0.25);}
+.result-item-label{font-size:10.5px;color:var(--tx2);font-weight:600;letter-spacing:0.6px;text-transform:uppercase;margin-bottom:6px;}
+.result-item-val{font-family:var(--mono);font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.result-item-val span{font-size:11px;color:var(--tx2);-webkit-text-fill-color:var(--tx2);font-weight:400;}
+.result-item-sub{font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:4px;}
+
+/* ═══ OUTPUT TABLE ═══ */
+.output-table-wrap{padding:0 22px 22px;}
+.output-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;}
+.output-table thead th{padding:10px 14px;font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--tx3);text-transform:uppercase;border-bottom:1px solid var(--bdr);text-align:left;}
+.output-table tbody tr{transition:background 0.15s;}
+.output-table tbody tr:hover{background:rgba(30,111,255,0.04);}
+.output-table tbody td{padding:9px 14px;border-bottom:1px solid rgba(30,111,255,0.05);color:var(--tx2);}
+.output-table tbody td:first-child{color:var(--tx1);font-family:var(--font);font-size:12.5px;font-weight:500;}
+.output-table tbody td.num-val{color:var(--cyan);font-weight:600;font-size:13px;}
+.output-table tbody td.unit-col{color:var(--tx3);font-size:11px;}
+.output-table tbody tr:last-child td{border-bottom:none;}
+.section-row td{background:rgba(245,158,11,0.05);color:var(--gold) !important;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;padding:6px 14px !important;}
+
+/* ═══ TOAST ═══ */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--bg3);border:1px solid var(--bdr);border-radius:11px;padding:12px 16px;display:flex;align-items:center;gap:10px;min-width:260px;max-width:360px;box-shadow:0 8px 28px rgba(0,0,0,0.4);backdrop-filter:blur(12px);animation:toastIn 0.28s ease both;}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+.toast.toast-ok{border-color:rgba(16,185,129,0.35);}
+.toast.toast-error{border-color:rgba(239,68,68,0.35);}
+.toast.toast-warn{border-color:rgba(245,158,11,0.35);}
+.toast-icon{font-size:16px;flex-shrink:0;}
+.toast-msg{font-size:12.5px;font-weight:500;flex:1;}
+.toast-close{font-size:15px;color:var(--tx3);cursor:pointer;}
+.toast-close:hover{color:var(--tx1);}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="logo-row">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div><div class="logo-name">Mecha<em>Mix</em></div></div>
+    </div>
+  </div>
+  <div class="sb-body">
+    <div class="sb-section">
+      <span class="sb-sec-label">Tổng quan</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dự án của tôi
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Nhập liệu & Kiểm tra</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Kiểm tra ngưỡng
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Tính toán</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Chọn động cơ
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Bộ truyền đai
+        <span class="nav-tag tag-done">DONE</span>
+      </a>
+      <a class="nav-link active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+        Bánh răng côn
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <circle cx="4" cy="12" r="2"/>
+          <circle cx="20" cy="12" r="2"/>
+        </svg>
+        Bánh răng trụ
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">AI & Tối ưu</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        Gợi ý linh kiện
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Tối ưu ML / GA
+      </a>
+    </div>
+    <div class="sb-section">
+      <span class="sb-sec-label">Xuất & Chia sẻ</span>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Xuất bản vẽ lắp
+      </a>
+      <a class="nav-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Xuất báo cáo PDF
+      </a>
+    </div>
+  </div>
+  <div class="sb-bot">
+    <div class="user-dropdown-wrap">
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="user-dropdown-name" id="dropName">Người dùng</div>
+          <div class="user-dropdown-email" id="dropEmail">—</div>
+        </div>
+        <a class="user-dropdown-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Hồ sơ cá nhân
+        </a>
+        <a class="user-dropdown-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Cài đặt
+        </a>
+        <div class="user-dropdown-sep"></div>
+        <div class="user-dropdown-item danger" id="btnLogout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Đăng xuất
+        </div>
+      </div>
+      <div class="user-row" id="userRowBtn" style="cursor:pointer;">
+        <div class="u-av" id="userAv">?</div>
+        <div><div class="u-name" id="userName">Đang tải...</div><div class="u-role" id="userRole">—</div></div>
+        <div class="u-dots" id="userDots">···</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <header class="topbar">
+    <div class="tb-breadcrumb">
+      <span>MechaMix</span><span class="sep">›</span>
+      <span>Tính toán</span><span class="sep">›</span>
+      <span class="cur">Bộ truyền bánh răng côn</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-date" id="tbDate"></div>
+      <div class="tb-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Tìm kiếm...
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="tb-notif-dot"></div>
+      </div>
+      <div class="tb-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- MODULE HEADER with Pipeline -->
+    <div class="module-header">
+      <div class="module-header-glow"></div>
+      <div class="module-badge">M3</div>
+      <div class="module-meta">
+        <div class="module-title">Tính toán <span>Bộ truyền bánh răng côn - Răng thẳng</span></div>
+        <div class="module-desc">Nhập T₁, n₁, u từ Module 2 — kiểm nghiệm bền tiếp xúc, uốn và quá tải</div>
+      </div>
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-dot done">M1</div>
+          <div class="pipe-label">Động cơ</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot done">M2</div>
+          <div class="pipe-label">Bộ truyền đai</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot active">M3</div>
+          <div class="pipe-label">Bánh răng côn</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-dot next">M4</div>
+          <div class="pipe-label">Bánh răng trụ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. Thông số truyền động -->
+    <div class="section-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Bước 1: Thông số truyền động đầu vào</div>
+          <div class="card-sub">Nhập T₁, n₁, u và các thông số làm việc</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="field-row" style="margin-bottom:14px;">
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Mô men xoắn trục vào T₁</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inT1" type="number" value="47980.997" step="any" placeholder="47980.997">
+              <span class="field-unit">N·mm</span>
+            </div>
+            <div class="field-range">Case study: T₁ = 47 980.997 N·mm</div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Tốc độ trục vào n₁</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inN1" type="number" value="1168.8" step="any" placeholder="1168.8">
+              <span class="field-unit">rpm</span>
+            </div>
+            <div class="field-range">Không phải tốc độ động cơ</div>
+          </div>
+        </div>
+        <div class="field-row" style="margin-bottom:14px;">
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Tỉ số truyền u</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inU" type="number" value="4.5" step="0.05" placeholder="4.5">
+              <span class="field-unit">—</span>
+            </div>
+            <div class="field-range">Khuyến nghị: 1 ≤ u ≤ 6.3</div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Thời gian làm việc t_h</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inTh" type="number" value="17280" step="any" placeholder="17280">
+              <span class="field-unit">h</span>
+            </div>
+            <div class="field-range">Case study: 17 280 giờ</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Hệ số tải trọng đỉnh K_qt</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inKqt" type="number" value="2.2" step="0.1">
+              <span class="field-unit">—</span>
+            </div>
+            <div class="field-range">Mặc định: 2.2</div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Hệ số K_be</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inKbe" type="number" value="0.3" step="0.05">
+              <span class="field-unit">—</span>
+            </div>
+            <div class="field-range">Khuyến nghị: 0.25 ÷ 0.35</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Vật liệu -->
+    <div class="section-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Bước 2: Lựa chọn vật liệu bánh răng</div>
+          <div class="card-sub">HB ≤ 350 — Thường hóa / Tôi cải thiện</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="divider"><span class="divider-label">Bánh nhỏ (bánh chủ động)</span></div>
+        <div class="field-row" style="margin-bottom:14px;">
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Độ cứng HB₁</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inHB1" type="number" value="250" min="150" max="400">
+              <span class="field-unit">HB</span>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">σ_b bánh nhỏ</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inSigB1" type="number" value="850">
+              <span class="field-unit">MPa</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-row" style="margin-bottom:14px;">
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">σ_ch bánh nhỏ</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inSigCh1" type="number" value="580">
+              <span class="field-unit">MPa</span>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Nhiệt luyện</label>
+            <select class="sel" id="inNL1">
+              <option value="TT" selected>Thường hóa / Tôi cải thiện</option>
+            </select>
+          </div>
+        </div>
+        <div class="divider"><span class="divider-label">Bánh lớn (bánh bị động)</span></div>
+        <div class="field-row" style="margin-bottom:14px;">
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Độ cứng HB₂</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inHB2" type="number" value="240" min="150" max="400">
+              <span class="field-unit">HB</span>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">σ_b bánh lớn</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inSigB2" type="number" value="750">
+              <span class="field-unit">MPa</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">σ_ch bánh lớn</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inSigCh2" type="number" value="450">
+              <span class="field-unit">MPa</span>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Hệ số K_FC</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="inKFC" type="number" value="1.0" step="0.1">
+              <span class="field-unit">—</span>
+            </div>
+            <div class="field-range">= 1 nếu quay 1 chiều</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div class="status-dot idle" id="statusDot"></div>
+      <div>
+        <div class="status-text" id="statusText">Nhập thông số và nhấn "Tính toán"</div>
+        <div class="status-sub" id="statusSub">Cần điền đầy đủ: T₁, n₁, u, t_h và vật liệu</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="resetAll()">Đặt lại</button>
+        <button class="btn btn-gold" onclick="runCalc()" id="btnCalc">
+          Tính toán
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Quy trình tính -->
+    <div class="section-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Quy trình tính toán kỹ thuật</div>
+        </div>
+        <div class="card-badge badge-check">KIỂM TRA</div>
+      </div>
+      <div class="card-body">
+        <div class="calc-step">
+          <div class="step-num s-idle" id="s1num">1</div>
+          <div class="step-content">
+            <div class="step-title">Ứng suất cho phép</div>
+            <div class="step-detail">Tính N_HO, N_HE, K_HL, K_FL</div>
+            <div class="step-formula" id="s1formula">σ_Hlim = 2·HB + 70 ; S_H = 1.1 ; S_F = 1.75
+N_HO = 30·HB^2.4 ; K_HL = (N_HO/N_HE)^(1/6)</div>
+            <div class="step-result" id="s1result" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="calc-step">
+          <div class="step-num s-idle" id="s2num">2</div>
+          <div class="step-content">
+            <div class="step-title">Chiều dài côn ngoài sơ bộ Re</div>
+            <div class="step-detail">Xác định b = K_be × Re_sb</div>
+            <div class="step-formula" id="s2formula">Re = K_R·√(u²+1)·∛(T₁·K_Hβ / ((1-K_be)·K_be·[σH]²·u))
+K_R = 0.5·K_d ; K_d = 100 (thép–thép)</div>
+            <div class="step-result" id="s2result" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="calc-step">
+          <div class="step-num s-idle" id="s3num">3</div>
+          <div class="step-content">
+            <div class="step-title">Thông số ăn khớp & hình học</div>
+            <div class="step-detail">Chọn Z₁, Z₂, mte tiêu chuẩn</div>
+            <div class="step-detail">Tính Re, b_fixed, δ₁, δ₂, dm1, dm2</div>
+            <div class="step-formula" id="s3formula">de1 = mte·Z₁ ; de2 = mte·Z₂ ; Re = 0.5·mte·√(Z₁²+Z₂²)
+δ₁ = arctan(Z₁/Z₂) ; he = 2.2·mte ; hae = mte ; hfe = 1.2·mte</div>
+            <div class="step-result" id="s3result" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="calc-step">
+          <div class="step-num s-idle" id="s4num">4</div>
+          <div class="step-content">
+            <div class="step-title">Kiểm nghiệm bền tiếp xúc σ_H</div>
+            <div class="step-detail">Vòng lặp tăng module nếu vượt quá 4%</div>
+            <div class="step-formula" id="s4formula">σ_H = Z_M·Z_H·Z_ε·√(2T₁·K_H·√(u²+1) / (0.85·b·u·dm1²))
+K_H = K_Hβ·K_Hα·K_Hv ; vH = δ_H·g₀·v·√(dm1·(u+1)/u)</div>
+            <div class="step-result" id="s4result" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="calc-step">
+          <div class="step-num s-idle" id="s5num">5</div>
+          <div class="step-content">
+            <div class="step-title">Kiểm nghiệm bền uốn σ_F</div>
+            <div class="step-detail">Tính σ_F1, σ_F2 theo mtm và hệ số</div>
+            <div class="step-formula" id="s5formula">σ_F1 = 2·T₁·K_F·Y_ε·Y_F1 / (0.85·b·mtm·dm1)
+σ_F2 = σ_F1·Y_F2/Y_F1 ; K_F = K_Fβ·K_Fα·K_Fv</div>
+            <div class="step-result" id="s5result" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="calc-step">
+          <div class="step-num s-idle" id="s6num">6</div>
+          <div class="step-content">
+            <div class="step-title">Kiểm nghiệm quá tải</div>
+            <div class="step-detail">σ_H_max ≤ [σH]max</div>
+            <div class="step-detail">σ_F_max ≤ [σF]max</div>
+            <div class="step-formula" id="s6formula">σ_H_max = σ_H·√K_qt ≤ 2.8·σ_ch
+σ_F_max = σ_F·K_qt ≤ 0.8·σ_ch</div>
+            <div class="step-result" id="s6result" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ứng suất cho phép -->
+    <div class="section-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Ứng suất cho phép</div>
+          <div class="card-sub">Bánh nhỏ và bánh lớn</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table class="check-table">
+          <thead><tr><th>Tham số</th><th>Bánh nhỏ</th><th>Bánh lớn</th></tr></thead>
+          <tbody>
+            <tr><td>σ_Hlim (MPa)</td><td class="val-cell" id="rSHL1">—</td><td class="val-cell" id="rSHL2">—</td></tr>
+            <tr><td>σ_Flim (MPa)</td><td class="val-cell" id="rSFL1">—</td><td class="val-cell" id="rSFL2">—</td></tr>
+            <tr><td>N_HO</td><td class="val-cell" id="rNHO1">—</td><td class="val-cell" id="rNHO2">—</td></tr>
+            <tr><td>K_HL</td><td class="val-cell" id="rKHL1">—</td><td class="val-cell" id="rKHL2">—</td></tr>
+            <tr><td>[σH] (MPa)</td><td class="val-cell" id="rSHCP1">—</td><td class="val-cell" id="rSHCP2">—</td></tr>
+            <tr><td>[σH] dùng (MPa)</td><td colspan="2" class="val-cell" id="rSHCPdung" style="text-align:center;">—</td></tr>
+            <tr><td>[σF]₁ (MPa)</td><td class="val-cell" id="rSFCP1">—</td><td class="val-cell" id="rSFCP2">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Kiểm nghiệm bền -->
+    <div class="section-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Kiểm nghiệm bền</div>
+          <div class="card-sub">Tiếp xúc · Uốn · Quá tải</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table class="check-table">
+          <thead><tr><th>Điều kiện</th><th>Tính được</th><th>Cho phép</th><th>KQ</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Vận tốc vòng v</td>
+              <td class="val-cell" id="ckV">—</td>
+              <td class="limit-cell">m/s</td>
+              <td><span class="check-state idle" id="ckVs">—</span></td>
+            </tr>
+            <tr>
+              <td>σ_H – Tiếp xúc</td>
+              <td class="val-cell" id="ckSH">—</td>
+              <td class="limit-cell" id="ckSHlim">— MPa</td>
+              <td><span class="check-state idle" id="ckSHs">IDLE</span></td>
+            </tr>
+            <tr>
+              <td>σ_F1 – Uốn B.nhỏ</td>
+              <td class="val-cell" id="ckSF1">—</td>
+              <td class="limit-cell" id="ckSF1lim">— MPa</td>
+              <td><span class="check-state idle" id="ckSF1s">IDLE</span></td>
+            </tr>
+            <tr>
+              <td>σ_F2 – Uốn B.lớn</td>
+              <td class="val-cell" id="ckSF2">—</td>
+              <td class="limit-cell" id="ckSF2lim">— MPa</td>
+              <td><span class="check-state idle" id="ckSF2s">IDLE</span></td>
+            </tr>
+            <tr>
+              <td>σ_H_max – Quá tải</td>
+              <td class="val-cell" id="ckSHmax">—</td>
+              <td class="limit-cell" id="ckSHmaxLim">— MPa</td>
+              <td><span class="check-state idle" id="ckSHmaxs">IDLE</span></td>
+            </tr>
+            <tr>
+              <td>σ_F1_max – Quá tải</td>
+              <td class="val-cell" id="ckSF1max">—</td>
+              <td class="limit-cell" id="ckSF1maxLim">— MPa</td>
+              <td><span class="check-state idle" id="ckSF1maxs">IDLE</span></td>
+            </tr>
+            <tr>
+              <td>σ_F2_max – Quá tải</td>
+              <td class="val-cell" id="ckSF2max">—</td>
+              <td class="limit-cell" id="ckSF2maxLim">— MPa</td>
+              <td><span class="check-state idle" id="ckSF2maxs">IDLE</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Hệ số kiểm nghiệm -->
+    <div class="section-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Hệ số động học</div>
+          <div class="card-sub">K_H · K_F · Z_H · Z_ε · Y_F</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table class="check-table">
+          <thead><tr><th>Hệ số</th><th>Giá trị</th><th>Hệ số</th><th>Giá trị</th></tr></thead>
+          <tbody>
+            <tr><td>K_Hβ</td><td class="val-cell" id="hKHb">—</td><td>K_Fβ</td><td class="val-cell" id="hKFb">—</td></tr>
+            <tr><td>K_Hα</td><td class="val-cell" id="hKHa">1.0</td><td>K_Fα</td><td class="val-cell" id="hKFa">1.0</td></tr>
+            <tr><td>K_Hv</td><td class="val-cell" id="hKHv">—</td><td>K_Fv</td><td class="val-cell" id="hKFv">—</td></tr>
+            <tr><td>K_H</td><td class="val-cell" id="hKH">—</td><td>K_F</td><td class="val-cell" id="hKF">—</td></tr>
+            <tr><td>Z_H</td><td class="val-cell" id="hZH">—</td><td>ε_α</td><td class="val-cell" id="hEps">—</td></tr>
+            <tr><td>Z_ε</td><td class="val-cell" id="hZe">—</td><td>Y_ε</td><td class="val-cell" id="hYe">—</td></tr>
+            <tr><td>Y_F1</td><td class="val-cell" id="hYF1">—</td><td>Y_F2</td><td class="val-cell" id="hYF2">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BIG RESULT TABLE -->
+    <div class="result-panel" id="resultPanel" style="display:none;">
+      <div class="result-panel-header">
+        <div>
+          <div class="result-panel-title">Bảng thông số và kích thước bộ truyền bánh răng côn</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px;">Kết quả tính toán hoàn chỉnh theo Trịnh Chất & Lê Văn Uyển</div>
+        </div>
+        <div class="card-badge badge-output" style="margin-left:auto;">OUTPUT CUỐI</div>
+      </div>
+
+      <div class="result-grid-4">
+        <div class="result-item">
+          <div class="result-item-label">Chiều dài côn ngoài Re</div>
+          <div class="result-item-val" id="rRe">—<span> mm</span></div>
+          <div class="result-item-sub" id="rRe_sb">Re_sb = — mm</div>
+        </div>
+        <div class="result-item">
+          <div class="result-item-label">Module mặt đầu ngoài mte</div>
+          <div class="result-item-val" id="rMte">—<span> mm</span></div>
+          <div class="result-item-sub" id="rMtm_sub">mtm = — mm</div>
+        </div>
+        <div class="result-item">
+          <div class="result-item-label">Số răng Z₁ / Z₂</div>
+          <div class="result-item-val" id="rZ">—</div>
+          <div class="result-item-sub" id="rU">u_tt = —</div>
+        </div>
+        <div class="result-item">
+          <div class="result-item-label">Chiều rộng vành b</div>
+          <div class="result-item-val" id="rB">—<span> mm</span></div>
+          <div class="result-item-sub" id="rBcheck">b/Re = —</div>
+        </div>
+      </div>
+
+      <div class="output-table-wrap">
+        <table class="output-table">
+          <thead>
+            <tr>
+              <th style="width:52%;">Thông số</th>
+              <th style="width:28%;text-align:right;">Giá trị</th>
+              <th style="width:20%;">Đơn vị</th>
+            </tr>
+          </thead>
+          <tbody id="outputTableBody">
+            <tr><td colspan="3" style="text-align:center;color:var(--tx3);padding:30px;">Chưa có kết quả – Nhấn "Tính toán" để bắt đầu</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!--<div style="display:flex;justify-content:flex-end;padding:0 22px 22px;">
+        <a href="../m4/UI_banhrangtru.html" class="btn btn-primary" id="btnNext" style="padding:12px 24px;" onclick="event.preventDefault(); goToM4();">
+          Tiếp tục: Chuyển sang Bánh răng trụ - M4
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>-->
+    
+    <div style="display:flex;justify-content:flex-end;padding:0 22px 22px;">
+  <button class="btn btn-primary" id="btnNext" style="padding:12px 24px;" disabled onclick="window.location.href='../m4/UI_banhrangtru.html';">
+    Tiếp tục: Chuyển sang Bánh răng trụ - M4
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  </button>
+</div>
+
+  </div><!-- /content -->
+</main>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CALCULATION ENGINE – Ported from Python (Trịnh Chất)
+// ═══════════════════════════════════════════════════════════════
+
+const STANDARD_MODULES = [1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0];
+
+const BANG_6_16 = {
+  6: {'le355': 38, 'mid': 42, 'gt10': 48},
+  7: {'le355': 47, 'mid': 53, 'gt10': 64},
+  8: {'le355': 56, 'mid': 61, 'gt10': 73},
+  9: {'le355': 73, 'mid': 82, 'gt10': 100},
+};
+
+const BANG_6_13 = {9: 1.5, 8: 4.0, 7: 8.0, 6: 12.0};
+
+const YF_TABLE = [
+  [17, 4.26],[20, 4.08],[22, 4.00],[25, 3.90],[30, 3.80],
+  [40, 3.70],[50, 3.65],[60, 3.62],[80, 3.61],[100, 3.60],[150, 3.60]
+];
+
+const BANG_6_22 = {
+  40:  {1:24, 2:20, 3.15:18, 4:16, 6:15},
+  60:  {1:24, 2:20, 3.15:18, 4:16, 6:15},
+  80:  {1:25, 2:21, 3.15:19, 4:17, 6:16},
+  100: {1:25, 2:21, 3.15:19, 4:17, 6:16},
+  125: {1:26, 2:22, 3.15:20, 4:18, 6:17},
+  160: {1:27, 2:24, 3.15:22, 4:21, 6:18},
+  200: {1:30, 2:28, 3.15:27, 4:24, 6:22},
+};
+
+function interpolate(table, x) {
+  if (x <= table[0][0]) return table[0][1];
+  if (x >= table[table.length-1][0]) return table[table.length-1][1];
+  for (let i = 0; i < table.length-1; i++) {
+    let [x0,y0] = table[i], [x1,y1] = table[i+1];
+    if (x0 <= x && x <= x1) return y0 + (y1-y0)*(x-x0)/(x1-x0);
+  }
+  return table[table.length-1][1];
+}
+
+function interp1D(pairs, x) {
+  if (x <= pairs[0][0]) return pairs[0][1];
+  if (x >= pairs[pairs.length-1][0]) return pairs[pairs.length-1][1];
+  for (let i = 0; i < pairs.length-1; i++) {
+    let [x0,y0] = pairs[i], [x1,y1] = pairs[i+1];
+    if (x0 <= x && x <= x1) return y0 + (y1-y0)*(x-x0)/(x1-x0);
+  }
+  return pairs[pairs.length-1][1];
+}
+
+function traYF(z) { return interpolate(YF_TABLE, z); }
+
+function tinh_K_Hbeta(K_be, u, HB_max) {
+  let x = K_be * u / (2 - K_be);
+  let bang = HB_max <= 350
+    ? [[0.2,1.04],[0.4,1.08],[0.6,1.13],[0.8,1.18],[1.0,1.28]]
+    : [[0.2,1.08],[0.4,1.20],[0.6,1.32],[0.8,1.44]];
+  return interp1D(bang, x);
+}
+
+function tinh_K_Fbeta(K_be, u, HB_max) {
+  let x = K_be * u / (2 - K_be);
+  let bang = HB_max <= 350
+    ? [[0.2,1.08],[0.4,1.15],[0.6,1.25],[0.8,1.35],[1.0,1.45]]
+    : [[0.2,1.15],[0.4,1.30],[0.6,1.48],[0.8,1.67],[1.0,1.90]];
+  return interp1D(bang, x);
+}
+
+function tinh_NHO(HB) { return 30 * Math.pow(HB, 2.4); }
+function tinh_K_HL(N_HO, N_HE) { return N_HE >= N_HO ? 1.0 : Math.pow(N_HO/N_HE, 1/6); }
+function tinh_K_FL(N_FO, N_FE) { return N_FE >= N_FO ? 1.0 : Math.pow(N_FO/N_FE, 1/6); }
+
+function chon_cap_cx(v) {
+  for (let cap of [9,8,7,6]) {
+    if (v <= BANG_6_13[cap]) return cap;
+  }
+  return 6;
+}
+
+function tra_delta_g0(HB1, HB2, cap_cx, mte) {
+  let delta_H = (HB1<=350 && HB2<=350) ? 0.006 : 0.014;
+  let delta_F = (HB1<=350 && HB2<=350) ? 0.016 : 0.016;
+  let row = BANG_6_16[cap_cx] || BANG_6_16[8];
+  let g0 = mte <= 3.55 ? row.le355 : (mte <= 10 ? row.mid : row.gt10);
+  return {delta_H, delta_F, g0};
+}
+
+function tinh_ZH(beta_deg=0, alpha_tw_deg=20) {
+  let alpha_tw = alpha_tw_deg * Math.PI/180;
+  let beta_b = Math.atan(Math.cos(alpha_tw) * Math.tan(beta_deg * Math.PI/180));
+  return Math.sqrt(2 * Math.cos(beta_b) / Math.sin(2 * alpha_tw));
+}
+
+function tinh_eps_alpha(Z1, Z2) { return 1.88 - 3.2*(1/Z1 + 1/Z2); }
+function tinh_Z_eps(eps_alpha) { return Math.sqrt((4 - eps_alpha) / 3); }
+
+function chon_Z1_from_table(u, de1_sb) {
+  let de1_keys = Object.keys(BANG_6_22).map(Number).sort((a,b)=>a-b);
+  let de1_key = de1_keys[de1_keys.length-1];
+  for (let k of de1_keys) { if (k >= de1_sb) { de1_key = k; break; } }
+  let row = BANG_6_22[de1_key];
+  let u_keys = Object.keys(row).map(Number).sort((a,b)=>a-b);
+  let u_key = u_keys[u_keys.length-1];
+  for (let uk of u_keys) { if (uk >= u) { u_key = uk; break; } }
+  return Math.ceil(1.6 * row[u_key]);
+}
+
+function chooseModule(mte_sb) {
+  for (let m of STANDARD_MODULES) { if (m >= mte_sb - 1e-9) return m; }
+  return STANDARD_MODULES[STANDARD_MODULES.length-1];
+}
+
+function calculate(params) {
+  const {T1, n1, u, t_h, HB1, HB2, sigB1, sigB2, sigCh1, sigCh2, K_FC, K_be, K_qt} = params;
+  const c = 1;
+  const ZM = 274.0;
+
+  let sigHlim1 = 2*HB1+70, sigHlim2 = 2*HB2+70;
+  let sigFlim1 = 1.8*HB1,  sigFlim2 = 1.8*HB2;
+  let S_H = 1.1, S_F = 1.75;
+  let N_HO1 = tinh_NHO(HB1), N_HO2 = tinh_NHO(HB2);
+  let N_FO = 4e6;
+  let NHE1 = 60*c*n1*t_h;
+  let NHE2 = 60*c*(n1/u)*t_h;
+  let NFE1 = NHE1, NFE2 = NHE2;
+  let K_HL1 = tinh_K_HL(N_HO1, NHE1);
+  let K_HL2 = tinh_K_HL(N_HO2, NHE2);
+  let K_FL1 = tinh_K_FL(N_FO, NFE1);
+  let K_FL2 = tinh_K_FL(N_FO, NFE2);
+  let sigH_cp1 = (sigHlim1/S_H)*K_HL1;
+  let sigH_cp2 = (sigHlim2/S_H)*K_HL2;
+  let sigH_cp  = Math.min(sigH_cp1, sigH_cp2);
+  let sigF_cp1 = (sigFlim1/S_F)*K_FC*K_FL1;
+  let sigF_cp2 = (sigFlim2/S_F)*K_FC*K_FL2;
+
+  let sigH_max_cp1 = 2.8*sigCh1, sigH_max_cp2 = 2.8*sigCh2;
+  let sigF_max_cp1 = 0.8*sigCh1, sigF_max_cp2 = 0.8*sigCh2;
+
+  let HB_max = Math.max(HB1, HB2);
+  let K_Hbeta = tinh_K_Hbeta(K_be, u, HB_max);
+  let K_Fbeta = tinh_K_Fbeta(K_be, u, HB_max);
+  let K_d = 100.0, K_R = 0.5*K_d;
+  let Re_sb = K_R * Math.sqrt(u*u+1) * Math.pow(T1*K_Hbeta / ((1-K_be)*K_be*sigH_cp*sigH_cp*u), 1/3);
+  let b_fixed = K_be * Re_sb;
+
+  let de1_sb = 2*Re_sb / Math.sqrt(u*u+1);
+  let Z1 = chon_Z1_from_table(u, de1_sb);
+  let Z2 = Math.round(u * Z1);
+  let u_tt = Z2/Z1;
+
+  let Re_sb2 = Re_sb;
+  let dm1_sb  = 2*Re_sb2*(1-0.5*K_be)*Z1 / Math.sqrt(Z1*Z1+Z2*Z2);
+  let mtm_sb  = dm1_sb / Z1;
+  let mte_sb  = mtm_sb / (1 - 0.5*K_be);
+  let mte     = chooseModule(mte_sb);
+
+  function buildGeom(mte_val) {
+    let mtm_v = mte_val*(1-0.5*K_be);
+    let Re_v   = 0.5*mte_val*Math.sqrt(Z1*Z1+Z2*Z2);
+    let dm1_v  = mtm_v*Z1;
+    let dm2_v  = (1-0.5*K_be)*mte_val*Z2;
+    let de1_v  = mte_val*Z1;
+    let de2_v  = mte_val*Z2;
+    let delta1 = Math.atan(Z1/Z2);
+    let delta2 = Math.PI/2 - delta1;
+    let he_v   = 2.2*mte_val;
+    let hae_v  = mte_val;
+    let hfe_v  = he_v - hae_v;
+    let dae1_v = de1_v + 2*hae_v*Math.cos(delta1);
+    let dae2_v = de2_v + 2*hae_v*Math.cos(delta2);
+    return {mte:mte_val, mtm:mtm_v, Re:Re_v, dm1:dm1_v, dm2:dm2_v,
+            de1:de1_v, de2:de2_v, delta1, delta2, he:he_v, hae:hae_v, hfe:hfe_v,
+            dae1:dae1_v, dae2:dae2_v};
+  }
+
+  let gg = buildGeom(mte);
+  let kn_tx, iterCount = 0;
+  let mte_cur = mte;
+
+  while(true) {
+    gg = buildGeom(mte_cur);
+    let v = Math.PI*gg.dm1*n1/60000;
+    let cap_cx = chon_cap_cx(v);
+    let {delta_H, delta_F, g0} = tra_delta_g0(HB1, HB2, cap_cx, mte_cur);
+    let K_Halpha = 1.0;
+    let vH = delta_H*g0*v*Math.sqrt(gg.dm1*(u+1)/u);
+    let K_Hv = 1 + (vH*b_fixed*gg.dm1)/(2*T1*K_Hbeta*K_Halpha);
+    let K_H  = K_Hbeta*K_Halpha*K_Hv;
+    let ZH   = tinh_ZH();
+    let eps_alpha = tinh_eps_alpha(Z1, Z2);
+    let Z_eps = tinh_Z_eps(eps_alpha);
+    let nen = (2*T1*K_H*Math.sqrt(u*u+1)) / (0.85*b_fixed*u*gg.dm1*gg.dm1);
+    let sigH = ZM*ZH*Z_eps*Math.sqrt(nen);
+    let chenh = (sigH - sigH_cp)/sigH_cp*100;
+    let dat_H = sigH <= sigH_cp || chenh <= 4;
+    kn_tx = {v, cap_cx, vH, K_Hbeta, K_Halpha, K_Hv, K_H, ZH, eps_alpha, Z_eps, sigH, sigH_cp, dat_H, chenh, delta_H, delta_F, g0};
+    if (dat_H) break;
+    let idx = STANDARD_MODULES.indexOf(mte_cur);
+    if (idx < 0 || idx >= STANDARD_MODULES.length-1) break;
+    mte_cur = STANDARD_MODULES[idx+1];
+    iterCount++;
+    if (iterCount > 10) break;
+  }
+
+  gg = buildGeom(mte_cur);
+  let {delta_H, delta_F, g0} = tra_delta_g0(HB1, HB2, kn_tx.cap_cx, mte_cur);
+
+  let K_Falpha = 1.0;
+  let vF = delta_F*g0*kn_tx.v*Math.sqrt(gg.dm1*(u+1)/u);
+  let K_Fv = 1 + (vF*b_fixed*gg.dm1)/(2*T1*K_Fbeta*K_Falpha);
+  let K_F  = K_Fbeta*K_Falpha*K_Fv;
+  let eps_alpha = tinh_eps_alpha(Z1, Z2);
+  let Y_eps = 1/eps_alpha;
+  let Y_beta = 1.0;
+  let Ztd1 = Z1/Math.pow(Math.cos(gg.delta1), 3);
+  let Ztd2 = Z2/Math.pow(Math.cos(gg.delta2), 3);
+  let YF1  = traYF(Ztd1);
+  let YF2  = traYF(Ztd2);
+  let sigF1 = (2*T1*K_F*Y_eps*Y_beta*YF1)/(0.85*b_fixed*gg.mtm*gg.dm1);
+  let sigF2 = sigF1*YF2/YF1;
+  let dat_F1 = sigF1 <= sigF_cp1;
+  let dat_F2 = sigF2 <= sigF_cp2;
+
+  let sigH_max_cp = Math.min(sigH_max_cp1, sigH_max_cp2);
+  let sigH_max  = kn_tx.sigH * Math.sqrt(K_qt);
+  let sigF1_max = sigF1 * K_qt;
+  let sigF2_max = sigF2 * K_qt;
+  let dat_Hmax  = sigH_max  <= sigH_max_cp;
+  let dat_F1max = sigF1_max <= sigF_max_cp1;
+  let dat_F2max = sigF2_max <= sigF_max_cp2;
+
+  let b_Re = b_fixed/gg.Re;
+  let eps_check = tinh_eps_alpha(Z1, Z2);
+
+  return {
+    sigHlim1, sigHlim2, sigFlim1, sigFlim2,
+    N_HO1, N_HO2, K_HL1, K_HL2, K_FL1, K_FL2,
+    sigH_cp1, sigH_cp2, sigH_cp, sigF_cp1, sigF_cp2,
+    sigH_max_cp1, sigH_max_cp2, sigF_max_cp1, sigF_max_cp2,
+    K_Hbeta, K_Fbeta, Re_sb, b_fixed,
+    Z1, Z2, u_tt, sai_so_u: Math.abs(u_tt-u)/u*100,
+    mte: mte_cur, mte_sb, mtm: gg.mtm, Re: gg.Re,
+    b: b_fixed, b_Re,
+    delta1_deg: gg.delta1*180/Math.PI,
+    delta2_deg: gg.delta2*180/Math.PI,
+    dm1: gg.dm1, dm2: gg.dm2,
+    de1: gg.de1, de2: gg.de2,
+    he: gg.he, hae: gg.hae, hfe: gg.hfe,
+    dae1: gg.dae1, dae2: gg.dae2,
+    ...kn_tx, iterCount,
+    K_Fbeta, K_Falpha, K_Fv, K_F, vF,
+    eps_alpha, Y_eps, YF1, YF2, Ztd1, Ztd2,
+    sigF1, sigF2, sigF_cp1, sigF_cp2,
+    dat_F1, dat_F2,
+    sigH_max_cp, sigH_max, sigF1_max, sigF2_max,
+    dat_Hmax, dat_F1max, dat_F2max,
+    dat_all: kn_tx.dat_H && dat_F1 && dat_F2 && dat_Hmax && dat_F1max && dat_F2max,
+    eps_check, ok_eps: eps_check >= 1.2,
+  };
+}
+
+// ══════════════════════════════
+// UI UPDATE
+// ══════════════════════════════
+function fmt(v, d=3) { return isNaN(v) ? '—' : v.toFixed(d); }
+function fmtN(v)     { return isNaN(v) ? '—' : v.toFixed(0); }
+
+function setStepState(id, state) {
+  const el = document.getElementById(id);
+  el.className = 'step-num ' + state;
+}
+function showResult(id, chips) {
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+  el.innerHTML = chips.map(c => `<div class="res-chip">${c}</div>`).join('');
+}
+
+function setCheckState(valId, stateId, val, limit, unit='MPa', pass=null) {
+  document.getElementById(valId).textContent = `${fmt(val)} ${unit}`;
+  let ok = pass !== null ? pass : val <= limit;
+  let el = document.getElementById(stateId);
+  el.className = 'check-state ' + (ok ? 'pass' : 'fail');
+  el.textContent = ok ? 'PASS ✓' : 'FAIL ✗';
+}
+function setText(id, txt) { document.getElementById(id).textContent = txt; }
+
+function runCalc() {
+  const params = {
+    T1:     parseFloat(document.getElementById('inT1').value),
+    n1:     parseFloat(document.getElementById('inN1').value),
+    u:      parseFloat(document.getElementById('inU').value),
+    t_h:    parseFloat(document.getElementById('inTh').value),
+    HB1:    parseFloat(document.getElementById('inHB1').value),
+    HB2:    parseFloat(document.getElementById('inHB2').value),
+    sigB1:  parseFloat(document.getElementById('inSigB1').value),
+    sigB2:  parseFloat(document.getElementById('inSigB2').value),
+    sigCh1: parseFloat(document.getElementById('inSigCh1').value),
+    sigCh2: parseFloat(document.getElementById('inSigCh2').value),
+    K_FC:   parseFloat(document.getElementById('inKFC').value),
+    K_be:   parseFloat(document.getElementById('inKbe').value),
+    K_qt:   parseFloat(document.getElementById('inKqt').value),
+  };
+
+  for (let [k,v] of Object.entries(params)) {
+    if (isNaN(v)) { showToast('error','❌ Thiếu hoặc sai định dạng thông số: ' + k); return; }
+  }
+
+  let dot = document.getElementById('statusDot');
+  dot.className = 'status-dot running';
+  setText('statusText', '⏳ Đang tính toán...');
+  setText('statusSub', 'Vòng lặp kiểm nghiệm σH đang chạy');
+
+  for(let i=1;i<=6;i++) setStepState('s'+i+'num','s-active');
+
+  setTimeout(() => {
+    try {
+      const R = calculate(params);
+
+      setStepState('s1num','s-done');
+      setText('rSHL1', fmt(R.sigHlim1,1)); setText('rSHL2', fmt(R.sigHlim2,1));
+      setText('rSFL1', fmt(R.sigFlim1,1)); setText('rSFL2', fmt(R.sigFlim2,1));
+      setText('rNHO1', (R.N_HO1/1e6).toFixed(2)+'M'); setText('rNHO2', (R.N_HO2/1e6).toFixed(2)+'M');
+      setText('rKHL1', fmt(R.K_HL1,4)); setText('rKHL2', fmt(R.K_HL2,4));
+      setText('rSHCP1', fmt(R.sigH_cp1,2)); setText('rSHCP2', fmt(R.sigH_cp2,2));
+      setText('rSHCPdung', fmt(R.sigH_cp,2) + ' MPa');
+      setText('rSFCP1', fmt(R.sigF_cp1,2)); setText('rSFCP2', fmt(R.sigF_cp2,2));
+      showResult('s1result', [`[σH]=${fmt(R.sigH_cp,2)} MPa`,`[σF]₁=${fmt(R.sigF_cp1,2)} MPa`,`[σF]₂=${fmt(R.sigF_cp2,2)} MPa`]);
+
+      setStepState('s2num','s-done');
+      showResult('s2result', [`Re_sb=${fmt(R.Re_sb,3)} mm`,`K_Hβ=${fmt(R.K_Hbeta,4)}`,`K_Fβ=${fmt(R.K_Fbeta,4)}`,`b_fixed=${fmt(R.b_fixed,3)} mm`]);
+
+      setStepState('s3num','s-done');
+      showResult('s3result', [`Z₁=${R.Z1}  Z₂=${R.Z2}`,`mte=${R.mte} mm`,`Re=${fmt(R.Re,3)} mm`,`dm1=${fmt(R.dm1,4)} mm`,`b=${fmt(R.b,3)} mm`]);
+
+      setStepState('s4num', R.dat_H ? 's-done' : 's-active');
+      showResult('s4result', [`v=${fmt(R.v,3)} m/s · CCX${R.cap_cx}`,`K_H=${fmt(R.K_H,4)}`,`K_Hv=${fmt(R.K_Hv,4)}`,`σH=${fmt(R.sigH,3)} MPa`,R.dat_H ? `✓ Đạt (${fmt(R.chenh,1)}%)` : `⚠ Vượt ${fmt(R.chenh,1)}%`,R.iterCount>0 ? `Tăng mte ${R.iterCount} lần` : ''].filter(Boolean));
+
+      setStepState('s5num', (R.dat_F1 && R.dat_F2) ? 's-done' : 's-active');
+      showResult('s5result', [`K_F=${fmt(R.K_F,4)}`,`K_Fv=${fmt(R.K_Fv,4)}`,`YF1=${fmt(R.YF1,3)}  YF2=${fmt(R.YF2,3)}`,`σF1=${fmt(R.sigF1,3)} MPa`,`σF2=${fmt(R.sigF2,3)} MPa`]);
+
+      setStepState('s6num', (R.dat_Hmax && R.dat_F1max && R.dat_F2max) ? 's-done' : 's-active');
+      showResult('s6result', [`σH_max=${fmt(R.sigH_max,3)} ≤ ${fmt(R.sigH_max_cp,1)}`,`σF1_max=${fmt(R.sigF1_max,3)} ≤ ${fmt(R.sigF_max_cp1,1)}`,`σF2_max=${fmt(R.sigF2_max,3)} ≤ ${fmt(R.sigF_max_cp2,1)}`]);
+
+      setText('ckV', fmt(R.v,3) + ' m/s');
+      let el = document.getElementById('ckVs');
+      el.className = 'check-state pass'; el.textContent = 'CCX '+R.cap_cx;
+
+      document.getElementById('ckSHlim').textContent = fmt(R.sigH_cp,2)+' MPa';
+      setCheckState('ckSH','ckSHs', R.sigH, R.sigH_cp,'MPa', R.dat_H);
+
+      document.getElementById('ckSF1lim').textContent = fmt(R.sigF_cp1,2)+' MPa';
+      setCheckState('ckSF1','ckSF1s', R.sigF1, R.sigF_cp1,'MPa', R.dat_F1);
+
+      document.getElementById('ckSF2lim').textContent = fmt(R.sigF_cp2,2)+' MPa';
+      setCheckState('ckSF2','ckSF2s', R.sigF2, R.sigF_cp2,'MPa', R.dat_F2);
+
+      document.getElementById('ckSHmaxLim').textContent = fmt(R.sigH_max_cp,1)+' MPa';
+      setCheckState('ckSHmax','ckSHmaxs', R.sigH_max, R.sigH_max_cp,'MPa', R.dat_Hmax);
+
+      document.getElementById('ckSF1maxLim').textContent = fmt(R.sigF_max_cp1,1)+' MPa';
+      setCheckState('ckSF1max','ckSF1maxs', R.sigF1_max, R.sigF_max_cp1,'MPa', R.dat_F1max);
+
+      document.getElementById('ckSF2maxLim').textContent = fmt(R.sigF_max_cp2,1)+' MPa';
+      setCheckState('ckSF2max','ckSF2maxs', R.sigF2_max, R.sigF_max_cp2,'MPa', R.dat_F2max);
+
+      setText('hKHb', fmt(R.K_Hbeta,4)); setText('hKFb', fmt(R.K_Fbeta,4));
+      setText('hKHv', fmt(R.K_Hv,4));   setText('hKFv', fmt(R.K_Fv,4));
+      setText('hKH',  fmt(R.K_H,4));    setText('hKF',  fmt(R.K_F,4));
+      setText('hZH',  fmt(R.ZH,4));     setText('hEps', fmt(R.eps_alpha,4));
+      setText('hZe',  fmt(R.Z_eps,4));  setText('hYe',  fmt(R.Y_eps,4));
+      setText('hYF1', fmt(R.YF1,4));    setText('hYF2', fmt(R.YF2,4));
+
+      setText('rRe', fmt(R.Re,3));
+      setText('rRe_sb', 'Re_sb = '+fmt(R.Re_sb,3)+' mm');
+      setText('rMte', fmt(R.mte,4));
+      document.getElementById('rMtm_sub').textContent = 'mtm = '+fmt(R.mtm,4)+' mm';
+      setText('rZ', `${R.Z1} / ${R.Z2}`);
+      document.getElementById('rU').textContent = `u_tt = ${fmt(R.u_tt,4)} (Δ${fmt(R.sai_so_u,2)}%)`;
+      setText('rB', fmt(R.b,3));
+      document.getElementById('rBcheck').textContent = `b/Re = ${fmt(R.b_Re,3)} ${R.b_Re>=0.25&&R.b_Re<=0.35?'✓':'⚠'}`;
+
+      let rows = [
+        ['sect','THÔNG SỐ HÌNH HỌC','',''],
+        ['Chiều dài côn ngoài Re', fmt(R.Re,3), 'mm'],
+        ['Chiều dài côn ngoài sơ bộ Re_sb', fmt(R.Re_sb,3), 'mm'],
+        ['Môđun mặt đầu ngoài mte', fmt(R.mte,4), 'mm'],
+        ['Môđun trung bình mtm', fmt(R.mtm,4), 'mm'],
+        ['Chiều rộng vành răng b', fmt(R.b,3), 'mm'],
+        ['Tỉ số truyền yêu cầu u', fmt(params.u,4), '—'],
+        ['Tỉ số truyền thực u_tt', fmt(R.u_tt,4), '—'],
+        ['Sai số tỉ số truyền Δu', fmt(R.sai_so_u,2), '%'],
+        ['Số răng bánh nhỏ Z₁', fmtN(R.Z1), 'răng'],
+        ['Số răng bánh lớn Z₂', fmtN(R.Z2), 'răng'],
+        ['sect','ĐƯỜNG KÍNH','',''],
+        ['Đường kính ngoài bánh nhỏ de1', fmt(R.de1,3), 'mm'],
+        ['Đường kính ngoài bánh lớn de2', fmt(R.de2,3), 'mm'],
+        ['Đường kính trung bình bánh nhỏ dm1', fmt(R.dm1,4), 'mm'],
+        ['Đường kính trung bình bánh lớn dm2', fmt(R.dm2,4), 'mm'],
+        ['Đường kính đỉnh răng ngoài bánh nhỏ dae1', fmt(R.dae1,3), 'mm'],
+        ['Đường kính đỉnh răng ngoài bánh lớn dae2', fmt(R.dae2,3), 'mm'],
+        ['sect','GÓC VÀ CHIỀU CAO RĂNG','',''],
+        ['Góc côn chia bánh nhỏ δ₁', fmt(R.delta1_deg,3), '°'],
+        ['Góc côn chia bánh lớn δ₂', fmt(R.delta2_deg,3), '°'],
+        ['Chiều cao răng ngoài he', fmt(R.he,4), 'mm'],
+        ['Chiều cao đầu răng ngoài hae', fmt(R.hae,4), 'mm'],
+        ['Chiều cao chân răng ngoài hfe', fmt(R.hfe,4), 'mm'],
+        ['sect','KIỂM NGHIỆM BỀN','',''],
+        ['Vận tốc vòng v', fmt(R.v,3), 'm/s'],
+        ['Cấp chính xác', fmtN(R.cap_cx), '—'],
+        ['Ứng suất tiếp xúc σ_H', fmt(R.sigH,3)+' / '+fmt(R.sigH_cp,3), 'MPa'],
+        ['Ứng suất uốn bánh nhỏ σ_F1', fmt(R.sigF1,3)+' / '+fmt(R.sigF_cp1,3), 'MPa'],
+        ['Ứng suất uốn bánh lớn σ_F2', fmt(R.sigF2,3)+' / '+fmt(R.sigF_cp2,3), 'MPa'],
+        ['σ_H quá tải / [σH]max', fmt(R.sigH_max,3)+' / '+fmt(R.sigH_max_cp,3), 'MPa'],
+        ['σ_F1 quá tải / [σF1]max', fmt(R.sigF1_max,3)+' / '+fmt(R.sigF_max_cp1,3), 'MPa'],
+        ['σ_F2 quá tải / [σF2]max', fmt(R.sigF2_max,3)+' / '+fmt(R.sigF_max_cp2,3), 'MPa'],
+        ['sect','HỆ SỐ TẢI TRỌNG','',''],
+        ['K_Hβ (bảng 6.21)', fmt(R.K_Hbeta,4), '—'],
+        ['K_Fβ (bảng 6.21)', fmt(R.K_Fbeta,4), '—'],
+        ['K_Hv', fmt(R.K_Hv,4), '—'],
+        ['K_Fv', fmt(R.K_Fv,4), '—'],
+        ['K_H = K_Hβ·K_Hα·K_Hv', fmt(R.K_H,4), '—'],
+        ['K_F = K_Fβ·K_Fα·K_Fv', fmt(R.K_F,4), '—'],
+        ['Z_H', fmt(R.ZH,4), '—'],
+        ['Z_ε', fmt(R.Z_eps,4), '—'],
+        ['ε_α', fmt(R.eps_alpha,4), '—'],
+        ['Y_ε = 1/ε_α', fmt(R.Y_eps,4), '—'],
+        ['Y_F1 (Z₁ tương đương)', fmt(R.YF1,3), '—'],
+        ['Y_F2 (Z₂ tương đương)', fmt(R.YF2,3), '—'],
+      ];
+
+      let tbody = document.getElementById('outputTableBody');
+      tbody.innerHTML = rows.map(r => {
+        if (r[0] === 'sect') return `<tr class="section-row"><td colspan="3">${r[1]}</td></tr>`;
+        return `<tr><td>${r[0]}</td><td class="num-val" style="text-align:right;">${r[1]}</td><td class="unit-col">${r[2]}</td></tr>`;
+      }).join('');
+
+      document.getElementById('resultPanel').style.display = 'block';
+
+      dot.className = 'status-dot ' + (R.dat_all ? 'ok' : 'err');
+      setText('statusText', R.dat_all ? '✅ Tính toán hoàn tất – TẤT CẢ ĐẠT YÊU CẦU' : '⚠️ Tính toán xong – Một số điều kiện CHƯA ĐẠT');
+      setText('statusSub', `mte=${R.mte}mm · Z₁=${R.Z1} · Z₂=${R.Z2} · Re=${fmt(R.Re,2)}mm · dm1=${fmt(R.dm1,2)}mm`);
+
+      if (R.iterCount > 0)
+        showToast('warn', `⚠️ Đã tăng module ${R.iterCount} lần → mte = ${R.mte} mm để đảm bảo σH`);
+
+      if (R.dat_all) {
+        document.getElementById('btnNext').disabled = false;
+        showToast('ok', `✅ M3 hoàn tất! Tất cả điều kiện bền đạt yêu cầu.`);
+      } else {
+        let fails = [];
+        if (!R.dat_H)    fails.push('σH tiếp xúc');
+        if (!R.dat_F1)   fails.push('σF1 uốn');
+        if (!R.dat_F2)   fails.push('σF2 uốn');
+        if (!R.dat_Hmax) fails.push('σH quá tải');
+        showToast('error', `❌ Chưa đạt: ${fails.join(', ')} — Thay đổi vật liệu hoặc thông số`);
+      }
+
+    } catch(e) {
+      dot.className = 'status-dot err';
+      setText('statusText', '❌ Lỗi tính toán: ' + e.message);
+      showToast('error', '❌ Lỗi: ' + e.message);
+      console.error(e);
+    }
+  }, 80);
+}
+
+function resetAll() {
+  for(let i=1;i<=6;i++) { setStepState('s'+i+'num','s-idle'); document.getElementById('s'+i+'result').style.display='none'; }
+  document.getElementById('resultPanel').style.display='none';
+  document.getElementById('statusDot').className='status-dot idle';
+  setText('statusText','Nhập thông số và nhấn "Tính toán"');
+  setText('statusSub','Cần điền đầy đủ: T₁, n₁, u, t_h và vật liệu');
+  ['rSHL1','rSHL2','rSFL1','rSFL2','rNHO1','rNHO2','rKHL1','rKHL2','rSHCP1','rSHCP2','rSHCPdung','rSFCP1','rSFCP2'].forEach(id=>setText(id,'—'));
+  ['ckV','ckSH','ckSF1','ckSF2','ckSHmax','ckSF1max','ckSF2max'].forEach(id=>setText(id,'—'));
+  ['ckVs','ckSHs','ckSF1s','ckSF2s','ckSHmaxs','ckSF1maxs','ckSF2maxs'].forEach(id=>{let e=document.getElementById(id);e.className='check-state idle';e.textContent='IDLE';});
+  ['hKHb','hKFb','hKHv','hKFv','hKH','hKF','hZH','hEps','hZe','hYe','hYF1','hYF2'].forEach(id=>setText(id,'—'));
+  document.getElementById('btnNext').disabled=true;
+  document.getElementById('outputTableBody').innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--tx3);padding:30px;">Chưa có kết quả</td></tr>';
+}
+
+function showToast(type, msg) {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = {ok:'✅',error:'❌',warn:'⚠️'};
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  wrap.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(16px)';t.style.transition='all 0.28s';setTimeout(()=>t.remove(),300);},6000);
+}
+
+document.getElementById('tbDate').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+// Cập nhật thông tin người dùng + dropdown đăng xuất
+(function() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const displayName = user?.full_name || user?.username || 'Người dùng';
+    const email       = user?.email || '—';
+
+    // Cập nhật sidebar user-row
+    const nameEl  = document.getElementById('userName');
+    const avEl    = document.getElementById('userAv');
+    const roleEl  = document.getElementById('userRole');
+    if (nameEl) nameEl.textContent = displayName;
+    if (roleEl) roleEl.textContent = user?.role || 'CS';
+
+    // Avatar initials
+    const parts = displayName.trim().split(/\s+/);
+    const initials = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+      : parts[0].substring(0,2).toUpperCase();
+    if (avEl) avEl.textContent = initials;
+
+    // Dropdown header
+    const dropName  = document.getElementById('dropName');
+    const dropEmail = document.getElementById('dropEmail');
+    if (dropName)  dropName.textContent  = displayName;
+    if (dropEmail) dropEmail.textContent = email;
+
+  } catch(e) { console.error(e); }
+})();
+
+// Dropdown toggle & đăng xuất
+(function() {
+  const row      = document.getElementById('userRowBtn');
+  const dropdown = document.getElementById('userDropdown');
+  const btnLogout= document.getElementById('btnLogout');
+
+  if (!row || !dropdown) return;
+
+  // Mở/đóng dropdown khi click user-row
+  row.addEventListener('click', function(e) {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+
+  // Đóng khi click ra ngoài
+  document.addEventListener('click', function() {
+    dropdown.classList.remove('open');
+  });
+
+  // Đăng xuất
+  if (btnLogout) {
+    btnLogout.addEventListener('click', function() {
+      if (!confirm('Bạn có chắc muốn đăng xuất?')) return;
+      // Xóa thông tin phiên, giữ lại kết quả tính toán nếu muốn
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth_token');
+      // Tính đường dẫn login tương đối
+      window.location.href = '../login.html';
+    });
+  }
+})();
+</script>
+<!-- Shared & Module JS Logic -->
+<script src="../shared/storage.js"></script>
+<script src="../shared/workflow.js"></script>
+<script src="../shared/restore.js"></script>
+<script src="M3_BanhRangCon.js"></script>
+</body>
+</html>
