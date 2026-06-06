@@ -791,6 +791,30 @@ K_H = K_Hβ·K_Hα·K_Hv ; vH = δ_H·g₀·v·√(dm1·(u+1)/u)</div>
             <tr><td colspan="3" style="text-align:center;color:var(--tx3);padding:30px;">Chưa có kết quả – Nhấn "Tính toán" để bắt đầu</td></tr>
           </tbody>
         </table>
+
+      <div id="aiDoctorConContainer" style="display: none; margin-top: 25px; padding: 20px; border: 2px dashed #10b981; background-color: #f0fdf4; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <span style="font-size: 1.5rem;"></span>
+        <h3 style="color: #065f46; font-weight: bold; margin: 0; font-size: 1.2rem;">Hệ Thống Trợ Lý AI Chẩn Đoán</h3>
+    </div>
+    
+    <p style="color: #374151; margin: 4px 0;">Trạng thái hệ thống: <span style="color: #ef4444; font-weight: bold;">Phát hiện thông số đầu vào bất hợp lý hoặc quá tải!</span></p>
+    
+    <!-- VÙNG CHI TIẾT CÁC THÔNG SỐ CẦN CHỈNH SỬA (MỚI THÊM) -->
+    <div style="margin: 12px 0; padding: 12px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
+        <strong style="color: #991b1b; font-size: 0.95rem;"> Các thông số cần điều chỉnh lại:</strong>
+        <ul id="aiDiagnosticDetails" style="margin: 6px 0 0 0; padding-left: 20px; color: #b91c1c; font-size: 0.9rem; line-height: 1.5;">
+            <!-- Chi tiết lỗi thông số sẽ tự động sinh ra ở đây -->
+        </ul>
+    </div>
+
+    <p style="color: #374151; margin: 4px 0;">Kích thước Mô-đun thô AI ước lượng: <span id="aiRawMte" style="font-family: monospace; font-weight: bold; color: #2563eb;">—</span> mm</p>
+    
+    <div style="margin-top: 15px; padding: 12px; background-color: #10b981; color: white; border-radius: 8px; text-align: center;">
+        <p style="margin: 0; font-size: 0.95rem; opacity: 0.9;">Khuyến nghị từ AI - Thay đổi Mô-đun Tiêu Chuẩn ngoại lên:</p>
+        <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: bold; font-family: sans-serif;"><span id="aiSuggestedMte">—</span> mm</p>
+    </div>
+</div>
       </div>
 
       <!--<div style="display:flex;justify-content:flex-end;padding:0 22px 22px;">
@@ -1264,6 +1288,10 @@ function runCalc() {
       if (R.dat_all) {
         document.getElementById('btnNext').disabled = false;
         showToast('ok', `✅ M3 hoàn tất! Tất cả điều kiện bền đạt yêu cầu.`);
+        // Ẩn khung AI nếu tính toán đạt yêu cầu
+        if(document.getElementById('aiDoctorConContainer')) {
+          document.getElementById('aiDoctorConContainer').style.display = 'none';
+        }
       } else {
         let fails = [];
         if (!R.dat_H)    fails.push('σH tiếp xúc');
@@ -1271,9 +1299,82 @@ function runCalc() {
         if (!R.dat_F2)   fails.push('σF2 uốn');
         if (!R.dat_Hmax) fails.push('σH quá tải');
         showToast('error', `❌ Chưa đạt: ${fails.join(', ')} — Thay đổi vật liệu hoặc thông số`);
-      }
 
-    } catch(e) {
+        // --- ĐOẠN AI DOCTOR PHÂN TÍCH CHI TIẾT THÔNG SỐ LỖI ---
+        let inputErrors = [];
+
+        // 1. Kiểm tra độ cứng HB của Bánh 1 (Bánh nhỏ)
+        if (params.HB1 > 600) {
+          inputErrors.push(`<b>Độ cứng HB1 (${params.HB1} HB):</b> Quá cao so với thực tế (tối đa ~600 HB). Cần giảm xuống.`);
+        }
+        // 2. Kiểm tra độ cứng HB của Bánh 2 (Bánh lớn)
+        if (params.HB2 < 100) {
+          inputErrors.push(`<b>Độ cứng HB2 (${params.HB2} HB):</b> Quá mềm. Thép tiêu chuẩn cần đạt từ 170 - 280 HB.`);
+        }
+        // 3. Kiểm tra nguyên lý phối hợp độ cứng (HB1 phải lớn hơn HB2 từ 20-50 đơn vị nếu hóa nhiệt luyện thông thường)
+        if (params.HB1 <= params.HB2) {
+          inputErrors.push(`<b>Tương quan độ cứng:</b> HB1 (bánh nhỏ) nên lớn hơn HB2 (bánh lớn) từ 20-50 HB để mòn đều.`);
+        }
+        // 4. Kiểm tra ứng suất/giới hạn bền (Ví dụ nhập nhầm số quá lớn)
+        if (params.sigma_b1 > 2000 || params.sigma_ch1 > 1500) {
+          inputErrors.push(`<b>Cơ tính bánh nhỏ (σ_b, σ_ch):</b> Giá trị nhập vào siêu thực (>2000 MPa). Hãy kiểm tra lại đơn vị hoặc mác thép.`);
+        }
+        // 5. Lỗi mặc định do thiếu Module khi cơ tính đã chuẩn
+        if (inputErrors.length === 0 && !R.dat_H) {
+          inputErrors.push(`<b>Mô-đun ngoại (mte):</b> Hiện tại quá nhỏ, không đủ chịu mô-men xoắn $T_1$ gây ra hiện tượng tróc rỗ bề mặt răng.`);
+        }
+
+        // Hiển thị danh sách lỗi cụ thể lên giao diện AI Doctor
+        const detailsContainer = document.getElementById('aiDiagnosticDetails');
+        detailsContainer.innerHTML = ''; // Xóa danh sách cũ đi
+        inputErrors.forEach(errStr => {
+          let li = document.createElement('li');
+          li.innerHTML = errStr;
+          detailsContainer.appendChild(li);
+        });
+
+        // Tiến hành gọi API lấy tính toán module tối ưu từ AI
+        if (!R.dat_H || R.chenh > 0 || inputErrors.length > 0) { 
+          let thuc_te_overload = R.sigH / (R.sigH_cp || 1);
+          if (isNaN(thuc_te_overload) || thuc_te_overload < 1.0) thuc_te_overload = 1.15;
+
+          const aiPayload = {
+            T1: params.T1,
+            u: params.u,
+            mte_loi: R.mte || params.mte,
+            z1: R.Z1,
+            HB1: params.HB1 > 600 ? 250 : params.HB1, // Giả định đưa về số thực tế nếu người dùng nhập lố để AI đoán chuẩn hơn
+            overload_ratio: parseFloat(thuc_te_overload.toFixed(2))
+          };
+
+          fetch('http://127.0.0.1:8000/api/v1/predict/bevel-gear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(aiPayload)
+          })
+          .then(res => { if (!res.ok) throw new Error("Backend lỗi"); return res.json(); })
+          .then(response => {
+            if (response.status === 'success') {
+              document.getElementById('aiRawMte').textContent = response.data.raw_predicted_mte;
+              document.getElementById('aiSuggestedMte').textContent = response.data.suggested_mte;
+              
+              // Hiện bảng AI lên cho người dùng xem
+              //document.getElementById('aiDoctorConContainer').style.display = 'block';
+              //showToast('warn', `AI Doctor đã phát hiện lỗi thông số đầu vào!`);
+            }
+          })
+          .catch(err => {
+            // Trường hợp backend chưa bật, vẫn hiện bảng chẩn đoán lỗi thông số cục bộ
+            document.getElementById('aiRawMte').textContent = "Chờ kết nối...";
+            document.getElementById('aiSuggestedMte').textContent = "Tính toán lại vật liệu";
+            document.getElementById('aiDoctorConContainer').style.display = 'block';
+            console.error("Không gọi được API AI:", err);
+          });
+        }
+        
+      } 
+
+    } catch(e) { // Khối bắt lỗi của lệnh try {
       dot.className = 'status-dot err';
       setText('statusText', '❌ Lỗi tính toán: ' + e.message);
       showToast('error', '❌ Lỗi: ' + e.message);

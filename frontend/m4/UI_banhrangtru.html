@@ -762,6 +762,27 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
           <tbody id="tblOverload"></tbody>
         </table>
       </div>
+      <div id="aiDoctorSpurContainer" style="display: none; margin: 25px 0; padding: 20px; border: 2px dashed #2563eb; background-color: #f0f5ff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+              <span style="font-size: 1.5rem;"></span>
+              <h3 style="color: #1e3a8a; font-weight: bold; margin: 0; font-size: 1.2rem;">Hệ Thống Trợ Lý AI Chẩn Đoán</h3>
+          </div>
+          
+          <p style="color: #374151; margin: 4px 0;">Trạng thái: <span style="color: #ef4444; font-weight: bold;">Phát hiện thông số đầu vào chưa tối ưu hoặc quá tải!</span></p>
+          
+          <div style="margin: 12px 0; padding: 12px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
+              <strong style="color: #991b1b; font-size: 0.95rem;"> Các thông số cần điều chỉnh lại:</strong>
+              <ul id="aiSpurDiagnosticDetails" style="margin: 6px 0 0 0; padding-left: 20px; color: #b91c1c; font-size: 0.9rem; line-height: 1.5;">
+                  </ul>
+          </div>
+
+          <p style="color: #374151; margin: 4px 0;">Kích thước Mô-đun thô AI ước lượng: <span id="aiRawM" style="font-family: monospace; font-weight: bold; color: #2563eb;">—</span> mm</p>
+          
+          <div style="margin-top: 15px; padding: 12px; background-color: #2563eb; color: white; border-radius: 8px; text-align: center;">
+              <p style="margin: 0; font-size: 0.95rem; opacity: 0.9;">Khuyến nghị từ AI - Thay đổi Mô-đun Tiêu Chuẩn lên:</p>
+              <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: bold; font-family: sans-serif;"><span id="aiSuggestedM">—</span> mm</p>
+          </div>
+      </div>
 
       <!-- Verdict -->
       <div id="verdictBox" class="verdict-box"></div>
@@ -1286,21 +1307,135 @@ function runCalc(){
   `;
 
   // --- Verdict ---
-  const allOk=cont.ok&&bend.ok1&&bend.ok2&&over.okH&&over.okF1&&over.okF2&&meshOk.z1&&meshOk.z2&&meshOk.eps&&meshOk.bwm;
-  const verd=document.getElementById('verdictBox');
-  if(allOk){
-    verd.className='verdict-box verdict-pass';
-    verd.innerHTML=`<span style="font-size:26px;">✅</span><div><div style="font-size:16px;font-weight:800;">BỘ TRUYỀN ĐẠT YÊU CẦU</div><div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:4px;">Tất cả điều kiện bền tiếp xúc, uốn và quá tải đều thỏa mãn — bộ truyền đạt thiết kế.</div></div>`;
-    showToast('ok','✅ Tính toán hoàn tất — Bộ truyền đạt tất cả điều kiện bền!');
+
+const isDataValid = !isNaN(cont.sigH) && !isNaN(bend.sF1) && !isNaN(bend.sF2) && !isNaN(eps);
+  
+  const allOk = isDataValid && cont.ok && bend.ok1 && bend.ok2 && over.okH && over.okF1 && over.okF2 && meshOk.z1 && meshOk.z2 && meshOk.eps && meshOk.bwm;
+  const verd = document.getElementById('verdictBox');
+  const aiContainer = document.getElementById('aiDoctorSpurContainer');
+
+  if (allOk) {
+    verd.className = 'verdict-box verdict-pass';
+    verd.innerHTML = `<span style="font-size:26px;">✅</span><div><div style="font-size:16px;font-weight:800;">BỘ TRUYỀN ĐẠT YÊU CẦU</div><div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:4px;">Tất cả điều kiện bền tiếp xúc, uốn và quá tải đều thỏa mãn — bộ truyền đạt thiết kế.</div></div>`;
+    showToast('ok', '✅ Tính toán hoàn tất — Bộ truyền đạt tất cả điều kiện bền!');
+    if (aiContainer) aiContainer.style.display = 'none';
+
   } else {
-    verd.className='verdict-box verdict-fail';
-    verd.innerHTML=`<span style="font-size:26px;">⛔</span><div><div style="font-size:16px;font-weight:800;">BỘ TRUYỀN CHƯA ĐẠT</div><div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:4px;">Kiểm tra lại thông số — Điều chỉnh m, z₁, z₂, bw hoặc thay đổi vật liệu.</div></div>`;
-    showToast('error','⛔ Bộ truyền chưa đạt — Xem bảng kết quả để điều chỉnh thông số.');
+    verd.className = 'verdict-box verdict-fail';
+    verd.innerHTML = `<span style="font-size:26px;">⛔</span><div><div style="font-size:16px;font-weight:800;">BỘ TRUYỀN CHƯA ĐẠT</div><div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:4px;">Kiểm tra lại thông số — Điều chỉnh m, z₁, z₂, bw hoặc thay đổi vật liệu.</div></div>`;
+    showToast('error', '⛔ Bộ truyền chưa đạt — Xem bảng kết quả để điều chỉnh thông số.');
+
+    // ÉP BUỘC HIỂN THỊ KHUNG AI NGAY LẬP TỨC
+    if (aiContainer) {
+      aiContainer.style.display = 'block';
+    }
+
+    let inputErrors = [];
+    const sch_val1 = gv('sch1');
+
+    // BẪY LỖI ĐẶC BIỆT: Khi khoảng cách trục aw mâu thuẫn hình học với số răng/mô-đun
+    if (!isDataValid) {
+      inputErrors.push(`<b>Lỗi nghiêm trọng về hình học (aw = ${aw} mm):</b> Khoảng cách trục quá nhỏ so với tổ hợp răng và mô-đun hiện tại, hệ thống không thể tạo biên dạng răng ăn khớp hợp lệ.`);
+    }
+    if (sch_val1 > 2000) {
+      inputErrors.push(`<b>Giới hạn chảy bánh nhỏ (sch₁ = ${sch_val1} MPa):</b> Giá trị quá lớn so với thực tế vật liệu.`);
+    }
+    if (!meshOk.z1) {
+      inputErrors.push(`<b>Số răng bánh nhỏ (z₁ = ${z1}):</b> Đang bị nhỏ hơn 17 răng ($z_{min}$), gây hiện tượng cắt chân răng.`);
+    }
+    if (!meshOk.bwm) {
+      inputErrors.push(`<b>Tỷ lệ bwm (${isNaN(bwm) ? 0 : bwm.toFixed(2)}):</b> Nằm ngoài phạm vi tiêu chuẩn [8, 30].`);
+    }
+    if (isDataValid && !cont.ok) {
+      inputErrors.push(`<b>Ứng suất tiếp xúc (σH):</b> Vượt mức cho phép do kích thước Mô-đun hiện tại ($m = ${m}$ mm) quá bé.`);
+    }
+    if (isDataValid && (!bend.ok1 || !bend.ok2)) {
+      inputErrors.push(`<b>Độ bền uốn (σF):</b> Răng chịu lực uốn tại chân răng quá lớn, có nguy cơ gãy nứt răng.`);
+    }
+    if (isDataValid && (!over.okH || !over.okF1 || !over.okF2)) {
+      inputErrors.push(`<b>Kiểm nghiệm quá tải:</b> Ứng suất khi đỉnh tải vượt quá giới hạn bền cho phép [σ]max.`);
+    }
+
+    // Hiển thị danh sách lỗi trực quan lên giao diện
+    const detailsContainer = document.getElementById('aiSpurDiagnosticDetails');
+    if (detailsContainer) {
+      detailsContainer.innerHTML = '';
+      if (inputErrors.length === 0) {
+        detailsContainer.innerHTML = '<li>Phát hiện thông số chưa tối ưu cục bộ, vui lòng kiểm tra lại hệ số tải trọng.</li>';
+      } else {
+        inputErrors.forEach(errStr => {
+          let li = document.createElement('li');
+          li.innerHTML = errStr;
+          detailsContainer.appendChild(li);
+        });
+      }
+    }
+
+    // Khởi tạo các giá trị chờ từ API tránh bị trống (—) hoặc dính chữ NaN
+    document.getElementById('aiRawM').textContent = "Đang tính toán...";
+    document.getElementById('aiSuggestedM').textContent = "Đang phân tích...";
+
+    // Xử lý biến an toàn để truyền cho API, chặn đứng hoàn toàn NaN / Infinity
+    let safeSigH = isNaN(cont.sigH) || !isFinite(cont.sigH) ? 1000 : cont.sigH;
+    let safeSallow = isNaN(sHallow) || sHallow <= 0 ? 400 : sHallow;
+    let thuc_te_overload = safeSigH / safeSallow;
+    
+    // Nếu hình học lỗi (aw quá nhỏ), ép tăng hệ số overload lên cao để gợi ý tăng kích thước đại lượng
+    if (!isDataValid) thuc_te_overload = 1.85; 
+    if (isNaN(thuc_te_overload) || thuc_te_overload < 1.0) thuc_te_overload = 1.15;
+
+    const aiPayload = {
+      T3: T1, 
+      u: uReal,
+      m_loi: m,
+      z1: z1,
+      overload_ratio: parseFloat(thuc_te_overload.toFixed(2))
+    };
+
+    fetch('http://127.0.0.1:8000/api/v1/predict/spur-gear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(aiPayload)
+    })
+    .then(res => { 
+      if (!res.ok) throw new Error("API Bánh trụ phản hồi lỗi từ Server"); 
+      return res.json(); 
+    })
+    .then(response => {
+      if (response.status === 'success' || response.data) {
+        document.getElementById('aiRawM').textContent = response.data.raw_predicted_m || "N/A";
+        document.getElementById('aiSuggestedM').textContent = response.data.suggested_m || "N/A";
+      } else {
+        throw new Error("Cấu trúc JSON phản hồi không đúng");
+      }
+    })
+    .catch(err => {
+      // CƠ CHẾ DỰ PHÒNG NGOẠI TUYẾN TOÀN DIỆN
+      console.warn("Lỗi tham vấn API (Chuyển sang chế độ offline):", err);
+      
+      let nextM = m;
+      if (thuc_te_overload > 1.5) nextM = m * 1.6;
+      else if (thuc_te_overload > 1.2) nextM = m * 1.35;
+      else nextM = m + 0.5;
+      
+      let standardM = Math.ceil(nextM * 2) / 2; 
+      if (standardM === 3.5) standardM = 4.0;
+      if (standardM < 1.5) standardM = 2.0; // Đảm bảo mô-đun không quá bé khi aw lỗi
+
+      document.getElementById('aiRawM').textContent = (!isDataValid) ? "Không thể xác định" : (m * Math.sqrt(thuc_te_overload)).toFixed(2) + " mm";
+      document.getElementById('aiSuggestedM').textContent = standardM + " mm (Khuyên dùng)";
+    });
   }
 
-  updateGearVisual();
-  document.getElementById('outputSection').style.display='block';
-  setTimeout(()=>document.getElementById('outputSection').scrollIntoView({behavior:'smooth',block:'start'}),100);
+  // Chạy an toàn cho Gear Visual phòng khi thông số vẽ hình bị âm/NaN
+  try {
+    updateGearVisual();
+  } catch(e) {
+    console.warn("Bỏ qua lỗi vẽ hình do kích thước hình học không đồng bộ:", e);
+  }
+  
+  document.getElementById('outputSection').style.display = 'block';
+  setTimeout(() => document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 
 function resetForm(){

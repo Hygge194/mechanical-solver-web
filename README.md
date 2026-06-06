@@ -83,6 +83,8 @@ python -m uvicorn main:app --reload
 #Cài đặt để chạy AI
 python -m pip install pandas openpyxl
 
+python -m pip install scikit-learn joblib
+
 ```
 
 **3. Khởi Động Giao Diện:**
