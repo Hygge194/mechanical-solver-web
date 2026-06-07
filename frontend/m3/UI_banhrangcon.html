@@ -570,7 +570,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
         <div>
           <div class="card-title">Quy trình tính toán kỹ thuật</div>
         </div>
-        <div class="card-badge badge-check">KIỂM TRA</div>
       </div>
       <div class="card-body">
         <div class="calc-step">
@@ -792,13 +791,13 @@ K_H = K_Hβ·K_Hα·K_Hv ; vH = δ_H·g₀·v·√(dm1·(u+1)/u)</div>
           </tbody>
         </table>
 
-      <div id="aiDoctorConContainer" style="display: none; margin-top: 25px; padding: 20px; border: 2px dashed #10b981; background-color: #f0fdf4; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+      <div id="aiDoctorConContainer" style="display: none; margin-top: 25px; padding: 20px; border: 2px dashed #ef4444; background-color: #f0f5ff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
         <span style="font-size: 1.5rem;"></span>
-        <h3 style="color: #065f46; font-weight: bold; margin: 0; font-size: 1.2rem;">Hệ Thống Trợ Lý AI Chẩn Đoán</h3>
+        <h3 style="color: #1e3a8a; font-weight: bold; margin: 0; font-size: 1.2rem;">Hệ Thống Trợ Lý AI Chẩn Đoán</h3>
     </div>
     
-    <p style="color: #374151; margin: 4px 0;">Trạng thái hệ thống: <span style="color: #ef4444; font-weight: bold;">Phát hiện thông số đầu vào bất hợp lý hoặc quá tải!</span></p>
+    <p style="color: #374151; margin: 4px 0;">Trạng thái: <span style="color: #ef4444; font-weight: bold;">Phát hiện thông số đầu vào bất hợp lý hoặc quá tải!</span></p>
     
     <!-- VÙNG CHI TIẾT CÁC THÔNG SỐ CẦN CHỈNH SỬA (MỚI THÊM) -->
     <div style="margin: 12px 0; padding: 12px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
@@ -810,7 +809,7 @@ K_H = K_Hβ·K_Hα·K_Hv ; vH = δ_H·g₀·v·√(dm1·(u+1)/u)</div>
 
     <p style="color: #374151; margin: 4px 0;">Kích thước Mô-đun thô AI ước lượng: <span id="aiRawMte" style="font-family: monospace; font-weight: bold; color: #2563eb;">—</span> mm</p>
     
-    <div style="margin-top: 15px; padding: 12px; background-color: #10b981; color: white; border-radius: 8px; text-align: center;">
+    <div style="margin-top: 15px; padding: 12px; background-color: #2563eb; color: white; border-radius: 8px; text-align: center;">
         <p style="margin: 0; font-size: 0.95rem; opacity: 0.9;">Khuyến nghị từ AI - Thay đổi Mô-đun Tiêu Chuẩn ngoại lên:</p>
         <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: bold; font-family: sans-serif;"><span id="aiSuggestedMte">—</span> mm</p>
     </div>
@@ -1283,7 +1282,7 @@ function runCalc() {
       setText('statusSub', `mte=${R.mte}mm · Z₁=${R.Z1} · Z₂=${R.Z2} · Re=${fmt(R.Re,2)}mm · dm1=${fmt(R.dm1,2)}mm`);
 
       if (R.iterCount > 0)
-        showToast('warn', `⚠️ Đã tăng module ${R.iterCount} lần → mte = ${R.mte} mm để đảm bảo σH`);
+        //showToast('warn', `⚠️ Đã tăng module ${R.iterCount} lần → mte = ${R.mte} mm để đảm bảo σH`);
 
       if (R.dat_all) {
         document.getElementById('btnNext').disabled = false;
@@ -1359,7 +1358,7 @@ function runCalc() {
               document.getElementById('aiSuggestedMte').textContent = response.data.suggested_mte;
               
               // Hiện bảng AI lên cho người dùng xem
-              //document.getElementById('aiDoctorConContainer').style.display = 'block';
+              document.getElementById('aiDoctorConContainer').style.display = 'block';
               //showToast('warn', `AI Doctor đã phát hiện lỗi thông số đầu vào!`);
             }
           })

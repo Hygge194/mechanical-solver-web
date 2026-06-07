@@ -396,6 +396,31 @@ function displayResult(R, params) {
   // ── Hiện panel kết quả ──────────────────────────────────────
   const panel = document.getElementById('resultPanel');
   if (panel) panel.style.display = 'block';
+
+  const aiContainer = document.getElementById('aiDoctorConContainer');
+const aiDetails = document.getElementById('aiDiagnosticDetails');
+const aiRawMte = document.getElementById('aiRawMte');
+const aiSuggestedMte = document.getElementById('aiSuggestedMte');
+
+// Kiểm tra xem có điều kiện nào không đạt hay không (dựa vào R.dat_all)
+if (!R.dat_all) {
+  // 1. Hiện khối AI
+  if (aiContainer) aiContainer.style.display = 'block';
+  
+  // 2. Điền chi tiết lỗi
+  const fails = buildFailList(R); // Sử dụng hàm buildFailList đã có sẵn
+  if (aiDetails) {
+    aiDetails.innerHTML = fails.map(fail => `<li>Tham số <b>${fail}</b> không đạt yêu cầu.</li>`).join('');
+  }
+  
+  // 3. Gợi ý thông số (Ví dụ: đề xuất tăng module)
+  if (aiRawMte) aiRawMte.textContent = (R.mte).toFixed(2);
+  if (aiSuggestedMte) aiSuggestedMte.textContent = (R.mte + 0.5).toFixed(2); // Logic tính module đề xuất của bạn
+
+} else {
+  // Nếu tất cả đều đạt, ẩn khối AI đi
+  if (aiContainer) aiContainer.style.display = 'none';
+}
 }
 
 /**
@@ -661,8 +686,102 @@ function runCalc() {
 
         showToast('ok', '✅ M3 hoàn tất! Dữ liệu đã lưu. Sẵn sàng chuyển M4.');
       } else {
-        showToast('error', `❌ Chưa đạt: ${buildFailList(R).join(', ')} — Thay đổi vật liệu hoặc thông số`);
+        const fails = buildFailList(R);
+        showToast('error', `❌ Chưa đạt: ${fails.join(', ')} — Trợ lý AI đang phân tích...`);
+
+        // --- BẮT ĐẦU LOGIC AI DOCTOR (M3) ---
+        // 1. KHAI BÁO TRƯỚC RỒI MỚI GỌI (Fix lỗi crash JS)
+        const aiContainer = document.getElementById('aiDoctorConContainer');
+        if (aiContainer) {
+            aiContainer.style.setProperty('display', 'block', 'important');
+        }
+
+        let inputErrors = [];
+
+        // 2. Chẩn đoán theo KẾT QUẢ KIỂM NGHIỆM (Chỉ mặt điểm tên)
+        if (!R.dat_H) {
+            inputErrors.push(`📍 <b>Rỗ bề mặt (σH vượt mức):</b> Ứng suất tiếp xúc lớn hơn cho phép. 
+            <br>👉 <i>Khắc phục:</i> Tăng <b>Mô-đun (mte)</b>, tăng <b>Hệ số Kbe</b>, hoặc chọn vật liệu có <b>Độ cứng HB/HRC cao hơn</b>.`);
+        }
+        
+        if (!R.dat_F1 || !R.dat_F2) {
+            inputErrors.push(`📍 <b>Nguy cơ gãy chân răng (σF vượt mức):</b> Ứng suất uốn quá lớn. 
+            <br>👉 <i>Khắc phục:</i> Tăng <b>Mô-đun (mte)</b>, hoặc tăng <b>Số răng (z₁, z₂)</b>.`);
+        }
+
+        if (!R.dat_Hmax || !R.dat_F1max || !R.dat_F2max) {
+            // Nhận diện lỗi cấu trúc hình học nếu ứng suất max phi lý
+            let isAbsurdlyHigh = false;
+            if (R.sigF1_max && params.sigCh1 && R.sigF1_max > params.sigCh1 * 5) isAbsurdlyHigh = true;
+
+            if (isAbsurdlyHigh) {
+                inputErrors.push(`📍 <b>Quá tải mức độ NGHIÊM TRỌNG:</b> Ứng suất sinh ra lớn gấp hàng chục lần sức chịu đựng.
+                <br>👉 <i>Nguyên nhân:</i> Mâu thuẫn cấu trúc hình học. Hãy kiểm tra lại <b>Mô-đun (mte)</b>, <b>Số răng (z)</b> và hệ số truyền!`);
+            } else {
+                inputErrors.push(`📍 <b>Quá tải phá hủy:</b> Lực va đập vượt sức chịu đựng. 
+                <br>👉 <i>Khắc phục:</i> Giảm <b>Hệ số Kqt</b>, hoặc tăng <b>Giới hạn chảy (σ_ch)</b>.`);
+            }
+        }
+
+        // Bắt thêm lỗi tương quan độ cứng nếu nhập ngược
+        if (params.HB1 <= params.HB2) {
+            inputErrors.push(`📍 <b>Tương quan độ cứng bị ngược:</b> Bánh dẫn (HB1) đang mềm hơn hoặc bằng Bánh bị dẫn. Hãy chỉnh <b>HB1 > HB2</b>.`);
+        }
+
+        // Cập nhật danh sách lỗi lên giao diện
+        const detailsContainer = document.getElementById('aiDiagnosticDetails');
+        if (detailsContainer) {
+            detailsContainer.innerHTML = '';
+            if (inputErrors.length === 0) inputErrors.push("📍 <b>Lỗi thông số:</b> Vui lòng kiểm tra lại sự đồng bộ tải trọng.");
+            inputErrors.forEach(errStr => {
+                let li = document.createElement('li');
+                li.innerHTML = errStr;
+                li.style.marginBottom = "12px";
+                li.style.lineHeight = "1.5";
+                detailsContainer.appendChild(li);
+            });
+        }
+
+        // Set trạng thái Loading cho API
+        if(document.getElementById('aiRawMte')) document.getElementById('aiRawMte').textContent = "Đang tính toán...";
+        if(document.getElementById('aiSuggestedMte')) document.getElementById('aiSuggestedMte').textContent = "Đang phân tích...";
+
+        // 3. Tiến hành gọi API
+        let safeSigH = (isNaN(R.sigH) || !isFinite(R.sigH)) ? 1000 : R.sigH;
+        let safeSallow = (isNaN(R.sigH_cp) || R.sigH_cp <= 0) ? 400 : R.sigH_cp;
+        let thuc_te_overload = safeSigH / safeSallow;
+        if (isNaN(thuc_te_overload) || thuc_te_overload < 1.0) thuc_te_overload = 1.15;
+
+        const aiPayload = {
+            T1: params.T1,
+            u: params.u,
+            mte_loi: R.mte || params.mte || 3,
+            z1: R.Z1,
+            HB1: params.HB1 > 600 ? 250 : params.HB1, 
+            overload_ratio: parseFloat(thuc_te_overload.toFixed(2))
+        };
+
+        fetch('http://127.0.0.1:8000/api/v1/predict/bevel-gear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(aiPayload)
+        })
+        .then(res => { if (!res.ok) throw new Error("Backend lỗi"); return res.json(); })
+        .then(response => {
+            if (response.status === 'success') {
+                document.getElementById('aiRawMte').textContent = response.data.raw_predicted_mte || "N/A";
+                document.getElementById('aiSuggestedMte').textContent = response.data.suggested_mte || "N/A";
+            }
+        })
+        .catch(err => {
+            console.warn("Chạy AI Offline:", err);
+            let mte_base = R.mte || params.mte || 3;
+            let standardMte = Math.ceil((mte_base + 0.5) * 2) / 2;
+            if(document.getElementById('aiRawMte')) document.getElementById('aiRawMte').textContent = (mte_base * Math.sqrt(thuc_te_overload)).toFixed(2) + " (Sơ bộ)";
+            if(document.getElementById('aiSuggestedMte')) document.getElementById('aiSuggestedMte').textContent = `${standardMte} mm (Gợi ý)`;
+        });
       }
+
 
     } catch (err) {
       setStatus('err', `❌ Lỗi tính toán: ${err.message}`);
@@ -676,6 +795,11 @@ function runCalc() {
  * resetAll()  —  Gọi từ nút "Đặt lại"
  */
 function resetAll() {
+  const aiContainer = document.getElementById('aiDoctorConContainer');
+  if (aiContainer) aiContainer.style.setProperty('display', 'none', 'important');
+
+  for(let i=1;i<=6;i++) { setStepState('s'+i+'num','s-idle'); document.getElementById('s'+i+'result').style.display='none'; }
+  document.getElementById('resultPanel').style.display='none';
   // Reset bước tính
   for (let i = 1; i <= STEP_COUNT; i++) {
     setStepState(i, 'idle');

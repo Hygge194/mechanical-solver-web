@@ -762,7 +762,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
           <tbody id="tblOverload"></tbody>
         </table>
       </div>
-      <div id="aiDoctorSpurContainer" style="display: none; margin: 25px 0; padding: 20px; border: 2px dashed #2563eb; background-color: #f0f5ff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+      <!-- Verdict -->
+      <div id="verdictBox" class="verdict-box"></div>
+      <div id="aiDoctorSpurContainer" style="display: none; margin: 25px 0; padding: 20px; border: 2px dashed #ef4444; background-color: #f0f5ff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
               <span style="font-size: 1.5rem;"></span>
               <h3 style="color: #1e3a8a; font-weight: bold; margin: 0; font-size: 1.2rem;">Hệ Thống Trợ Lý AI Chẩn Đoán</h3>
@@ -784,8 +786,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
           </div>
       </div>
 
-      <!-- Verdict -->
-      <div id="verdictBox" class="verdict-box"></div>
+      
 
     </div><!-- /outputSection -->
 
@@ -934,7 +935,7 @@ const f3 = v => typeof v==='number'?v.toFixed(3):v;
 const f4 = v => typeof v==='number'?v.toFixed(4):v;
 
 function ckClass(ok){return ok?'cs-pass':'cs-fail';}
-function ckText(ok){return ok?'ĐẠT ✓':'KHÔNG ĐẠT ✗';}
+function ckText(ok){return ok?'PASS':'FAIL';}
 function setCheck(idV,idS,val,ok){
   document.getElementById(idV).textContent=val;
   const el=document.getElementById(idS);
