@@ -79,10 +79,20 @@ pip install fastapi uvicorn pymysql passlib bcrypt==3.2.2 PyJWT python-dotenv
 
 # Boot máy chủ chạy ngầm ở port 8000
 python -m uvicorn main:app --reload
+
+#Cài đặt để chạy AI
+python -m pip install pandas openpyxl
+
+python -m pip install scikit-learn joblib
+
 ```
 
 **3. Khởi Động Giao Diện:**
 *   Mở thư mục `frontend` trên IDE.
 *   Chạy Live Server từ file `login.html`.
 *   *Tạo một tài khoản, đăng nhập và tận hưởng ứng dụng qua Dashboard.*
+
+Note: 
+dai.py, config.py, env: password
+
 

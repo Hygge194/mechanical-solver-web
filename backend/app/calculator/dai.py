@@ -26,7 +26,7 @@ import mysql.connector  # pip install mysql-connector-python
 DB_CONFIG = {
     'host':     'localhost',
     'user':     'root',
-    'password': '',
+    'password': '16122005',
     'database': 'he_thong_dan_dong',
 }
 

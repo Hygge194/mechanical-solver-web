@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from services.motor_service import get_motor_recommendations
 from services.auth_service import register_user, authenticate_user
+import joblib
+import pandas as pd
+import os
 
 app = FastAPI(title="Phần mềm thiết kế hệ dẫn động - BK")
 
@@ -14,6 +16,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# -----------------------------------------------------------------------------
+# KHỞI TẠO VÀ TẢI MÔ HÌNH AI DOCTOR (BƯỚC CHÈN MỚI)
+# -----------------------------------------------------------------------------
+# Xác định đường dẫn tuyệt đối hoặc tương đối tới file .pkl của bạn
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_CON_PATH = os.path.join(BASE_DIR, "calculator", "ai_doctor_con.pkl")
+MODEL_TRU_PATH = os.path.join(BASE_DIR, "calculator", "ai_doctor_tru.pkl")
+
+model_con = None
+model_tru = None
+
+try:
+    if os.path.exists(MODEL_CON_PATH):
+        model_con = joblib.load(MODEL_CON_PATH)
+        print("🤖 AI Doctor: Đã tải thành công mô hình Bánh Răng Côn!")
+    else:
+        print(f"⚠️ Cảnh báo: Không tìm thấy file mô hình côn tại {MODEL_CON_PATH}")
+
+    if os.path.exists(MODEL_TRU_PATH):
+        model_tru = joblib.load(MODEL_TRU_PATH)
+        print("🤖 AI Doctor: Đã tải thành công mô hình Bánh Răng Trụ!")
+    else:
+        print(f"⚠️ Cảnh báo: Không tìm thấy file mô hình trụ tại {MODEL_TRU_PATH}")
+except Exception as e:
+    print(f"❌ Lỗi nghiêm trọng khi tải mô hình AI: {e}")
 
 @app.get("/")
 def read_root():
@@ -168,32 +196,111 @@ async def calculate_belt(data: dict):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/api/v1/predict/bevel-gear")
+async def predict_bevel_gear(data: dict):
+    """
+    API tiếp nhận thông số bánh răng côn bị lỗi từ Frontend 
+    và dùng mô hình AI (Random Forest) để dự đoán mô-đun 'suggested_mte' tối ưu.
+    """
+    if model_con is None:
+        raise HTTPException(status_code=503, detail="Mô hình AI Bánh răng côn hiện chưa được tải thành công trên hệ thống.")
+    
+    try:
+        # 1. Trích xuất dữ liệu từ payload nhận về từ Frontend
+        T1 = float(data.get("T1", 0))
+        u = float(data.get("u", 0))
+        mte_loi = float(data.get("mte_loi", 0))
+        z1 = int(data.get("z1", 0))
+        HB1 = float(data.get("HB1", 0))
+        overload_ratio = float(data.get("overload_ratio", 1.3)) # Mặc định 1.3 nếu frontend không truyền
+
+        # 2. Tạo DataFrame đúng cấu trúc các trường thông tin mà AI đã học từ Bước 2
+        input_df = pd.DataFrame([{
+            'T1': T1,
+            'u': u,
+            'mte_loi': mte_loi,
+            'z1': z1,
+            'HB1': HB1,
+            'overload_ratio': overload_ratio
+        }])
+
+        # 3. Chạy dự đoán bằng mô hình Random Forest
+        raw_prediction = model_con.predict(input_df)[0]
+
+        # 4. Quy đổi số thực dự đoán về mô-đun tiêu chuẩn gần nhất trong thiết kế cơ khí
+        standard_modules = [1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0]
+        suggested_mte = min([m for m in standard_modules if m >= raw_prediction], default=max(standard_modules))
+
+        return {
+            "status": "success",
+            "data": {
+                "raw_predicted_mte": round(raw_prediction, 4),
+                "suggested_mte": suggested_mte
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
-# Lệnh chạy server: python -m uvicorn main:app --reload
+@app.post("/api/v1/predict/spur-gear")
+async def predict_spur_gear(data: dict):
+    """
+    API tiếp nhận thông số bánh răng trụ bị lỗi từ Frontend
+    và dùng mô hình AI để dự đoán mô-đun 'suggested_m' phù hợp nhất.
+    """
+    if model_tru is None:
+        raise HTTPException(status_code=503, detail="Mô hình AI Bánh răng trụ hiện chưa được tải thành công trên hệ thống.")
+    
+    try:
+        T3 = float(data.get("T3", 0))
+        u = float(data.get("u", 0))
+        m_loi = float(data.get("m_loi", 0))
+        z1 = int(data.get("z1", 0))
+        overload_ratio = float(data.get("overload_ratio", 1.3))
+
+        input_df = pd.DataFrame([{
+            'T3': T3,
+            'u': u,
+            'm_loi': m_loi,
+            'z1': z1,
+            'overload_ratio': overload_ratio
+        }])
+
+        raw_prediction = model_tru.predict(input_df)[0]
+
+        standard_modules = [1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0]
+        suggested_m = min([m for m in standard_modules if m >= raw_prediction], default=max(standard_modules))
+
+        return {
+            "status": "success",
+            "data": {
+                "raw_predicted_m": round(raw_prediction, 4),
+                "suggested_m": suggested_m
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 # --- REPORT GENERATION ROUTE ---
 
+from utils.report import generate_report
+
 @app.post("/api/v1/report/generate")
-async def generate_report_endpoint(data: dict):
+async def api_generate_report(payload: dict):
     """
-    Endpoint nhận toàn bộ JSON PROJECT_DATA từ trình duyệt
-    để sinh file báo cáo Word (DOCX) rồi trả thẳng về cho người dùng tải xuống.
+    Endpoint nhận JSON project data từ frontend và trả về file Word stream.
     """
     try:
-        from utils.report import generate_report
-        file_stream = generate_report(data)
-        
-        headers = {
-            'Content-Disposition': 'attachment; filename="Thuyet_Minh_Do_An.docx"'
-        }
-        
+        file_stream = generate_report(payload)
         return StreamingResponse(
             file_stream, 
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
-            headers=headers
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": "attachment; filename=Thuyet_Minh_Do_An.docx"}
         )
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Lỗi tạo báo cáo: {str(e)}")
+
+# Lệnh chạy server: python -m uvicorn main:app --reload

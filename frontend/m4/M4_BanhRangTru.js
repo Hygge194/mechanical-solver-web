@@ -369,6 +369,10 @@ function updateCheckPanel(p, S) {
   setChk('ck_z1v', 'ck_z1s', String(p.z1), S.meshOk.z1);
   setChk('ck_z2v', 'ck_z2s', String(p.z2), S.meshOk.z2);
   setChk('ck_epsv', 'ck_epss', S.cont.Ze !== undefined ? S.cont.sigH.toFixed(2) : '—', S.meshOk.eps);
+  const aiRawM = document.getElementById('aiRawM');
+  const aiSuggestedM = document.getElementById('aiSuggestedM');
+  if (aiRawM) aiRawM.textContent = "Đang tính toán...";
+  if (aiSuggestedM) aiSuggestedM.textContent = "Đang phân tích...";
 
   // Trùng khớp
   const epsEl = document.getElementById('ck_epsv');
@@ -697,7 +701,10 @@ function _buildOverloadTable(p, S) {
 
 function _buildVerdict(S) {
   const el = document.getElementById('verdictBox');
+  const aiContainer = document.getElementById('aiDoctorSpurContainer');
   if (!el) return;
+
+  // 1. TRƯỜNG HỢP ĐẠT YÊU CẦU
   if (S.allOk) {
     el.className = 'verdict-box verdict-pass';
     el.innerHTML = `<span style="font-size:26px;">✅</span>
@@ -707,16 +714,123 @@ function _buildVerdict(S) {
           Tất cả điều kiện bền tiếp xúc, uốn và quá tải đều thỏa mãn.
         </div>
       </div>`;
+    
+    // Giấu khung AI đi
+    if (aiContainer) aiContainer.style.setProperty('display', 'none', 'important');
+    showToast('ok', '✅ Tính toán hoàn tất — Bộ truyền đạt!');
+  
+  // 2. TRƯỜNG HỢP KHÔNG ĐẠT YÊU CẦU
   } else {
-    const fails = buildFailList(S);
+    // Không dùng hàm buildFailList mặc định nữa để quản lý mảng inputErrors thủ công cho AI
     el.className = 'verdict-box verdict-fail';
     el.innerHTML = `<span style="font-size:26px;">⛔</span>
       <div>
         <div style="font-size:16px;font-weight:800;">BỘ TRUYỀN CHƯA ĐẠT</div>
         <div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:4px;">
-          Chưa đạt: ${fails.join(', ')} — Điều chỉnh m, z, bw hoặc thay đổi vật liệu.
+          Hệ thống phát hiện lỗi thông số, AI Doctor đang phân tích gợi ý bên dưới...
         </div>
       </div>`;
+    showToast('error', '⛔ Bộ truyền chưa đạt');
+
+    // ÉP KHUNG AI HIỂN THỊ TRÊN MÀN HÌNH BẰNG MỌI GIÁ
+    if (aiContainer) {
+      aiContainer.style.setProperty('display', 'block', 'important');
+    }
+
+    // -- CHẨN ĐOÁN LỖI CHO AI DOCTOR --
+    let inputErrors = [];
+    const p = readInput().params; // Lấy thông số nhập gốc từ UI
+    
+    // 1. Nếu hỏng Ứng suất tiếp xúc (Rỗ bề mặt)
+    if (S.cont && !S.cont.ok) {
+        inputErrors.push(` <b>Rỗ bề mặt (σH vượt mức):</b> Ứng suất tiếp xúc sinh ra lớn hơn giới hạn cho phép. 
+        <br> <i>Thông số cần chỉnh:</i> Tăng <b>Khoảng cách trục (a_w)</b>, tăng <b>Hệ số chiều rộng (ψ_a)</b>, hoặc vào mục Vật Liệu chọn loại có <b>Độ cứng HB/HRC cao hơn</b>.`);
+    }
+
+    // 2. Nếu hỏng Ứng suất uốn (Gãy chân răng)
+    if (S.bend && (!S.bend.ok1 || !S.bend.ok2)) {
+        inputErrors.push(` <b>Nguy cơ gãy răng (σF vượt mức):</b> Ứng suất uốn tại chân răng quá lớn. 
+        <br> <i>Thông số cần chỉnh:</i> Tăng <b>Mô-đun (m)</b>, tăng <b>Số răng (z₁, z₂)</b>, hoặc nâng cấp vật liệu có <b>Giới hạn mỏi uốn (σ°Flim) cao hơn</b>.`);
+    }
+
+    // 3. Nếu hỏng Kiểm nghiệm Quá Tải (Phá hủy dòn/biến dạng dư)
+    if (S.over && (!S.over.okH || !S.over.okF1 || !S.over.okF2)) {
+        
+        // Nhận diện trường hợp ứng suất vọt lên mức phi lý (ví dụ vượt hàng ngàn % như trong ảnh)
+        let isAbsurdlyHigh = false;
+        if (S.over.sF1_max && p.sch1 && S.over.sF1_max > p.sch1 * 5) {
+            isAbsurdlyHigh = true;
+        }
+
+        if (isAbsurdlyHigh) {
+            inputErrors.push(` <b>Quá tải mức độ NGHIÊM TRỌNG:</b> Ứng suất sinh ra lớn gấp hàng chục lần sức chịu đựng của vật liệu. 
+            <br> <i>Nguyên nhân chính:</i> Có sự mâu thuẫn lớn trong kích thước hình học, khiến lực vòng tăng phi mã. Hãy kiểm tra lại sự đồng bộ giữa <b>Khoảng cách trục (a_w)</b>, <b>Mô-đun (m)</b> và <b>Số răng (z)</b>!`);
+        } else {
+            inputErrors.push(` <b>Không chịu được tải trọng tĩnh (Va đập):</b> Lực quá tải lớn hơn giới hạn chảy/giới hạn dòn. 
+            <br> <i>Thông số cần chỉnh:</i> Giảm <b>Hệ số quá tải (Kqt)</b>, tăng <b>Giới hạn chảy (σ_ch)</b> trong mục Vật liệu, hoặc tăng kích thước bánh răng.`);
+        }
+    }
+
+    // 4. Các lỗi cấu tạo vành răng cơ bản
+    if (S.meshOk && !S.meshOk.bwm) {
+         inputErrors.push(` <b>Tỷ lệ vành răng không chuẩn:</b> Tỷ số bw/m đang nằm ngoài phạm vi [8, 30]. 
+         <br> <i>Thông số cần chỉnh:</i> Điều chỉnh lại <b>Hệ số ψ_a</b> hoặc <b>Mô-đun (m)</b>.`);
+    }
+    if (S.meshOk && !S.meshOk.z1) {
+         inputErrors.push(` <b>Hiện tượng cắt chân răng:</b> Số răng bánh chủ động quá ít. 
+         <br> <i>Thông số cần chỉnh:</i> Tăng <b>Số răng z₁</b> lên tối thiểu 17 (nếu hệ số dịch chỉnh bằng 0).`);
+    }
+
+    // Đẩy danh sách lỗi ra UI
+    const detailsContainer = document.getElementById('aiSpurDiagnosticDetails');
+    if (detailsContainer) {
+      detailsContainer.innerHTML = '';
+      if(inputErrors.length === 0 && (!S.isOk || !S.overallOk)) {
+          inputErrors.push(" <b>Kiểm nghiệm thất bại:</b> Vui lòng kiểm tra lại Tải trọng (Mô-men xoắn) và cấp chính xác.");
+      }
+      
+      inputErrors.forEach(errStr => {
+        let li = document.createElement('li');
+        li.innerHTML = errStr;
+        li.style.marginBottom = "12px"; // Tăng margin để các gạch đầu dòng tách bạch, dễ đọc
+        li.style.lineHeight = "1.5";
+        detailsContainer.appendChild(li);
+      });
+    }
+
+    // -- GỌI API BACKEND CHO AI DOCTOR --
+    // Lọc biến an toàn chống sập DOM do NaN
+    let safeSigH = (isNaN(S.cont.sigH) || !isFinite(S.cont.sigH)) ? 1000 : S.cont.sigH;
+    let safeSallow = (isNaN(S.sHallow) || S.sHallow <= 0) ? 400 : S.sHallow;
+    let thuc_te_overload = safeSigH / safeSallow;
+    if (isNaN(thuc_te_overload) || thuc_te_overload < 1.0) thuc_te_overload = 1.15;
+
+    fetch('http://127.0.0.1:8000/api/v1/predict/spur-gear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        T3: p.T1, 
+        u: p.z2/p.z1 || 1, 
+        m_loi: p.m, 
+        z1: p.z1, 
+        overload_ratio: parseFloat(thuc_te_overload.toFixed(2)) 
+      })
+    })
+    .then(res => { if (!res.ok) throw new Error("API Offline"); return res.json(); })
+    .then(response => {
+      if (response.status === 'success') {
+        document.getElementById('aiRawM').textContent = response.data.raw_predicted_m;
+        document.getElementById('aiSuggestedM').textContent = response.data.suggested_m;
+      } else {
+        throw new Error("API Data Error");
+      }
+    })
+    .catch(err => {
+      // Cơ chế Offline tự tính khi không bật server
+      let standardM = Math.ceil((p.m + 0.5) * 2) / 2; 
+      if(document.getElementById('aiRawM')) document.getElementById('aiRawM').textContent = "Lỗi kết nối Server";
+      if(document.getElementById('aiSuggestedM')) document.getElementById('aiSuggestedM').textContent = `${standardM} mm (Gợi ý Sơ bộ)`;
+    });
   }
 }
 

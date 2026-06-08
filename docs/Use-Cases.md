@@ -1,29 +1,4 @@
-### BẢNG ĐẶC TẢ USE-CASE VÀ PHÂN HỆ (MODULES & USE CASES)
-
-Dự án được chia thành 5 Module chính, bao quát các Use-case sau:
-
-#### Module 1: Cho phép người dùng nhập liệu và kiểm tra ngưỡng dữ liệu
-*   **UC-02:** Tra cứu động cơ và phân bổ động lực học (M1).
-
-#### Module 2: Thực hiện tính toán theo các chương của khoa KHUD
-*   **UC-03:** Thiết kế bộ truyền đai (M2).
-*   **UC-04:** Thiết kế bánh răng côn (M3).
-*   **UC-05:** Thiết kế bánh răng trụ (M4).
-
-#### Module 3: Cho phép gợi ý linh kiện phù hợp
-*   **UC-07:** Gợi ý linh kiện (vòng bi, then, trục) từ Cơ sở dữ liệu.
-
-#### Module 4: Ứng dụng Web/Mobile
-*   **UC-01:** Quản lý tài khoản (Đăng ký, Đăng nhập, Đăng xuất).
-*   **UC-06:** Lưu chuyển và phục hồi dữ liệu hệ thống (Workflow).
-*   **UC-09:** Hiển thị tổng hợp và xuất kết quả báo cáo (PDF).
-
-#### Module 5: Tính năng đặc trưng: sử dụng machine learning
-*   **UC-08:** Tối ưu hóa thiết kế và gợi ý thông số bằng Machine Learning.
-
----
-
-### CHI TIẾT USE-CASE (USE CASE DETAILS)
+### BẢNG ĐẶC TẢ USE-CASE CHI TIẾT (USE CASE DETAILS)
 
 #### UC-01: Quản lý tài khoản (Đăng ký, Đăng nhập, Đăng xuất)
 *   **Use case name:** Đăng ký, đăng nhập và xác thực người dùng.
@@ -102,6 +77,7 @@ Dự án được chia thành 5 Module chính, bao quát các Use-case sau:
     *   *Ứng suất vượt giới hạn:* Hệ thống cảnh báo không đạt, hướng dẫn người dùng điều chỉnh kích thước hoặc vật liệu.
 *   **Postcondition:** Có đầy đủ thông số thiết kế bộ truyền bánh răng trụ để xuất bản vẽ.
 
+---
 #### UC-06: Lưu chuyển và phục hồi dữ liệu hệ thống (Workflow)
 *   **Use case name:** Lưu chuyển trạng thái tính toán.
 *   **Actor:** Hệ thống.
@@ -116,24 +92,9 @@ Dự án được chia thành 5 Module chính, bao quát các Use-case sau:
     *   *Người dùng thay đổi thông số cũ:* Hệ thống báo Invalidate, xóa dữ liệu kế thừa và yêu cầu tính lại.
 *   **Postcondition:** Đảm bảo luồng dữ liệu tính toán liền mạch, tự động hóa cao.
 
-#### UC-07: Gợi ý linh kiện từ Cơ sở dữ liệu
-*   **Use case name:** Gợi ý linh kiện phù hợp (Vòng bi, then...).
-*   **Actor:** Hệ thống.
-*   **Description:** Dựa trên kết quả tính toán đường kính trục và tải trọng, truy xuất CSDL để đề xuất mã linh kiện tiêu chuẩn.
-*   **Preconditions:** Hoàn tất tính toán động lực học và các kích thước trục.
-*   **Normal flow:** Hệ thống phân tích lực -> Truy vấn CSDL linh kiện -> Hiển thị danh sách gợi ý.
-*   **Postcondition:** Người dùng chọn được linh kiện đạt tiêu chuẩn.
-
-#### UC-08: Tối ưu hóa thiết kế bằng Machine Learning
-*   **Use case name:** Tối ưu hóa thiết kế qua AI/ML.
-*   **Actor:** Hệ thống.
-*   **Description:** Sử dụng mô hình Machine Learning (đã được huấn luyện) để phân tích các bộ thông số đầu vào và gợi ý tỷ số truyền, hoặc kích thước tối ưu nhằm giảm khối lượng hoặc tăng độ bền.
-*   **Preconditions:** Tích hợp API Machine Learning vào luồng tính toán.
-*   **Normal flow:** Gửi thông số đầu vào tới API AI -> API trả về bộ thông số gợi ý -> Hiển thị cho người dùng đối chiếu.
-
-#### UC-09: Hiển thị tổng hợp và xuất kết quả báo cáo (PDF)
-*   **Use case name:** Xuất kết quả báo cáo PDF.
-*   **Actor:** Người dùng.
-*   **Description:** Tập hợp dữ liệu từ tất cả các module và định dạng thành file báo cáo thuyết minh tính toán.
-*   **Preconditions:** Đã hoàn thành tính toán các module.
-*   **Normal flow:** Nhấn "Xuất báo cáo" -> Backend gọi thư viện xử lý báo cáo -> Tải file PDF về máy.
+---
+#### CÁC TÍNH NĂNG TRONG LỘ TRÌNH PHÁT TRIỂN (ROADMAP)
+*(Các tính năng dưới đây chưa được lập trình trong phiên bản hiện tại)*
+*   **UC-07:** Gợi ý linh kiện (vòng bi) từ Cơ sở dữ liệu.
+*   **UC-08:** Tối ưu hóa thiết kế bằng Machine Learning (Thuật toán Di truyền).
+*   **UC-09:** Hiển thị tổng hợp và xuất kết quả báo cáo (PDF).
