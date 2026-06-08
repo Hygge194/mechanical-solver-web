@@ -436,7 +436,20 @@ function saveM2(payload, result) {
         m2Data.t_h = m1.input?.lifetime ?? "";
     }
 
-    saveModuleData(STORAGE_KEYS.M2, m2Data);
+    try {
+        if (typeof saveModuleData === 'function') {
+            saveModuleData("M2_Data", m2Data);
+        } else {
+            localStorage.setItem("M2_Data", JSON.stringify(m2Data));
+        }
+        
+        let project = JSON.parse(localStorage.getItem("PROJECT_DATA")) || {};
+        project["M2_Data"] = m2Data;
+        localStorage.setItem("PROJECT_DATA", JSON.stringify(project));
+    } catch (err) {
+        console.error("Lỗi lưu M2:", err);
+        localStorage.setItem("M2_Data", JSON.stringify(m2Data));
+    }
 }
 
 /* ══════════════════════════════════════════════════════════════

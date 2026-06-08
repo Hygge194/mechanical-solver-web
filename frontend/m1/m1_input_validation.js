@@ -232,27 +232,37 @@ async function fetchStep34() {
 
             // ───── SAVE DATA FOR M2 ─────
             const inputLifetime = document.getElementById("inputLifetime");
-            saveModuleData(STORAGE_KEYS.M1, {
+            const m1Data = {
                 input: {
                     pt: state.pt,
                     niv: state.niv,
                     lifetime: inputLifetime ? parseFloat(inputLifetime.value) : null
                 },
-
                 motor: state.selectedMotor,
-
                 power: {
                     pct: state.pct
                 },
-
                 ratios: ratios,
-
                 kinematics: kin,
-
                 validation: validation,
-
                 timestamp: new Date().toISOString()
-            });
+            };
+
+            try {
+                if (typeof saveModuleData === 'function') {
+                    saveModuleData("M1_Data", m1Data);
+                } else {
+                    localStorage.setItem("M1_Data", JSON.stringify(m1Data));
+                }
+                
+                // M3/M4 style fallback for PROJECT_DATA update
+                let project = JSON.parse(localStorage.getItem("PROJECT_DATA")) || {};
+                project["M1_Data"] = m1Data;
+                localStorage.setItem("PROJECT_DATA", JSON.stringify(project));
+            } catch (err) {
+                console.error("Lỗi khi lưu M1_Data:", err);
+                localStorage.setItem("M1_Data", JSON.stringify(m1Data));
+            }
         }
     } catch(e) { 
         console.error(e);

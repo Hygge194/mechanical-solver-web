@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from services.motor_service import get_motor_recommendations
 from services.auth_service import register_user, authenticate_user
@@ -170,3 +171,29 @@ async def calculate_belt(data: dict):
 
 
 # Lệnh chạy server: python -m uvicorn main:app --reload
+
+# --- REPORT GENERATION ROUTE ---
+
+@app.post("/api/v1/report/generate")
+async def generate_report_endpoint(data: dict):
+    """
+    Endpoint nhận toàn bộ JSON PROJECT_DATA từ trình duyệt
+    để sinh file báo cáo Word (DOCX) rồi trả thẳng về cho người dùng tải xuống.
+    """
+    try:
+        from utils.report import generate_report
+        file_stream = generate_report(data)
+        
+        headers = {
+            'Content-Disposition': 'attachment; filename="Thuyet_Minh_Do_An.docx"'
+        }
+        
+        return StreamingResponse(
+            file_stream, 
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
+            headers=headers
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

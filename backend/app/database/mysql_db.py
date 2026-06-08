@@ -37,7 +37,8 @@ def fetch_motor_by_power_and_speed(p_min, n_sb):
             CongSuat_kW as P,
             TocDo_vph as n,
             CosPhi as cosphi,
-            Tk_Tdn as tk_tdn
+            Tk_Tdn as tk_tdn,
+            HieuSuat as eta
         FROM Thu_Vien_Dong_Co
         WHERE CongSuat_kW >= %s
         ORDER BY ABS(TocDo_vph - %s) ASC,

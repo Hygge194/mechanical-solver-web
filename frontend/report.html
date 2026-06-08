@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xuất Báo Cáo - Hệ Thống Dẫn Động</title>
+    <link rel="stylesheet" href="m1/m1_input_validation.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx1); padding: 2rem; }
+        .report-container { max-width: 800px; margin: 0 auto; background: var(--bg2); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: var(--blue); margin-top: 0; }
+        .btn-export { background: var(--blue); color: #fff; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+        .btn-export:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-export:active { transform: translateY(0); }
+        .btn-export:disabled { opacity: 0.7; cursor: not-allowed; }
+        .status-box { margin-top: 20px; padding: 16px; border-radius: 8px; background: var(--bg3); font-size: 14px; }
+        .module-check { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .icon-ok { color: var(--green); }
+        .icon-miss { color: var(--red); }
+    </style>
+</head>
+<body>
+
+<div class="report-container">
+    <h1>📄 Xuất Thuyết Minh Đồ ÁN (Word)</h1>
+    <p>Hệ thống sẽ thu thập dữ liệu tính toán từ các Module M1, M2, M3, M4 đang được lưu trong trình duyệt của bạn để tạo thành file báo cáo Word tự động.</p>
+    
+    <div class="status-box" id="dataStatus">
+        <p style="margin-top:0;font-weight:600;color:var(--tx2);">Trạng thái dữ liệu:</p>
+        <div id="checkList">Đang kiểm tra dữ liệu...</div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <button class="btn-export" id="btnExport" onclick="exportReport()">
+            <span id="btnIcon">📥</span> <span id="btnText">Tải xuống báo cáo (.docx)</span>
+        </button>
+    </div>
+</div>
+
+<script src="shared/storage.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        checkData();
+    });
+
+    function getFullData() {
+        // Cố gắng lấy từ PROJECT_DATA trước
+        let data = loadProjectData();
+        
+        // Nhặt thêm trực tiếp từ localStorage cho chắc chắn (fallback như M3, M4)
+        const keys = ["M1_Data", "M2_Data", "M3_Data", "M4_Data"];
+        keys.forEach(k => {
+            if (!data[k]) {
+                try {
+                    const raw = localStorage.getItem(k);
+                    if (raw) data[k] = JSON.parse(raw);
+                } catch (e) {}
+            }
+        });
+        
+        return data;
+    }
+
+    function checkData() {
+        const data = getFullData();
+        const list = document.getElementById("checkList");
+        let html = '';
+        
+        const m1 = data.M1_Data ? '<span class="icon-ok">✅ Có dữ liệu</span>' : '<span class="icon-miss">❌ Thiếu dữ liệu</span>';
+        const m2 = data.M2_Data ? '<span class="icon-ok">✅ Có dữ liệu</span>' : '<span class="icon-miss">❌ Thiếu dữ liệu</span>';
+        const m3 = data.M3_Data ? '<span class="icon-ok">✅ Có dữ liệu</span>' : '<span class="icon-miss">❌ Thiếu dữ liệu</span>';
+        const m4 = data.M4_Data ? '<span class="icon-ok">✅ Có dữ liệu</span>' : '<span class="icon-miss">❌ Thiếu dữ liệu</span>';
+
+        html += `<div class="module-check"><strong>Module 1 (Động cơ):</strong> ${m1}</div>`;
+        html += `<div class="module-check"><strong>Module 2 (Đai):</strong> ${m2}</div>`;
+        html += `<div class="module-check"><strong>Module 3 (Bánh răng côn):</strong> ${m3}</div>`;
+        html += `<div class="module-check"><strong>Module 4 (Bánh răng trụ):</strong> ${m4}</div>`;
+
+        if (!data.M1_Data && !data.M2_Data && !data.M3_Data && !data.M4_Data) {
+            html += `<p style="color:var(--red); margin-top:10px;">Chưa có dữ liệu nào để xuất báo cáo. Hãy tính toán ít nhất một Module.</p>`;
+        }
+
+        list.innerHTML = html;
+    }
+
+    async function exportReport() {
+        const btn = document.getElementById("btnExport");
+        const btnText = document.getElementById("btnText");
+        const data = getFullData();
+        
+        if (Object.keys(data).length === 0) {
+            alert("Không có dữ liệu để xuất báo cáo!");
+            return;
+        }
+
+        try {
+            btn.disabled = true;
+            btnText.textContent = "Đang tạo báo cáo...";
+            
+            const response = await fetch("http://127.0.0.1:8000/api/v1/report/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error("Lỗi khi tạo báo cáo từ máy chủ");
+            }
+
+            // Lấy file dạng blob
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            // Tạo the a ẩn để tải file
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Thuyet_Minh_Do_An.docx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            
+            // Giải phóng bộ nhớ
+            window.URL.revokeObjectURL(url);
+            
+        } catch (error) {
+            console.error(error);
+            alert("Đã xảy ra lỗi khi xuất báo cáo: " + error.message);
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = "Tải xuống báo cáo (.docx)";
+        }
+    }
+</script>
+</body>
+</html>
