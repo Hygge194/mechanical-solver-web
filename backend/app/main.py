@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from services.motor_service import get_motor_recommendations
 from services.auth_service import register_user, authenticate_user

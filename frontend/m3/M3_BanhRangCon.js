@@ -234,8 +234,8 @@ function evaluateStrength(R) {
 // ─────────────────────────────────────────────────────────────
 
 /** Định dạng số thực */
-const fmt  = (v, d = 3) => (isNaN(v) ? '—' : (+v).toFixed(d));
-const fmtN = (v)        => (isNaN(v) ? '—' : Math.round(v).toString());
+window.fmt  = window.fmt || ((v, d = 3) => (isNaN(v) ? '—' : (+v).toFixed(d)));
+window.fmtN = window.fmtN || ((v) => (isNaN(v) ? '—' : Math.round(v).toString()));
 
 /** Gán textContent an toàn */
 function setText(id, text) {
